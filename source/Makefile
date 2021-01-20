@@ -678,6 +678,7 @@ $(LIBD)(userint/PRAPPROX.o) \
 $(LIBD)(userint/PRCCS.o) \
 $(LIBD)(userint/PRCCSF.o) \
 $(LIBD)(userint/PRDC.o) \
+$(LIBD)(userint/PRDCT.o) \
 $(LIBD)(userint/PRDCC.o) \
 $(LIBD)(userint/PRDCS.o) \
 $(LIBD)(userint/PRDDESIRED.o) \

@@ -49,6 +49,7 @@ Step2: /* Process the command. */
        case 17: PRDCC(); break;
        case 18: PRDLV(); break;
        case 19: PRDC(); break;
+       case 119: PRDCT(); break;
        case 20: PRDSET(); break;
        case 21: { PRFINISH(); goto Return; } break;
        case 22: PRDPF(); break;

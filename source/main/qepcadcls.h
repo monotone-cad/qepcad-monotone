@@ -242,6 +242,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void PRCCSF();
   void PRCHPIVOT();
   void PRDC();
+  void PRDCT();
   void PRDCS();
   void PRDDESIRED();
   void PRDESIRED();

@@ -257,6 +257,14 @@ d-cell C
 Displays the info about the cell with the index C.
 @
 
+d-cell-tarski 119 de d
+@
+d-cell-tarski C
+
+Displays the cell with index C in the form of a Tarski formula.
+@
+
+
 
 d-dstat 38 abcde d
 @

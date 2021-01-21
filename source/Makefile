@@ -330,6 +330,7 @@ $(LIB)(userint/PRAPPROX.o) \
 $(LIB)(userint/PRCCS.o) \
 $(LIB)(userint/PRCCSF.o) \
 $(LIB)(userint/PRDC.o) \
+$(LIB)(userint/PRDCT.o) \
 $(LIB)(userint/PRDCC.o) \
 $(LIB)(userint/PRDCS.o) \
 $(LIB)(userint/PRDDESIRED.o) \

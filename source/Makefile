@@ -117,6 +117,7 @@ $(LIB)(io/GETWORD.o) \
 $(LIB)(io/GREADR.o) \
 $(LIB)(io/IPLDWR.o) \
 $(LIB)(io/IPLLDWR.o) \
+$(LIB)(io/CELLIPLLDWR.o) \
 $(LIB)(io/IPLLDWRMOD.o) \
 $(LIB)(io/IUPRWR.o) \
 $(LIB)(io/LABELWR.o) \
@@ -467,6 +468,7 @@ $(LIBD)(io/GETWORD.o) \
 $(LIBD)(io/GREADR.o) \
 $(LIBD)(io/IPLDWR.o) \
 $(LIBD)(io/IPLLDWR.o) \
+$(LIBD)(io/CELLIPLLDWR.o) \
 $(LIBD)(io/IPLLDWRMOD.o) \
 $(LIBD)(io/IUPRWR.o) \
 $(LIBD)(io/LABELWR.o) \

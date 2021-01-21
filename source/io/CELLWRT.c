@@ -18,18 +18,8 @@ Step1: /* Heading. */
        SWRITE(" ----------\n\n");
 
 Step2: /* Signs of Projection Factors. */
-       SWRITE("Signs of Projection Factors\n");
        S = LELTI(c,SIGNPF);
-       for (i = 1; i <= k; i++)
-         {
-         S1 = LELTI(S,k-i+1);
-         SWRITE("Level "); GWRITE(i); SWRITE("  : ");
-         if (S1 == 0)
-           SWRITE("Not determined");
-         else
-           SIGNLWR(S1);
-         SWRITE("\n");
-         }
+       CELLIPLLDWR(GVVL, GVPF, S); SWRITE("\n"); goto Return;
 
 Step3: /* Finish. */
        SWRITE("\n----------------------------------------------------\n");

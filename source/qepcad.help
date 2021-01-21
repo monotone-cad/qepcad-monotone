@@ -475,6 +475,14 @@ Displays all true cells using d-cell.
 @
 
 
+d-true-cells-tarski 163 bcde d
+@
+d-true-cells-tarski
+
+Displays all true cells using d-cell-tarski.
+@
+
+
 d-variable-list 11 abcde d
 @
 d-variable-list

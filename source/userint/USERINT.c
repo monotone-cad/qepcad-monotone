@@ -94,6 +94,7 @@ Step2: /* Process the command. */
        case 60: PRDLPI(); break;
        case 61: PRDLFI(); break;
        case 63: TRUECELLWRITE(GVPC); break;
+       case 163: TRUECELLWRITET(GVPC); break;
        case 64: FALSECELLWRITE(GVPC); break;
        case 69: PRDSTACK(); break;
        case 71: DISP2DCAD(GVPC,GVPF,GVPJ); break;

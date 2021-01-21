@@ -227,6 +227,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void STATWR();
   void SAMPLEWR(Word c);
   void CELLWR(Word c);
+  void CELLWRT(Word c);
   void CELLSWR(Word c);
 
   /* SACLIB */

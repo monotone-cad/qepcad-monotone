@@ -94,6 +94,7 @@ $(LIB)(io/CATTRNRDR.o) \
 $(LIB)(io/CATTRNWR.o) \
 $(LIB)(io/CELLRDR.o) \
 $(LIB)(io/CELLWR.o) \
+$(LIB)(io/CELLWRT.o) \
 $(LIB)(io/CELLSWR.o) \
 $(LIB)(io/COMMNT.o) \
 $(LIB)(io/COMMNTRD.o) \
@@ -443,6 +444,7 @@ $(LIBD)(io/CATTRNRDR.o) \
 $(LIBD)(io/CATTRNWR.o) \
 $(LIBD)(io/CELLRDR.o) \
 $(LIBD)(io/CELLWR.o) \
+$(LIBD)(io/CELLWRT.o) \
 $(LIBD)(io/CELLSWR.o) \
 $(LIBD)(io/COMMNT.o) \
 $(LIBD)(io/COMMNTRD.o) \

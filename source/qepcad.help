@@ -290,6 +290,14 @@ Displays all false cells using d-cell.
 @
 
 
+d-false-cells-tarski 164 bcde d
+@
+d-false-cells-tarski
+
+Displays all false cells using d-cell-tarski.
+@
+
+
 d-formula 10 abcde d
 @
 d-formula 

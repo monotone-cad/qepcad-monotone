@@ -1,5 +1,5 @@
 /*======================================================================
-                      CELLIPLLDWR(V,A,x)
+                      CELLIPLLDWR(V,A,S,k)
 
 Cell signs; Integral Polynomial, List of Lists, Distributed Write.
 
@@ -11,7 +11,7 @@ Cell signs; Integral Polynomial, List of Lists, Distributed Write.
 ======================================================================*/
 #include "qepcad.h"
 
-void CELLIPLLDWR(Word V, Word A, Word S)
+void CELLIPLLDWR(Word V, Word A, Word S, Word k)
 {
        Word A1,A11,i,P,xp,s;
        /* hide i,j,n,r; */
@@ -21,24 +21,25 @@ Step1: /* Write. */
        while (A != NIL)
          {
          ADV(A,&A1,&A);
+         xp = LELTI(S,k-i);
 	 i = i + 1;
-         xp = LELTI(S,i);
 
          while (A1 != NIL)
            {
            ADV(A1,&A11,&A1);
+           ADV(xp,&s,&xp);
+
            if (LELTI(A11,PO_STATUS) == PO_REMOVE || LELTI(A11,PO_TYPE) == PO_POINT)
 	     continue;
 
 	   P = LELTI(A11, PO_POLY);
-           ADV(xp,&s,&xp);
 	   IPDWRITE(i,P,V);
 	   switch (s)
              {
              case POSITIVE: SWRITE(" > "); break;
              case ZERO: SWRITE(" = "); break;
              case NEGATIVE: SWRITE(" < "); break;
-             case UNDET: SWRITE(" ? "); break;
+             default: SWRITE(" ? "); break;
              }
 	   GWRITE(0);
            SWRITE("\n");

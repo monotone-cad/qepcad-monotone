@@ -303,6 +303,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void SFCFULLD(Word D, Word P, Word J, Word n);
   Word SFCFULLDf(Word D, Word P, Word J, Word n);
   void FALSECELLWRITE(Word D);
+  void FALSECELLWRITET(Word D);
   void TRUECELLWRITE(Word D);
   void TRUECELLWRITET(Word D);
   void REPLACE_WITH_SIMPLE(Word D, Word P, Word flag);

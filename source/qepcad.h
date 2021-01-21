@@ -130,7 +130,7 @@ Word IPFZT1(Word r, Word A);
 void IPLDWR(Word V, Word A);
 Word IPLFAC(Word k, Word J);
 void IPLLDWR(Word V, Word A);
-void CELLIPLLDWR(Word V, Word A, Word S);
+void CELLIPLLDWR(Word V, Word A, Word S, Word k);
 void IPLLDWRMOD(Word V, Word A);
 void IPLSRP(Word A, Word *s_, Word *P_);
 Word IPRESPRS(Word r, Word A, Word B);

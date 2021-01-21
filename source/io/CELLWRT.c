@@ -19,7 +19,7 @@ Step1: /* Heading. */
 
 Step2: /* Signs of Projection Factors. */
        S = LELTI(c,SIGNPF);
-       CELLIPLLDWR(GVVL, GVPF, S); SWRITE("\n"); goto Return;
+       CELLIPLLDWR(GVVL, GVPF, S, k); SWRITE("\n"); goto Return;
 
 Step3: /* Finish. */
        SWRITE("\n----------------------------------------------------\n");

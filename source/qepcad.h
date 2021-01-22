@@ -1,5 +1,5 @@
 /*=======================================================
-                    qepcad.h                                        
+                    qepcad.h
 ========================================================*/
 #ifndef QEPCAD_H
 #define QEPCAD_H
@@ -174,9 +174,9 @@ Word NEGRLOP(Word T);
 void NEXTCELL(Word D, Word c, Word *cp_, Word *t_);
 void NEXTCOMB(Word n, Word r, Word Rs, Word *R_, Word *q_);
 void NEXTLEXI(Word l, Word Rs, Word *R_, Word *q_);
-void NEXTPRD(Word n, Word vs, Word Ss_r, Word Ss_s, 
-			   Word Rs_c, Word Rs_s, Word *v_, 
-			   Word *S_r_, Word *S_s_, 
+void NEXTPRD(Word n, Word vs, Word Ss_r, Word Ss_s,
+			   Word Rs_c, Word Rs_s, Word *v_,
+			   Word *S_r_, Word *S_s_,
 			   Word *R_c_, Word *R_s_, Word *q_);
 Word NORMAF(Word A);
 Word NORMAFS(Word Fh);
@@ -316,14 +316,14 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 #define GEOP   6
 #define NEOP   5
 #define LEOP   3
-      
+
 /* Other Extended Relational Operators */
 #define CDOP   0
 #define TAOP   7
 
 /* Indexed root */
 #define IROOT  101
-  
+
 /* Logical Operators */
 #define ANDOP     11
 #define OROP      12
@@ -362,11 +362,11 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 /* Solution Flag */
 #define EQU      1
 #define INEQU    0
-      
+
 /* Return Flag */
 #define OK      1
 #define ERROR   0
-      
+
 /* Cell */
 #define LEVEL      1     /* If you change this, update MCELL also. */
 #define CHILD      2
@@ -378,7 +378,7 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 #define HOWTV      8
 #define DEGSUB     9
 #define MULSUB     10
-      
+
 /* Partial Orderings */
 #define HLORD      1
 #define LLORD      2
@@ -398,7 +398,7 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 #define CALCINDEX    -4
 #define CAPARITY     -5
 
-#define CAINDEX0     -1000  /* All the value below this is reserved for 
+#define CAINDEX0     -1000  /* All the value below this is reserved for
                                index(i). */
 
 
@@ -438,7 +438,7 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 
 /* -----------------------------------------------------------------------*/
 /*                              Macros                                    */
-/* -----------------------------------------------------------------------*/ 
+/* -----------------------------------------------------------------------*/
 #define LBLINDEX(L)    THIRD(L)                       /* ??? */
 #define LBLLEVEL(L)    SECOND(L)                      /* ??? */
 #define MKLABEL(a,b,c)  LIST3(LFS(a),(b),(c))         /* ??? */
@@ -448,8 +448,8 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 
 /* -----------------------------------------------------------------------*/
 /*                              Data-bases                                */
-/* -----------------------------------------------------------------------*/ 
-extern Word DBAFCSBM;      /* Database for AFCSBM */   
+/* -----------------------------------------------------------------------*/
+extern Word DBAFCSBM;      /* Database for AFCSBM */
 extern Word DBAFPNIP;      /* Database for AFPNIP */
 extern Word DBAFUPGC;      /* Database for AFUPGC */
 extern Word DBAFUPSFN;     /* Database for AFUPSFN */
@@ -488,7 +488,7 @@ extern Word TCPC;      /* Partial CAD */
 extern Word TCPROD;    /* Product generated */
 extern Word TCPIMP;    /* Prime Implicant */
 extern Word TCPIMPTBL; /* Prime Implicant Table */
-extern Word TCEPIMP;   /* Essential Prime Implicant */ 
+extern Word TCEPIMP;   /* Essential Prime Implicant */
 extern Word TCSTAT;    /* Statistics at the end */
 extern Word TCDSTAT;   /* Dissertation statistics at the end */
 extern Word PCIPFZT;   /* 'y' if IPFZT is turned on, 'n' otherise. */
@@ -547,7 +547,7 @@ extern Word     TMIPLSRP[MNV1];    /* Time for computing signs and similar int; 
 extern Word     TMIPFSBM[MNV1];    /* Time for computing finest squarefree basis, IPFSBM */
 extern Word     TMIPLRRI[MNV1];    /* Time for integral poly real root isolation,  IPLRRI */
 extern Word     TMECR[MNV1];       /* Time for establishing children on rational, ECR, EC1 */
-extern Word     TMSIGNPR[MNV1];    /* Time for computing projection signature, SIGNPR, SIGNP1 */  
+extern Word     TMSIGNPR[MNV1];    /* Time for computing projection signature, SIGNPR, SIGNP1 */
 extern Word   TMEVALUATE[MNV1];  /* Time for trial evaluataion, EVALUATE */
 extern Word   TMPROPAGATE[MNV1]; /* Time for propagation, PROPAGATE */
 extern Word   TMAPEQC[MNV1];  /* Time to apply equational constraints, APEQC */

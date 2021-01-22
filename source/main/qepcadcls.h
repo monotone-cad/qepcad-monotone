@@ -42,27 +42,27 @@ public:
   GCWord PCAFUPBRI;   /* 0 for AFUPBRI, 1 for AFUPHIBRI. */
   GCWord PCNSTEP;     /* Number of steps to be skipped */
   GCWord PCFINISH;    /* 'y' if finish, 'n' otherwise */
-  GCWord PCMC;        /* 'y' if a cell is  chosen manually, 
+  GCWord PCMC;        /* 'y' if a cell is  chosen manually,
 		     * 'n' otherwise */
   GCWord PCMCC;       /* The cell manually chosen */
-  GCWord PCTCN;       /* 'y' if trivial conversion is treated, 
+  GCWord PCTCN;       /* 'y' if trivial conversion is treated,
 		     * 'n' otherwise */
-  GCWord PCRSP;       /* 'y' if rational sample point is treated, 
+  GCWord PCRSP;       /* 'y' if rational sample point is treated,
 		     * 'n' otherwise */
   GCWord PCFULL;      /* 'y' if a full CAD is to be build */
-  GCWord PCPROJOP;    /* Projection operators */       
+  GCWord PCPROJOP;    /* Projection operators */
   GCWord PCCCS;       /* Cell Choice Strategy for cells of level >= f. */
   GCWord PCCCSF;      /* Cell Choice Strategy for cells of level < f. */
   GCWord PCDESIRED;   /* Desired cell condition */
   GCWord PCUSEDES;    /* 'y' if use the desired condition, 'n' otherwise. */
-  GCWord PCNUMDEC;    /* Number of decimal digits for 
+  GCWord PCNUMDEC;    /* Number of decimal digits for
 		       * approximating algebraic numbers. */
-  GCWord PCSIMPLIFY;  /* 'b' if bottom-up is used.   
+  GCWord PCSIMPLIFY;  /* 'b' if bottom-up is used.
 		       * 't' if top-down is used. */
   GCWord PCEQC;       /* 1 if equational contraint specified.
 		       * 0 otherwise. */
   GCWord PCPROPEC;    /* Propagation of equational constraints. */
-  
+
   GCWord PCSEARCHOK;     /* 'y' if the search for true/false cell succeeded, 'n' otherwise. */
   GCWord PCSEARCHTRUE;   /* 'y' if the search for true cell should be done, 'n' otherwise. */
   GCWord PCSEARCHFALSE;  /* 'y' if the search for false cell should be done, 'n' otherwise. */
@@ -103,7 +103,7 @@ Word     TMIPLSRP[MNV1];    /* Time for computing signs and similar int; polys, 
 Word     TMIPFSBM[MNV1];    /* Time for computing finest squarefree basis, IPFSBM */
 Word     TMIPLRRI[MNV1];    /* Time for integral poly real root isolation,  IPLRRI */
 Word     TMECR[MNV1];       /* Time for establishing children on rational, ECR, EC1 */
-Word     TMSIGNPR[MNV1];    /* Time for computing projection signature, SIGNPR, SIGNP1 */  
+Word     TMSIGNPR[MNV1];    /* Time for computing projection signature, SIGNPR, SIGNP1 */
 Word   TMEVALUATE[MNV1];  /* Time for trial evaluataion, EVALUATE */
 Word   TMPROPAGATE[MNV1]; /* Time for propagation, PROPAGATE */
 Word   TMAPEQC[MNV1];     /* Time for applying equational constraints, APEQC */
@@ -142,7 +142,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
 /* ------------------------------------------------------------------------*/
 /*                    MEMBER FUNCITONS                                     */
 /* ------------------------------------------------------------------------*/
-  
+
   void INITGLOBALS();
   void INITSTATS();
   QepcadCls() { INITGLOBALS(); INITSTATS(); }
@@ -212,8 +212,8 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void CHOOSE(Word D, Word *t_, Word *c_);
   void CHCELL(Word cs, Word *c_, Word *t_);
   void ECLI(Word D, Word *c_, Word *t_);
-  BDigit SCREEN(Word c); 
-  BDigit SCREENBYQUANTIFIER(Word c); 
+  BDigit SCREEN(Word c);
+  BDigit SCREENBYQUANTIFIER(Word c);
   Word ISFECLI(Word D);
   Word INITPCAD();
   void EVALUATE(Word c, Word k, Word F, Word A);
@@ -305,6 +305,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void FALSECELLWRITE(Word D);
   void FALSECELLWRITET(Word D);
   void TRUECELLWRITE(Word D);
+  void ALLCELLWRITET(Word D);
   void TRUECELLWRITET(Word D);
   void REPLACE_WITH_SIMPLE(Word D, Word P, Word flag);
   void SEPPIVNONPIV(Word Q_k, Word k, Word *PP_, Word *NP_);

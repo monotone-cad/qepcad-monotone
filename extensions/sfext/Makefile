@@ -1,6 +1,6 @@
 ##################################################################
 #
-# Makefile for sfext.a 
+# Makefile for sfext.a
 #
 ##################################################################
 
@@ -31,7 +31,7 @@ VPATH = addpol:crcads:espcad:extlang:fewpol:formula:hoonch:\
 
 ##################################################################
 #
-# Here we list the object files we want in our library. 
+# Here we list the object files we want in our library.
 #
 ##################################################################
 O_addpol = \
@@ -58,6 +58,7 @@ $(LIB)(FALSECELLWRITE.o) \
 $(LIB)(FALSECELLWRITET.o) \
 $(LIB)(TRUECELLWRITE.o) \
 $(LIB)(TRUECELLWRITET.o) \
+$(LIB)(ALLCELLWRITET.o) \
 $(LIB)(LISTOFCWTV.o) \
 $(LIB)(NUMSOLPOINTS.o) \
 $(LIB)(RNCADRTV.o) \

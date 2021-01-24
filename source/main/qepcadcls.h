@@ -271,6 +271,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void PRFINISH();
   void PRGO();
   void PRIPFZT();
+  void PRMCT();
   void PRMCC(Word *t_);
   void PRPROJOP();
   void PRPROPEC();

@@ -678,6 +678,16 @@ Otherise,  turn it off.
 @
 
 
+mct 150 ab m
+@
+mct  C
+
+Monotone cell CAD
+If C is 'y', turn MCT on.
+Otherwise,  turn it off.
+@
+
+
 limit-entry-db 6 abcde m
 @
 limit-entry-db NNN

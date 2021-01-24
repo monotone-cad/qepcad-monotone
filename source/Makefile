@@ -2,7 +2,7 @@
 #
 #  Makefile for qepcad system.
 #
-#  (c) Copyright 1994 Research Institute for Symbolic Computation  
+#  (c) Copyright 1994 Research Institute for Symbolic Computation
 #                     Hoon Hong
 #
 #  Modified by Chris Brown, 2002. NOTE: You MUST use gmake with this file!
@@ -361,6 +361,7 @@ $(LIB)(userint/PRFINISH.o) \
 $(LIB)(userint/PRGO.o) \
 $(LIB)(userint/PRHELP.o) \
 $(LIB)(userint/PRIPFZT.o) \
+$(LIB)(userint/PRMCT.o) \
 $(LIB)(userint/PRIGS.o) \
 $(LIB)(userint/PRLDB.o) \
 $(LIB)(userint/PRMCC.o) \
@@ -402,7 +403,7 @@ $(LIB)(util/SVPOWR.o) \
 $(LIB)(util/SVPROD.o) \
 $(LIB)(util/VALIDLBL.o)
 
-#  To replace saclib routines. 
+#  To replace saclib routines.
 OBJS_SACLIB = \
 $(LIB)(saclib/GCSI.o) \
 $(LIB)(saclib/gcword.o) \
@@ -712,6 +713,7 @@ $(LIBD)(userint/PRFINISH.o) \
 $(LIBD)(userint/PRGO.o) \
 $(LIBD)(userint/PRHELP.o) \
 $(LIBD)(userint/PRIPFZT.o) \
+$(LIBD)(userint/PRMCT.o) \
 $(LIBD)(userint/PRIGS.o) \
 $(LIBD)(userint/PRLDB.o) \
 $(LIBD)(userint/PRMCC.o) \
@@ -753,7 +755,7 @@ $(LIBD)(util/SVPOWR.o) \
 $(LIBD)(util/SVPROD.o) \
 $(LIBD)(util/VALIDLBL.o)
 
-#  To replace saclib routines. 
+#  To replace saclib routines.
 OBJS_SACLIBd = \
 $(LIBD)(saclib/GCSI.o) \
 $(LIBD)(saclib/gcword.o) \
@@ -815,6 +817,6 @@ deb:		$(DEPENDENCIESd)
 			 $(LIBD) $(EXTLIBSD) $(LIBD)  $(EXTLIBSD) -o $(EXED) #\
 			#/home/wcbrown/Downloads/duma_2_4_27/libduma.a -lpthread
 
-#.c.o:	
+#.c.o:
 %.o:	%.c
 		$(CC) $(INCLUDES) $(CFLAGS) -o $@ -c $<

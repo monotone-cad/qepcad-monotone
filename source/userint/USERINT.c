@@ -78,6 +78,7 @@ Step2: /* Process the command. */
        case 43: PRDDESIRED(); break;
        case 44: PRCCSF(); break;
        case 45: PRIPFZT(); break;
+       case 150: PRMCT(); break;
        case 46: PRAPPROX(); break;
        case 47: PRSIMPLIFIER(); break;
        case 48: PRDCS(); break;

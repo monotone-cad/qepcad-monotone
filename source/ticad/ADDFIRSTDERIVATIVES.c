@@ -58,11 +58,10 @@ Step3: /* atomic formula */
     F = LIST1(F);
 
     while (Pp != NIL) {
-        D = FIRST(Pp);
-        F = COMP(LIST4(EQOP, D, r, NIL), F);
+        ADV(Pp, &D, &Pp);
+        if (IPCONST(r, D)) continue;
 
-        Pp = RED(Pp);
-        //TODO check if D is a constant, if so, then don't bother adding it.
+        F = COMP(LIST4(EQOP, D, r, NIL), F);
     }
 
     F = COMP(OROP, F);

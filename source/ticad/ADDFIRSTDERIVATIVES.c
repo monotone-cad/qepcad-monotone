@@ -41,29 +41,26 @@ Step2: /* figure out what type of formula we have */
     }
 
 Step3: /* atomic formula */
-    Word t, P, r, I, Pp, D;
+    Word t, P, r, I, Pp, D, S;
     FIRST4(F, &t, &P, &r, &I);
     SWRITE("we have an atomic formula!");
-    if (t != EQOP) {
-        SWRITE("Equations are only implemented so far.");
-        goto Return;
-    }
-
     // calculate first derivatives
-    printf("r = %d",r);
     Pp = IPALLPARTIALS(r, P, 1, 1);
     printf("number of derivs: %d\n",LENGTH(Pp));
 
-    // add F and disjunction of derivatives
-    F = LIST1(F);
+    F = LIST1(FF);
+    S = LIST1(FF);
 
     while (Pp != NIL) {
         ADV(Pp, &D, &Pp);
         if (IPCONST(r, D)) continue;
 
         F = COMP(LIST4(EQOP, D, r, NIL), F);
+        S = COMP(LIST4(EQOP, D, r, NIL), S);
     }
 
+    S = COMP(ANDOP, S);
+    if (LENGTH(S) > 2) F = COMP(S, F);
     F = COMP(OROP, F);
     printf("list length: %d\n",LENGTH(F));
 

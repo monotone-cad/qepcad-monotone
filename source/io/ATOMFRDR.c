@@ -4,10 +4,10 @@
 Atomic Formula Read, robust.
 
 \Input
-  \parm{V} is a non-null list of variables. 
+  \parm{V} is a non-null list of variables.
 
-\Output  
-  \parm{F} is an atomic formula whose variables 
+\Output
+  \parm{F} is an atomic formula whose variables
            all occur in $V$, read from the input stream.
   \parm{t} is 1 if successful, 0 otherwise.
 ======================================================================*/
@@ -80,43 +80,43 @@ Step1: /* Prepare */
 
 
 Step2: /* Read "_root_" */
-        if (CREADB() != '_' || CREADB() != 'r' ||  CREADB() != 'o' ||  
-	    CREADB() != 'o' ||  CREADB() != 't' ||  CREADB() != '_') 
+        if (CREADB() != '_' || CREADB() != 'r' ||  CREADB() != 'o' ||
+	    CREADB() != 'o' ||  CREADB() != 't' ||  CREADB() != '_')
 	{
 	  SWRITE("_root_ expected!\n");
-	  DIELOC(); t = 0; goto Return; 
+	  DIELOC(); t = 0; goto Return;
 	}
-	
+
 Step3: /* Read index j */
 	GREADR(&j,&t);
 	if (!t || j == 0)
 	{
 	  SWRITE("nonzero index for _root_ expected!\n");
-	  DIELOC(); t = 0; goto Return; 
+	  DIELOC(); t = 0; goto Return;
 	}
-      
+
 Step4: /* Read the right polynomial. */
         RPEXPREAD(r,V,&P2,&t); if (t == 0) goto Return;
-  
+
 Step5: /* Ensure the this ETF formula is proper */
 	PSIMREP(r,P1,&r1,&P1);
 	PSIMREP(r,P2,&r2,&P2p);
 	if (PRED(P1) != 0 || !RPONE(r1,RPDMV(r1,P1)) || r1 != r2)
 	{
 	  SWRITE("Not a *proper* Extended Tarski Formula!\n");
-	  DIELOC(); t = 0; goto Return; 
+	  DIELOC(); t = 0; goto Return;
 	}
 
 Step6: /* Construct F */
         IPSRP(r2,P2p,&a,&P);
         s = RNSIGN(a); if (s < 0) P = IPNEG(r2,P);
 	F = LIST6(IROOT,R,j,P,r2,NIL);
-	
+
 Return: /* Prepare for return. */
        *F_ = F;
        *t_ = t;
-       return;  
-  
+       return;
+
 }
 
 /*======================================================================

@@ -2,11 +2,11 @@
                       QEPCAD(Fs; t,F_e,F_n,F_s)
 
 Quantifier Elimination by Partial Cylindrical Algebraic Decomposition.
- 
+
 \Input
   \parm{F*} $=(Q_{f+1} x_{f+1})\cdots(Q_r x_r)\hat{F}(x_1,\ldots,x_r)$,
             $0\leq f < r$, is a quantified formula.
- 
+
 \Output
   \parm{t}  is either \c{EQU} or \c{INEQU}.
   \parm{Fe} is a quantifier-free formula equivalent to~\v{F*}
@@ -33,8 +33,14 @@ Step1: /* Normalize. */
                /*Int*/ Ths = ACLOCK();
        F = NORMQFF(Fh);
        if (GVUA != NIL) GVNA = NORMQFF(GVUA);
-               /*Int*/ Ths = ACLOCK() - Ths;
                /*Int*/ TMNORMQFF = Ths;
+       if (PCMCT == 'y') {
+           F = ADDFIRSTDERIVATIVES(F);
+           // normalise again - adding derivatives has messed up the formula
+           // TODO can we avoid this?
+           F = NORMQFF(F);
+       }
+               /*Int*/ Ths = ACLOCK() - Ths;
                /*Int*/ GVNQFF = F;
        //       if (TYPEQFF(F) != UNDET) { t = EQU; F_e = F; goto Return; }
 

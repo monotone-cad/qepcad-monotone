@@ -198,6 +198,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
 
   /* TICAD */
   Word TICAD(Word Q, Word F, Word f, Word P, Word A);
+  Word ADDFIRSTDERIVATIVES(Word F);
   Word ACCCVBC(Word k, Word c, Word M, Word B1, Word b, Word* B1h=0);
   Word ACCCVBCR(Word k, Word c, Word B1, Word b, Word* B1h=0);
   Word NZFOPQR(Word c, Word k, Word b, Word A);

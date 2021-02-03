@@ -21,26 +21,21 @@ Step1: /* Initialise */
 
 Step2: /* figure out what type of formula we have */
     if (FF == TRUE || FF == FALSE) { F = FF; goto Return; }
-    if (FIRST(FF) == ANDOP) {
-        // TODO
-        SWRITE("Conjunctions not implemented yet!");
-        F = FF;
-        goto Return;
-    }
 
-    if (FIRST(FF) == OROP) {
-        printf("Disjunction\n");fflush(0);
-        Word F1, F2;
-        F = LCOPY(FF);
+    if (FIRST(FF) == OROP || FIRST(FF) == ANDOP) {
+        Word F1, F2, op, Fcp;
+        op = FIRST(FF);
+        Fcp = LCOPY(FF);
+        F = LIST1(OROP);
         FF = RED(FF);
-        ADV(FF, &F1, &FF);
 
         while (FF != NIL) {
+            ADV(FF, &F1, &FF);
             F2 = ADDFIRSTDERIVATIVES(F1);
             F = CONC(F, RED(F2));
 
-            ADV(FF, &F1, &FF);
         }
+        F = LIST3(op, Fcp, F);
 
         goto Return;
     }

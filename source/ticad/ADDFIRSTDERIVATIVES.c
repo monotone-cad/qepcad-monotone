@@ -29,18 +29,27 @@ Step2: /* figure out what type of formula we have */
     }
 
     if (FIRST(FF) == OROP) {
-    printf("Disjunction");fflush(0);
-        F = FF;
+        printf("Disjunction\n");fflush(0);
+        Word F1, F2;
+        F = LCOPY(FF);
+        FF = RED(FF);
+        ADV(FF, &F1, &FF);
+
+        while (FF != NIL) {
+            F2 = ADDFIRSTDERIVATIVES(F1);
+            F = CONC(F, RED(F2));
+
+            ADV(FF, &F1, &FF);
+        }
+
         goto Return;
     }
-
 Step3: /* atomic formula */
     Word t, P, r, I, Pp, D, S;
     FIRST4(FF, &t, &P, &r, &I);
     SWRITE("we have an atomic formula!");
     // calculate first derivatives
     Pp = IPALLPARTIALS(r, P, 1, 1);
-    printf("number of derivs: %d\n",LENGTH(Pp));
 
     F = LIST1(FF);
     S = LIST1(FF);
@@ -56,7 +65,6 @@ Step3: /* atomic formula */
     S = COMP(ANDOP, S);
     if (LENGTH(S) > 2) F = COMP(S, F);
     F = COMP(OROP, F);
-    printf("list length: %d\n",LENGTH(F));
 
 Return:
   printf("about to return... %p", F);fflush(0);

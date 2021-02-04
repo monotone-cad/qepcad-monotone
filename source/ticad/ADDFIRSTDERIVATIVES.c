@@ -35,7 +35,12 @@ Step2: /* figure out what type of formula we have */
             F = CONC(F, RED(F2));
 
         }
-        F = LIST3(op, Fcp, F);
+        if (LENGTH(F) > LENGTH(Fcp)) {
+            F = LIST3(op, Fcp, F);
+        } else {
+            // no derivatives were added, keep original formula
+            F = Fcp;
+        }
 
         goto Return;
     }

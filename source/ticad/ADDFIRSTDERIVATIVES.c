@@ -35,15 +35,16 @@ Step2: /* figure out what type of formula we have */
             F = CONC(F, RED(F2));
 
         }
-        if (LENGTH(F) > LENGTH(Fcp)) {
-            F = LIST3(op, Fcp, F);
-        } else {
+        if (LENGTH(F) <=LENGTH(Fcp)) {
             // no derivatives were added, keep original formula
             F = Fcp;
+        } else if (op == ANDOP) {
+            F = LIST3(ANDOP, Fcp, F);
         }
 
         goto Return;
     }
+
 Step3: /* atomic formula */
     Word t, P, r, I, Pp, D, S;
     FIRST4(FF, &t, &P, &r, &I);

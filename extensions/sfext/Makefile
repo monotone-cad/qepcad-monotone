@@ -1,6 +1,6 @@
 ##################################################################
 #
-# Makefile for sfext.a 
+# Makefile for sfext.a
 #
 ##################################################################
 
@@ -16,6 +16,7 @@ LIB = sfexto.a
 CC = ${CCo}
 FLAGS = ${FLAGSo}
 endif
+ARFLAGS = rvU
 #------------------
 ##################################################################
 
@@ -31,7 +32,7 @@ VPATH = addpol:crcads:espcad:extlang:fewpol:formula:hoonch:\
 
 ##################################################################
 #
-# Here we list the object files we want in our library. 
+# Here we list the object files we want in our library.
 #
 ##################################################################
 O_addpol = \

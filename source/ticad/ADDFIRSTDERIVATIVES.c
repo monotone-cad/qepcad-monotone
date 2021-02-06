@@ -23,37 +23,31 @@ Step2: /* figure out what type of formula we have */
     if (FF == TRUE || FF == FALSE) { F = FF; goto Return; }
 
     if (FIRST(FF) == OROP || FIRST(FF) == ANDOP) {
-        Word F1, F2, op, Fcp;
+        Word F1, F2, op;
         op = FIRST(FF);
-        Fcp = LCOPY(FF);
-        F = LIST1(OROP);
+        F = LIST1(op);
         FF = RED(FF);
 
         while (FF != NIL) {
             ADV(FF, &F1, &FF);
             F2 = ADDFIRSTDERIVATIVES(F1);
-            F = CONC(F, RED(F2));
-
-        }
-        if (LENGTH(F) <=LENGTH(Fcp)) {
-            // no derivatives were added, keep original formula
-            F = Fcp;
-        } else if (op == ANDOP) {
-            F = LIST3(ANDOP, Fcp, F);
+            F = COMP(F2, F);
         }
 
+        F = INV(F);
+        printf("non atomic %d\n", LENGTH(F));
         goto Return;
     }
 
 Step3: /* atomic formula */
     Word t, P, r, I, Pp, D, S;
     FIRST4(FF, &t, &P, &r, &I);
-    SWRITE("we have an atomic formula!");
+    printf("we have an atomic formula!\n");
     // calculate first derivatives
     Pp = IPALLPARTIALS(r, P, 1, 1);
 
-    F = LIST1(FF);
-    S = LIST1(FF);
+    F = LIST2(FF, OROP);
+    S = LIST1(ANDOP);
 
     while (Pp != NIL) {
         ADV(Pp, &D, &Pp);
@@ -63,12 +57,22 @@ Step3: /* atomic formula */
         S = COMP(LIST4(EQOP, D, r, NIL), S);
     }
 
-    S = COMP(ANDOP, S);
-    if (LENGTH(S) > 2) F = COMP(S, F);
-    F = COMP(OROP, F);
+    if (LENGTH(S) == 1) {
+        // no derivatives - return original
+        F = FF;
+        goto Return;
+    }
+    printf("%d\n", LENGTH(F));
+    if (LENGTH(S) > 2) {
+        S = INV(S);
+        printf("%d\n", FIRST(S));
+        F = COMP(S, F);
+        printf("%d\n", LENGTH(F));
+    }
+    F = LIST3(ANDOP, FF, INV(F));
+    printf("%d\n", FIRST(F));
 
 Return:
-  printf("about to return... %p", F);fflush(0);
+    printf("return\n");
     return F;
-
 }

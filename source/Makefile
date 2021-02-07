@@ -19,6 +19,8 @@ FLAGSo = -O4
 CCd        =  g++
 FLAGSd = -g
 
+ARFLAGS = rvU
+
 # ============================================================
 # The readline library is in different places on solaris, i.e.
 # not in /usr/lib ... also, it depends on curses.

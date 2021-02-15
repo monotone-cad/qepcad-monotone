@@ -20,9 +20,13 @@ Step1: /* Write. */
        i = 0;
        while (A != NIL)
          {
+         if (k-i <= 0) break;
+
          ADV(A,&A1,&A);
          xp = LELTI(S,k-i);
-	 i = i + 1;
+	     i = i + 1;
+
+         if (LENGTH(xp) == 0) continue;
 
          while (A1 != NIL)
            {
@@ -30,7 +34,7 @@ Step1: /* Write. */
            ADV(xp,&s,&xp);
 
            if (LELTI(A11,PO_STATUS) == PO_REMOVE || LELTI(A11,PO_TYPE) == PO_POINT)
-	     continue;
+	           continue;
 
 	   P = LELTI(A11, PO_POLY);
 	   IPDWRITE(i,P,V);

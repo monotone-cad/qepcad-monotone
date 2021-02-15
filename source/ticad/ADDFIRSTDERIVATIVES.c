@@ -17,7 +17,6 @@ Word QepcadCls::ADDFIRSTDERIVATIVES(Word FF)
     Word F;
 
 Step1: /* Initialise */
-    printf("In addfirstderivatives\n"); fflush(0);
 
 Step2: /* figure out what type of formula we have */
     if (FF == TRUE || FF == FALSE) { F = FF; goto Return; }
@@ -35,14 +34,12 @@ Step2: /* figure out what type of formula we have */
         }
 
         F = INV(F);
-        printf("non atomic %d\n", LENGTH(F));
         goto Return;
     }
 
 Step3: /* atomic formula */
     Word t, P, r, I, Pp, D, S;
     FIRST4(FF, &t, &P, &r, &I);
-    printf("we have an atomic formula!\n");
     // calculate first derivatives
     Pp = IPALLPARTIALS(r, P, 1, 1);
 
@@ -62,17 +59,12 @@ Step3: /* atomic formula */
         F = FF;
         goto Return;
     }
-    printf("%d\n", LENGTH(F));
     if (LENGTH(S) > 2) {
         S = INV(S);
-        printf("%d\n", FIRST(S));
         F = COMP(S, F);
-        printf("%d\n", LENGTH(F));
     }
     F = LIST3(ANDOP, FF, INV(F));
-    printf("%d\n", FIRST(F));
 
 Return:
-    printf("return\n");
     return F;
 }

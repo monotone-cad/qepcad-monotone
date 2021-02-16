@@ -1,7 +1,8 @@
 /*======================================================================
-                    F -< ADDFIRSTDERIVATIVES(FF)
+                    F -< QUASIAFFINE(FF)
 
-Add disjunction of first derivatives of polynomials to formula.
+Modify the input formula to allow CAD to construct quasi-affine cells
+by adding critical and singular points.
 
 \Input
   \parm{FF} is a normalised formula
@@ -12,7 +13,7 @@ Add disjunction of first derivatives of polynomials to formula.
 ======================================================================*/
 #include "qepcad.h"
 
-Word QepcadCls::ADDFIRSTDERIVATIVES(Word FF)
+Word QepcadCls::QUASIAFFINE(Word FF)
 {
     Word F;
 
@@ -29,7 +30,7 @@ Step2: /* figure out what type of formula we have */
 
         while (FF != NIL) {
             ADV(FF, &F1, &FF);
-            F2 = ADDFIRSTDERIVATIVES(F1);
+            F2 = QUASIAFFINE(F1);
             F = COMP(F2, F);
         }
 

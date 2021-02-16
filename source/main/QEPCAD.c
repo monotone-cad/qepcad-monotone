@@ -35,7 +35,7 @@ Step1: /* Normalize. */
        if (GVUA != NIL) GVNA = NORMQFF(GVUA);
                /*Int*/ TMNORMQFF = Ths;
        if (PCMCT == 'y') {
-           F = ADDFIRSTDERIVATIVES(F);
+           F = QUASIAFFINE(F);
            // normalise again - adding derivatives has messed up the formula
            // TODO can we avoid this?
            F = NORMQFF(F);
@@ -65,6 +65,9 @@ Step3: /* Truth-invariant CAD. */
                /*Int*/ for (i=1; i<=f; i++) NMFPF=NMFPF+LENGTH(LELTI(P,i));
                /*Int*/ PCNSTEP = 1;
        D = TICAD(Q,F,f,P,A);
+        if (PCMCT == 'y') {
+            SWRITE("TODO: monotone cells!");
+        }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step4: /* Solution. */

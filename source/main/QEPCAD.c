@@ -66,7 +66,7 @@ Step3: /* Truth-invariant CAD. */
                /*Int*/ PCNSTEP = 1;
        D = TICAD(Q,F,f,P,A);
         if (PCMCT == 'y') {
-            SWRITE("TODO: monotone cells!");
+            D = MONOTONE(D);
         }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 

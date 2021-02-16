@@ -319,6 +319,7 @@ $(LIB)(ticad/SUBSTR.o) \
 $(LIB)(ticad/TCHILD.o) \
 $(LIB)(ticad/TICAD.o) \
 $(LIB)(ticad/QUASIAFFINE.o) \
+$(LIB)(ticad/MONOTONE.o) \
 $(LIB)(ticad/TICADauto.o)
 
 OBJS_USERINT = \
@@ -672,6 +673,7 @@ $(LIBD)(ticad/SUBSTR.o) \
 $(LIBD)(ticad/TCHILD.o) \
 $(LIBD)(ticad/TICAD.o) \
 $(LIBD)(ticad/QUASIAFFINE.o) \
+$(LIBD)(ticad/MONOTONE.o) \
 $(LIBD)(ticad/TICADauto.o)
 
 OBJS_USERINTd = \

@@ -59,7 +59,7 @@ Step2: /* Projection. */
                /*Int PCNSTEP = 1; */
        PROJECT(r,A,&P,&J);
         if (PCMCT == 'y') {
-        P = SEMIMONOTONE(P, r);
+            P = SEMIMONOTONE(P, r);
         }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 

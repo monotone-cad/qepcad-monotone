@@ -674,7 +674,7 @@ $(LIBD)(ticad/SUBSTR.o) \
 $(LIBD)(ticad/TCHILD.o) \
 $(LIBD)(ticad/TICAD.o) \
 $(LIBD)(ticad/QUASIAFFINE.o) \
-$(LIB)(ticad/SEMIMONOTONE.o) \
+$(LIBD)(ticad/SEMIMONOTONE.o) \
 $(LIBD)(ticad/MONOTONE.o) \
 $(LIBD)(ticad/TICADauto.o)
 

@@ -66,7 +66,7 @@ Step3: /* Truth-invariant CAD. */
                /*Int*/ PCNSTEP = 1;
        D = TICAD(Q,F,f,P,A);
         if (PCMCT == 'y') {
-            D = MONOTONE(D);
+            D = MONOTONE(D, r);
         }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 

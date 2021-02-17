@@ -58,6 +58,9 @@ Step2: /* Projection. */
                /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
                /*Int PCNSTEP = 1; */
        PROJECT(r,A,&P,&J);
+        if (PCMCT == 'y') {
+        P = SEMIMONOTONE(P, r);
+        }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step3: /* Truth-invariant CAD. */

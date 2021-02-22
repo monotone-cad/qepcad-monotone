@@ -41,14 +41,19 @@ Step1: /* add derivatives of projection factors */
 
             if (IPCONST(k, d)) continue;
 
-            W = MPOLY(d, NIL, NIL, PO_OTHER, PO_KEEP);
+            W = MPOLY(d, NIL, LIST3(PO_DER, 0, p), PO_OTHER, PO_KEEP);
 
             L2 = COMP(W, L2);
         }
 
         printf("  %d\n", LENGTH(L2));
         // using append from projection to handle the labels
-        L3 = IPLFAC(k, L2);
+        L2 = IPLFAC(k, L2);
+        L3 = L2;
+        while (L2 != NIL) {
+            ADV(L2, &d, &L2);
+            SLELTI(d, PO_PARENT, NIL);
+        }
 
         P = APPEND(P, k, L3);
     }

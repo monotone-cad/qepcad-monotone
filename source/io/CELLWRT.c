@@ -15,7 +15,7 @@ void QepcadCls::CELLWRT(Word c)
 Step1: /* Heading. */
         k = LELTI(c,LEVEL);
         r = LENGTH(GVVL);
-        printf("%d ", r);
+
         SWRITE("---------- Information about the cell "); LWRITE(LELTI(c,INDX));
         SWRITE(" ----------\n\n");
 

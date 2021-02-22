@@ -19,7 +19,6 @@ Word QepcadCls::SEMIMONOTONE(Word A, Word r)
 
     if (r != 3) return A;
     // TODO handle r > 3
-    printf("in semimonotone!!");fflush(0);
 
 Step1: /* add derivatives of projection factors */
     P = A;
@@ -46,10 +45,10 @@ Step1: /* add derivatives of projection factors */
             L2 = COMP(W, L2);
         }
 
-        printf("  %d\n", LENGTH(L2));
-        // using append from projection to handle the labels
+        // append factored derivatives (marked as input polynamils)
         L2 = IPLFAC(k, L2);
         L3 = L2;
+
         while (L2 != NIL) {
             ADV(L2, &d, &L2);
             SLELTI(d, PO_PARENT, NIL);

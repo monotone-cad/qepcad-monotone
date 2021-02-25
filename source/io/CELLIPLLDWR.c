@@ -26,9 +26,7 @@ Step1: /* Write. */
          xp = LELTI(S,k-i);
 	     i = i + 1;
 
-         if (LENGTH(xp) == 0) continue;
-
-         while (A1 != NIL)
+         while (A1 != NIL && xp != NIL)
            {
            ADV(A1,&A11,&A1);
            ADV(xp,&s,&xp);

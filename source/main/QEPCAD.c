@@ -58,9 +58,6 @@ Step2: /* Projection. */
                /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
                /*Int PCNSTEP = 1; */
        PROJECT(r,A,&P,&J);
-        if (PCMCT == 'y') {
-            P = SEMIMONOTONE(P, r);
-        }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step3: /* Truth-invariant CAD. */
@@ -68,9 +65,12 @@ Step3: /* Truth-invariant CAD. */
                /*Int*/ for (i=1; i<=f; i++) NMFPF=NMFPF+LENGTH(LELTI(P,i));
                /*Int*/ PCNSTEP = 1;
        D = TICAD(Q,F,f,P,A);
-        if (PCMCT == 'y') {
-            D = MONOTONE(D, r);
+        if (PCMCT == 'y' && r > 2) {
+            D = SEMIMONOTONE(P, D, r);
         }
+        /*if (PCMCT == 'y') {
+            D = MONOTONE(D, r);
+        }*/
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step4: /* Solution. */

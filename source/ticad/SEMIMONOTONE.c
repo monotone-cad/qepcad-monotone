@@ -5,7 +5,9 @@ Adds extra polynomials to projection factor set to ensure semi-monotone cells wi
 
 \Input
   \parm{A} is a list a_1, ..., a_r where a_ is a list of i-level projection factors
+  \parm{AA} is a list a_1, ..., a_r where a_ is a list of i-level input polynomials
   \parm{D} is a CAD
+  \parm{F} is the normalised input QFF
   \parm{r} is the space in which D lives
 
   Output
@@ -20,12 +22,16 @@ Word LEVELIDX(Word C);
 // factorise and null parents of a lest of level k polynomials
 Word FAC(Word L, Word k);
 
-Word QepcadCls::SEMIMONOTONE(Word A, Word DD, Word r)
+// get the parent (in D) of cell C, at level k
+Word PARENT(Word C, Word k, Word D);
+
+Word QepcadCls::SEMIMONOTONE(Word A, Word AA, Word DD, Word F, Word r)
 {
-    Word D, Ct, Cf, C, I, i ,j, A1, P, p, P1, p1, L, L1;
+    Word D, Ct, Cf, C, I, i ,j, A1, P, p, P1, p1, L, L1, Cs, k, S, Cc;
 
 Step1: /* Initialise */
     D = DD;
+    Cs = NIL; /* list of cells that need re-lifting */
 
 Step2: /* calculate: looping through true cells */
     LISTOFCWTV(D, &Ct, &Cf);
@@ -34,6 +40,7 @@ Step2: /* calculate: looping through true cells */
         I = LEVELIDX(C);
         if (LENGTH(I) > 2) {
             SWRITE("*** ERROR doesn't handle cells of dimension > 2");
+
             return D;
         } else if (LENGTH(I) < 2) {
             printf("# cell dim < 2 - continue\n");
@@ -42,8 +49,7 @@ Step2: /* calculate: looping through true cells */
         }
 
         /* We have a 2-dimensional cell */
-        i = LELTI(I, 1);
-        j = LELTI(I, 2);
+        FIRST2(I, &i, &j);
 
         printf("# two dimensional index: %d %d\n", i, j);
         /* adding partials of level j polynomials with respect to variable i */
@@ -61,9 +67,34 @@ Step2: /* calculate: looping through true cells */
         }
 
         printf("# %d ", LENGTH(LELTI(A, i)));
-        A = APPEND(A, j, FAC(L, j));
+        L = FAC(L, j);
+        A = APPEND(A, j, L);
         printf("%d\n", LENGTH(LELTI(A, i)));
 
+        /* Append cell that needs re-lifting */
+        Cs = COMP(PARENT(C, i, D), Cs);
+    }
+
+Step3: /* splitting cells */
+    printf("# %d cells to split\n", LENGTH(Cs));fflush(0);
+    while (Cs != NIL) {
+        ADV(Cs, &C, &Cs);
+        k = LELTI(C, LEVEL);
+        j = LELTI(LELTI(C, INDX), k);
+        A1 = LELTI(A, k);
+        L = LELTI(PARENT(C, k-1, D), CHILD);
+
+        // INSERT CELL
+        // - get siblings and insert index
+        // - iterate to insert index (see LINS)
+        // - insert into list and concat the rest
+        // - iterate over the rest (including all children) and increment level i index
+        // update index function, C, k, n) recursively set level k index on all cells to i
+        L = COMP(LCOPY(C), L);
+        L = COMP(LCOPY(C), L);
+
+        // TODO assumes f=r - i,.e., no quantifiers
+        // printf("# splitting cell %d\n", LENGTH(A1) - LENGTH(S));
     }
 
 Return: /* returning */
@@ -104,3 +135,18 @@ Word FAC(Word L, Word k)
     return LL;
 }
 
+Word PARENT(Word C, Word k, Word D)
+{
+    Word I, i, j, Cp, Cc;
+
+    Cp = D;
+    I = LELTI(C, INDX);
+
+    for (i = 1; i <= k; i++) {
+        j = LELTI(I, i);
+        Cc = LELTI(Cp, CHILD);
+        Cp = LELTI(Cc, j);
+    }
+
+    return Cp;
+}

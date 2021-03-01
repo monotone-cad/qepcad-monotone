@@ -25,6 +25,15 @@ Word FAC(Word L, Word k);
 // get the parent (in D) of cell C, at level k
 Word PARENT(Word C, Word k, Word D);
 
+// split cell C based on level k proj factors
+void SPLITCELL(Word A, Word C, Word k, Word D);
+
+// increment level k index in L (list of cells) by *by*
+Word INCINDEX(Word L, Word k, Word by);
+
+// recursive (deep, incl. children) cell duplication
+Word DEEPCELLDUP(Word C);
+
 Word QepcadCls::SEMIMONOTONE(Word A, Word AA, Word DD, Word F, Word r)
 {
     Word D, Ct, Cf, C, I, i ,j, A1, P, p, P1, p1, L, L1, Cs, k, S, Cc;
@@ -80,9 +89,8 @@ Step3: /* splitting cells */
     while (Cs != NIL) {
         ADV(Cs, &C, &Cs);
         k = LELTI(C, LEVEL);
-        j = LELTI(LELTI(C, INDX), k);
         A1 = LELTI(A, k);
-        L = LELTI(PARENT(C, k-1, D), CHILD);
+        SPLITCELL(A1, C, k, D);
 
         // INSERT CELL
         // - get siblings and insert index
@@ -90,11 +98,6 @@ Step3: /* splitting cells */
         // - insert into list and concat the rest
         // - iterate over the rest (including all children) and increment level i index
         // update index function, C, k, n) recursively set level k index on all cells to i
-        L = COMP(LCOPY(C), L);
-        L = COMP(LCOPY(C), L);
-
-        // TODO assumes f=r - i,.e., no quantifiers
-        // printf("# splitting cell %d\n", LENGTH(A1) - LENGTH(S));
     }
 
 Return: /* returning */
@@ -150,3 +153,84 @@ Word PARENT(Word C, Word k, Word D)
 
     return Cp;
 }
+
+
+void SPLITCELL(Word A, Word C, Word k, Word D)
+{
+    Word L, Siblings, Rest, j, i, Cs, Cnew, Parent;
+
+    Parent = PARENT(C, k-1, D);
+    Siblings = LELTI(Parent, CHILD);
+    L = Siblings;
+    j = LELTI(LELTI(C, INDX), k);
+
+    /* shift along siblings until we reach cell C */
+    for (i = 0; i < j - 1; i++) {
+        ADV(Siblings, &Cs, &Siblings);
+    } /* Siblings = [C, ...Rest] */
+
+    /* duplicate C and insert */
+    Cnew = DEEPCELLDUP(C);
+    Rest = RED(Siblings);
+    Rest = COMP(Cnew, Rest);
+
+    printf("# %d\n", LENGTH(Rest));
+    Rest = INCINDEX(Rest, k, 1);
+    SRED(Siblings, Rest);
+
+    printf("# %d\n", LENGTH(L));
+
+    /* re-assign the siblings */
+    SLELTI(Parent, CHILD, L);
+}
+
+Word INCINDEX(Word L, Word k, Word by)
+{
+    Word C, I, Children, j, LL;
+    LL = L;
+
+    while (L != NIL) {
+        ADV(L, &C, &L);
+        I = LELTI(C, INDX);
+        Children = LELTI(C, CHILD);
+        if (Children != NIL) {
+            SLELTI(C, CHILD, INCINDEX(Children, k, by));
+        }
+
+        j = LELTI(I, k);
+        SLELTI(I, k, j + by);
+    }
+
+    return LL;
+}
+
+
+Word DEEPCELLDUP(Word C)
+{
+    Word Children, Ch, NewChildren;
+
+    Children = LELTI(C, CHILD);
+    NewChildren = NIL;
+    while (Children != NIL) {
+        ADV(Children, &Ch, &Children);
+
+        NewChildren = COMP(
+            DEEPCELLDUP(Ch),
+            NewChildren
+        );
+    }
+
+    return MCELL(
+        LELTI(C, LEVEL),
+        NewChildren,
+        NIL,
+        LELTI(C, TRUTH),
+        LCOPY(LELTI(C, SAMPLE)),
+        LCOPY(LELTI(C, INDX)),
+        LCOPY(LELTI(C, SIGNPF)),
+        LELTI(C, HOWTV),
+        LCOPY(LELTI(C, DEGSUB)),
+        LCOPY(LELTI(C, MULSUB))
+    );
+}
+

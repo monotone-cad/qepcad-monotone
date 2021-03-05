@@ -34,6 +34,13 @@ Word INCINDEX(Word L, Word k, Word by);
 // recursive (deep, incl. children) cell duplication
 Word DEEPCELLDUP(Word C);
 
+// does ADV n times and returns what is left of the list. if n > LENGTH(L), then NIL
+Word ADVN(Word L, Word n);
+
+// append a new value to C's signpf at level k
+void SETSIGNPF(Word C, Word k, Word i, Word sign);
+
+
 Word QepcadCls::SEMIMONOTONE(Word A, Word AA, Word DD, Word F, Word r)
 {
     Word D, Ct, Cf, C, I, i ,j, A1, P, p, P1, p1, L, L1, Cs, k, S, Cc;
@@ -157,7 +164,7 @@ Word PARENT(Word C, Word k, Word D)
 
 void SPLITCELL(Word A, Word C, Word k, Word D)
 {
-    Word L, Siblings, Rest, j, i, Cs, Cnew, Parent;
+    Word L, Siblings, Rest, j, i, Cs, Cnew, Parent, NewPolynomials, newIndx, idx;
 
     Parent = PARENT(C, k-1, D);
     Siblings = LELTI(Parent, CHILD);
@@ -165,17 +172,47 @@ void SPLITCELL(Word A, Word C, Word k, Word D)
     j = LELTI(LELTI(C, INDX), k);
 
     /* shift along siblings until we reach cell C */
-    for (i = 0; i < j - 1; i++) {
-        ADV(Siblings, &Cs, &Siblings);
-    } /* Siblings = [C, ...Rest] */
+    /* Siblings = [C, ...Rest] */
+    Siblings = ADVN(Siblings, j-1);
 
-    /* duplicate C and insert */
-    Cnew = DEEPCELLDUP(C);
+    /* figure out how many cells are needed */
+    // TODO something something CSA something something
+    NewPolynomials = ADVN(A, LENGTH(LELTI(LELTI(C, SIGNPF), k)));
+    if (LENGTH(NewPolynomials) > 1) {
+        SWRITE("TODO: I can only handle one polynomial - need a proper csa algorithm please.\na");
+
+        return;
+    }
+
+    idx = LENGTH(A) - LENGTH(NewPolynomials) + 1;
+    printf("# new idx = %d\n", idx);
+    /* there will be 2 * LENGTH(NewPolynomials) + 1 cells, re-use cell C as first */
+
+    /* we know in advance that we are adding 2 cells, so we increment future indices by 2 */
     Rest = RED(Siblings);
+    Rest = INCINDEX(Rest, k, 2);
+
+    /* duplicate C and insert cell for ZERO and POSITIVE */
+    Cnew = DEEPCELLDUP(C);
+    /* update index */
+    SLELTI(LELTI(Cnew, INDX), k, j+2);
+    SLELTI(Cnew, CHILD, INCINDEX(LELTI(Cnew, CHILD), k, 2));
+    SETSIGNPF(Cnew, k, idx, POSITIVE);
+
+    Rest = COMP(Cnew, Rest);
+    // TODO repeaty code is bad!!! fix me please
+    Cnew = DEEPCELLDUP(C);
+    /* update index */
+    SLELTI(LELTI(Cnew, INDX), k, j+1);
+    SLELTI(Cnew, CHILD, INCINDEX(LELTI(Cnew, CHILD), k, 1));
+
+    // SETSIGNPF(Cnew, k, idx, ZERO);
+
     Rest = COMP(Cnew, Rest);
 
-    printf("# %d\n", LENGTH(Rest));
-    Rest = INCINDEX(Rest, k, 1);
+    // SETSIGNPF(C, k, idx, NEGATIVE);
+
+    /* finally assign the new Rest (w/ new cells) te Siblings */
     SRED(Siblings, Rest);
 
     printf("# %d\n", LENGTH(L));
@@ -204,11 +241,11 @@ Word INCINDEX(Word L, Word k, Word by)
     return LL;
 }
 
-
 Word DEEPCELLDUP(Word C)
 {
     Word Children, Ch, NewChildren;
 
+    // TODO figure out which ones should be LLCOPied
     Children = LELTI(C, CHILD);
     NewChildren = NIL;
     while (Children != NIL) {
@@ -220,6 +257,8 @@ Word DEEPCELLDUP(Word C)
         );
     }
 
+    if (NewChildren != NIL) NewChildren = INV(NewChildren);
+
     return MCELL(
         LELTI(C, LEVEL),
         NewChildren,
@@ -227,10 +266,47 @@ Word DEEPCELLDUP(Word C)
         LELTI(C, TRUTH),
         LCOPY(LELTI(C, SAMPLE)),
         LCOPY(LELTI(C, INDX)),
-        LCOPY(LELTI(C, SIGNPF)),
+        LLCOPY(LELTI(C, SIGNPF)),
         LELTI(C, HOWTV),
         LCOPY(LELTI(C, DEGSUB)),
         LCOPY(LELTI(C, MULSUB))
     );
+}
+
+Word ADVN(Word L, Word n)
+{
+    Word v;
+
+    for (int i = 0; i < n; i++) {
+        if (L == NIL) break;
+        ADV(L, &v, &L);
+        printf("~ advancing\n");
+    }
+
+    printf("# %d (in ADVN)\n", LENGTH(L));
+    return L;
+}
+
+void SETSIGNPF(Word C, Word k, Word i, Word sign)
+{
+    Word S, Children, Ch, level;
+    level = LELTI(C, LEVEL);
+    S = LELTI(LELTI(C, SIGNPF), level - k + 1);
+
+    if (i > LENGTH(S)) {
+        S + CONC(S, LIST1(sign));
+    } else {
+        SLELTI(S, i, sign);
+    }
+
+    SLELTI(LELTI(C, SIGNPF), k, S);
+
+    // recursively append sign to children
+    Children = LELTI(C, CHILD);
+    while (Children != NIL) {
+        ADV(Children, &Ch, &Children);
+
+        SETSIGNPF(Ch, k, i, sign);
+    }
 }
 

@@ -67,7 +67,7 @@ Step3: /* Truth-invariant CAD. */
        D = TICAD(Q,F,f,P,A);
         if (PCMCT == 'y' && r > 2) {
             SEMIMONOTONE(P, A, D, r);
-            D = TICAD(Q,F,f,P,A);
+            D = RECOMPUTE(D,Q,F,f,P,A);
         }
         /*if (PCMCT == 'y') {
             D = MONOTONE(D, r);

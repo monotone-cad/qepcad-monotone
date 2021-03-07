@@ -198,6 +198,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
 
   /* TICAD */
   Word TICAD(Word Q, Word F, Word f, Word P, Word A);
+  Word RECOMPUTE(Word DD, Word Q, Word F, Word f, Word P, Word A);
   Word QUASIAFFINE(Word F);
   void SEMIMONOTONE(Word A, Word P, Word D, Word r);
   Word MONOTONE(Word DD, Word r);

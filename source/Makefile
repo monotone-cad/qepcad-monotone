@@ -318,6 +318,7 @@ $(LIB)(ticad/SUBST.o) \
 $(LIB)(ticad/SUBSTR.o) \
 $(LIB)(ticad/TCHILD.o) \
 $(LIB)(ticad/TICAD.o) \
+$(LIB)(ticad/RECOMPUTE.o) \
 $(LIB)(ticad/QUASIAFFINE.o) \
 $(LIB)(ticad/SEMIMONOTONE.o) \
 $(LIB)(ticad/MONOTONE.o) \
@@ -673,6 +674,7 @@ $(LIBD)(ticad/SUBST.o) \
 $(LIBD)(ticad/SUBSTR.o) \
 $(LIBD)(ticad/TCHILD.o) \
 $(LIBD)(ticad/TICAD.o) \
+$(LIBD)(ticad/RECOMPUTE.o) \
 $(LIBD)(ticad/QUASIAFFINE.o) \
 $(LIBD)(ticad/SEMIMONOTONE.o) \
 $(LIBD)(ticad/MONOTONE.o) \

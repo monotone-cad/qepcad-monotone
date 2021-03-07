@@ -2,15 +2,13 @@
                     F -< SEMIMONOTONE(FF)
 
 Adds extra polynomials to projection factor set to ensure semi-monotone cells will be produced
+Does not recompute the cad
 
 \Input
   \parm{A} is a list a_1, ..., a_r where a_ is a list of i-level projection factors
   \parm{AA} is a list a_1, ..., a_r where a_ is a list of i-level input polynomials
   \parm{D} is a CAD
   \parm{r} is the space in which D lives
-
-  Output
-  \parm{D} new cad with semi-monotone cells
 
 ======================================================================*/
 #include "qepcad.h"
@@ -21,12 +19,10 @@ Word LEVELIDX(Word C);
 // factorise and null parents of a lest of level k polynomials
 Word FAC(Word L, Word k);
 
-Word QepcadCls::SEMIMONOTONE(Word A, Word AA, Word DD, Word r)
+void QepcadCls::SEMIMONOTONE(Word A, Word AA, Word D, Word r)
 {
-    Word D, Ct, Cf, C, I, i ,j, A1, P, p, P1, p1, L;
+    Word Ct, Cf, C, I, i ,j, A1, P, p, P1, p1, L;
 
-Step1: /* Initialise */
-    D = DD;
 Step2: /* calculate: looping through true cells */
     LISTOFCWTV(D, &Ct, &Cf);
     while (Ct != NIL) {
@@ -35,7 +31,7 @@ Step2: /* calculate: looping through true cells */
         if (LENGTH(I) > 2) {
             SWRITE("*** ERROR doesn't handle cells of dimension > 2");
 
-            return D;
+            return;
         } else if (LENGTH(I) < 2) {
             printf("# cell dim < 2 - continue\n");
 
@@ -65,8 +61,6 @@ Step2: /* calculate: looping through true cells */
         A = APPEND(A, j, L);
         printf("%d\n", LENGTH(LELTI(A, i)));
     }
-
-    return D;
 }
 
 Word LEVELIDX(Word C)

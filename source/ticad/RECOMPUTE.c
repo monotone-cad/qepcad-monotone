@@ -32,8 +32,28 @@ Word ADVN(Word L, Word n);
 // -1 if < 0, 1 if > 0, 0 is there is a root within the cell
 Word INTERVALSIGN(Word L, Word idx, Word x);
 
+// convert k-th coordinate of sample point to rational
+Word SAMPLETORATIONAL(Word C, Word k);
+
 // find the solution of a linear polynomial p
 Word LINEARROOT(Word p);
+
+// Append sign of projection factor to C at (C, LEVEL)
+void APPENDSIGNPF(Word C, Word S);
+
+// increment index at level k by t
+void INCINDEXL(Word C, Word k, Word t);
+void INCINDEX(Word C, Word k, Word t);
+
+// Deep cell copy
+Word CELLCOPY(Word C);
+
+// Given cell C which is not sign invariant and rational number p which is the point at which new polynomial changes
+// sign, return a list of 3 cells having the same truth values as C but which are sign invarient
+Word SPLITCELL(Word C, Word p);
+
+// insert new cells into list L
+Word INSERTCELLS(Word L, Word NewCells);
 
 Word QepcadCls::RECOMPUTE(Word C, Word Q, Word F, Word f, Word P, Word A)
 {
@@ -70,18 +90,18 @@ Return: /* return. */
     return D;
 }
 
-Word SPLIT(Word LL, Word Ps)
+Word SPLIT(Word L, Word Ps)
 {
-    Word L, P, p, x, s, C, k;
+    Word P, p, x, s, C, k;
 
-    if (LENGTH(LL) < 2) goto Return;
+    if (LENGTH(L) < 2) goto Return;
 
-    C = FIRST(LL);
+    C = FIRST(L);
     k = LELTI(C, LEVEL);
     Ps = ADVN(Ps, LENGTH(LELTI(LELTI(C, SIGNPF), k)));
 
 Step1: /* Iterate through the new polynomials */
-    if (Ps == NIL) goto Return;
+    while (Ps != NIL) {
     ADV(Ps, &P, &Ps);
     p = LELTI(P, PO_POLY);
     x = LINEARROOT(p);
@@ -92,23 +112,27 @@ Step1: /* Iterate through the new polynomials */
         return L;
     }
 
-    L = LL;
-
+    Word NewCells = NIL; // list of lists of new cells.
     for (int i = 1; i <= LENGTH(L); i++) {
         s = INTERVALSIGN(L, i, x);
-        printf("%d ", s);
+
+        // not sign invariant
+        if (s == 0) {
+            NewCells = SPLITCELL(LELTI(L, i), x);
+
+            continue;
+        }
+
+        APPENDSIGNPF(LELTI(L, i), s);
     }
-    printf("\n");
 
-    goto Step1; // next polynomial in the list Ps
-    // get new polynomials via advN
-    // for each cell C in L and each new polynomial
-    //     check if any roots of P in C.
-    //     if no: get sign via evaliating C sample point
-    //     if yes: we need to split C
+    // add new cells (Ds) to list, deleting C
+    L = INSERTCELLS(L, NewCells);
+    printf("%d\n", LENGTH(L));
 
+    }
 Return:
-    return LL;
+    return L;
 }
 
 Word ADVN(Word L, Word n)
@@ -207,3 +231,106 @@ Step3: /* endpoint comparison */
     if (xl >= 0) return -1;
     return NIL; // if this happened something went badly wrong
 }
+
+
+void APPENDSIGNPF(Word C, Word sign)
+{
+    Word S;
+
+    S = FIRST(LELTI(C, SIGNPF));
+    CONC(S, LIST1(sign));
+}
+
+void INCINDEX(Word C, Word k, Word t)
+{
+    Word I = LELTI(C, INDX);
+    SLELTI(I, k, LELTI(I, k) + t);
+}
+
+void INCINDEXL(Word L, Word k, Word t)
+{
+    Word C;
+
+    while (L != NIL) {
+        ADV(L, &C, &L);
+
+        INCINDEX(C, k, t);
+    }
+}
+
+Word CELLCOPY(Word C)
+{
+    Word Children, Ch, NewChildren;
+
+    // TODO figure out which ones should be LLCOPied
+    Children = LELTI(C, CHILD);
+    NewChildren = NIL;
+    while (Children != NIL) {
+        ADV(Children, &Ch, &Children);
+
+        NewChildren = COMP(
+            CELLCOPY(Ch),
+            NewChildren
+        );
+    }
+
+    if (NewChildren != NIL) NewChildren = INV(NewChildren);
+
+    return MCELL(
+        LELTI(C, LEVEL),
+        NewChildren,
+        NIL,
+        LELTI(C, TRUTH),
+        LCOPY(LELTI(C, SAMPLE)),
+        LCOPY(LELTI(C, INDX)),
+        LLCOPY(LELTI(C, SIGNPF)),
+        LELTI(C, HOWTV),
+        LCOPY(LELTI(C, DEGSUB)),
+        LCOPY(LELTI(C, MULSUB))
+    );
+}
+
+Word SPLITCELL(Word C, Word p)
+{
+    Word Cl, Cr, k;
+
+    k = LELTI(C, LEVEL);
+    Cl = CELLCOPY(C);
+    Cr = CELLCOPY(C);
+
+    // Update indices
+    INCINDEX(C, k, 1);
+    INCINDEX(Cr, k, 2);
+
+    // add signs of new projection factor
+    APPENDSIGNPF(Cl, -1);
+    APPENDSIGNPF(C, 0);
+    APPENDSIGNPF(Cr, 1);
+
+    // new cells, reverse order
+    return LIST3(Cl, C, Cr);
+}
+
+Word INSERTCELLS(Word LL, Word NewCells)
+{
+    Word C, k, i, t, L, LRed, NewRed;
+
+    C = FIRST(NewCells);
+    NewRed = RED(NewCells);
+    k = LELTI(C, LEVEL);
+    i = LELTI(LELTI(C, INDX), k);
+
+    L = ADVN(LL, i-1); // L = [C_i, ...rest]
+    LRed = RED(L);
+
+    // increment LRed indices
+    t = LENGTH(NewCells) - 1;
+    INCINDEXL(LRed, k, t);
+
+    // concotenate new cells onto remaining cells, and replace first by first new cell
+    SRED(L, CONC(NewRed, LRed));
+    SFIRST(L, C);
+
+    return LL;
+}
+

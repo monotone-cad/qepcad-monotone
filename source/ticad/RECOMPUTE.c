@@ -76,7 +76,6 @@ Step3: /* Recurse on children. */
 
         S = FIRST(LELTI(Child, SIGNPF)); // Note SIGNPF comes in reverse order
         if (LENGTH(S) < LENGTH(P1)) {
-            printf("Missing proj factors\n");
             Children = SPLIT(L, P1);
 
             // goto Step3; // go back to the beginning to ensure all cells are OK
@@ -107,7 +106,6 @@ Step1: /* Iterate through the new polynomials */
     x = LINEARROOT(p);
 
     if (x == NIL) {
-        printf("ERROR: root is NIL!\n");
 
         return L;
     }
@@ -128,7 +126,6 @@ Step1: /* Iterate through the new polynomials */
 
     // add new cells (Ds) to list, deleting C
     L = INSERTCELLS(L, NewCells);
-    printf("%d\n", LENGTH(L));
 
     }
 Return:
@@ -165,7 +162,6 @@ Word LINEARROOT(Word p)
     IFCL2(den,&lm,&ln);
     if (ICOMP(lm,ln) != 0) return NIL;
 
-    printf("%d/%d\n", num, den);
     Word x = RNLBRN(RNRED(INEG(num),den));
     return x;
 }
@@ -173,7 +169,7 @@ Word LINEARROOT(Word p)
 // convert k-th coordinate of sample point to rational
 Word SAMPLETORATIONAL(Word C, Word k)
 {
-    Word S, I, p;
+    Word S, I, p, B;
 
     S = LELTI(C, SAMPLE);
 
@@ -184,7 +180,9 @@ Word SAMPLETORATIONAL(Word C, Word k)
     if (p == 0) return 0;
 
     // compute B* (b)
-    return IUPBREV(SECOND(p), FIRST(p));
+    // TODO should be B*b(0)
+    B = IUPBREV(SECOND(p), FIRST(p));
+    return B;
 }
 
 Word INTERVALSIGN(Word L, Word idx, Word x)
@@ -235,10 +233,29 @@ Step3: /* endpoint comparison */
 
 void APPENDSIGNPF(Word C, Word sign)
 {
-    Word S;
+    Word S, M, D, l;
 
     S = FIRST(LELTI(C, SIGNPF));
+    l = LENGTH(S); // how many SIGNPF
+    M = LELTI(C, MULSUB);
+    D = LELTI(C, DEGSUB);
+
+    // append sign
     CONC(S, LIST1(sign));
+
+    // append new degsub (degsub = [d_1, ..., d_n], degrees of k-level projection factors
+    // we know it's a linear polynomial
+    if (D != NIL) { CONC(D, LIST1(1)); }
+
+    // append multiplicity - ((i_1,e_1),...,(i_n,e_n)) where i_j is the index at level k and e_j is the multiplicity
+    if (sign == 0) { // only applies to section cells
+        // TODO does order matter?
+        if (M != NIL) {
+            CONC(M, LIST1(LIST2(l+1, 1)));
+        } else {
+            SLELTI(C, MULSUB, LIST1(LIST2(l+1, 1)));
+        }
+    }
 }
 
 void INCINDEX(Word C, Word k, Word t)

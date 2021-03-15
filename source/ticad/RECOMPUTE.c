@@ -32,9 +32,6 @@ Word ADVN(Word L, Word n);
 // -1 if < 0, 1 if > 0, 0 is there is a root within the cell
 Word INTERVALSIGN(Word L, Word idx, Word x);
 
-// convert k-th coordinate of sample point to rational
-// TODO remove this
-// Word SAMPLETORATIONAL(Word C, Word k);
 // get the k-the coordinate of sample point of C
 Word SAMPLEK(Word C, Word k);
 
@@ -54,10 +51,16 @@ Word CELLCOPY(Word C);
 
 // Given cell C which is not sign invariant and rational number p which is the point at which new polynomial changes
 // sign, return a list of 3 cells having the same truth values as C but which are sign invarient
-Word SPLITCELL(Word C, Word p);
+Word SPLITCELL(Word C, Word p, Word Sl, Word Sr);
 
 // insert new cells into list L
 Word INSERTCELLS(Word L, Word NewCells);
+
+// algebraic number (b-a)/2
+Word MIDPOINT(Word M, Word l, Word r);
+
+// set sample coordinate, level k, to m
+void SETSAMPLEK(Word C, Word k, Word m);
 
 Word QepcadCls::RECOMPUTE(Word C, Word Q, Word F, Word f, Word P, Word A)
 {
@@ -113,16 +116,20 @@ Step1: /* Iterate through the new polynomials */
         return L;
     }
 
-    // convert to rationar representation, same as sample points
+    // convert to rational representation, same as sample points
     x = AFFRN(x);
-    AFWRITE(x, 'x');
     Word NewCells = NIL; // list of lists of new cells.
     for (int i = 1; i <= LENGTH(L); i++) {
         s = INTERVALSIGN(L, i, x);
 
         // not sign invariant
         if (s == 0) {
-            NewCells = SPLITCELL(LELTI(L, i), x);
+            NewCells = SPLITCELL(
+                LELTI(L, i),
+                x,
+                SAMPLEK(LELTI(L, MAX(i-1, 1)), k),
+                SAMPLEK(LELTI(L, MIN(i+1, LENGTH(L))), k)
+            );
 
             continue;
         }
@@ -170,25 +177,6 @@ Word LINEARROOT(Word p)
 
     Word x = RNRED(INEG(num),den);
     return x;
-}
-
-// convert k-th coordinate of sample point to rational
-Word __SAMPLETORATIONAL(Word C, Word k)
-{
-    Word S, I, p, B;
-
-    S = LELTI(C, SAMPLE);
-
-    if (LENGTH(S) != 3) return 0;
-
-    I = LELTI(S, 3);
-    p = LELTI(I, k);
-    if (p == 0) return 0;
-
-    // compute B* (b)
-    // TODO should be B*b(0)
-    B = IUPBREV(SECOND(p), FIRST(p));
-    return B;
 }
 
 Word SAMPLEK(Word C, Word k)
@@ -320,7 +308,7 @@ Word CELLCOPY(Word C)
         NewChildren,
         NIL,
         LELTI(C, TRUTH),
-        LCOPY(LELTI(C, SAMPLE)),
+        LLCOPY(LELTI(C, SAMPLE)),
         LCOPY(LELTI(C, INDX)),
         LLCOPY(LELTI(C, SIGNPF)),
         LELTI(C, HOWTV),
@@ -329,9 +317,16 @@ Word CELLCOPY(Word C)
     );
 }
 
-Word SPLITCELL(Word C, Word p)
+void SETSAMPLEK(Word C, Word k, Word m)
 {
-    Word Cl, Cr, k;
+    Word S = LELTI(LELTI(C, SAMPLE), 3);
+    SLELTI(S, k, m);
+}
+
+
+Word SPLITCELL(Word C, Word x, Word Sl, Word Sr)
+{
+    Word Cl, Cr, k, M, l, r, m;
 
     k = LELTI(C, LEVEL);
     Cl = CELLCOPY(C);
@@ -340,6 +335,20 @@ Word SPLITCELL(Word C, Word p)
     // Update indices
     INCINDEX(C, k, 1);
     INCINDEX(Cr, k, 2);
+
+    // sat sample points
+    // < x
+    FIRST2(Sl, &l, &M);
+    m = MIDPOINT(M, l, x);
+    SETSAMPLEK(Cl, k, m);
+
+    // = x
+    SETSAMPLEK(C, k, x);
+
+    // > x
+    FIRST2(Sr, &r, &M);
+    m = MIDPOINT(M, x, r);
+    SETSAMPLEK(Cr, k, m);
 
     // add signs of new projection factor
     APPENDSIGNPF(Cl, -1);
@@ -372,3 +381,12 @@ Word INSERTCELLS(Word LL, Word NewCells)
     return LL;
 }
 
+Word MIDPOINT(Word M, Word l, Word r)
+{
+    Word two = AFFINT(2);
+    return AFSUM(l, AFQ(
+        M,
+        AFDIF(r, l),
+        two
+    ));
+}

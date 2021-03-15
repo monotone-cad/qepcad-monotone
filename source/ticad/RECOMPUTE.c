@@ -307,7 +307,6 @@ Word SPLITCELL(Word C, Word p)
     APPENDSIGNPF(C, 0);
     APPENDSIGNPF(Cr, 1);
 
-    // new cells, reverse order
     return LIST3(Cl, C, Cr);
 }
 

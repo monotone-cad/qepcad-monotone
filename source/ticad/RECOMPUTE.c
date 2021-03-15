@@ -33,7 +33,11 @@ Word ADVN(Word L, Word n);
 Word INTERVALSIGN(Word L, Word idx, Word x);
 
 // convert k-th coordinate of sample point to rational
-Word SAMPLETORATIONAL(Word C, Word k);
+// TODO remove this
+// Word SAMPLETORATIONAL(Word C, Word k);
+// get the k-the coordinate of sample point of C
+Word SAMPLEK(Word C, Word k);
+
 
 // find the solution of a linear polynomial p
 Word LINEARROOT(Word p);
@@ -106,10 +110,12 @@ Step1: /* Iterate through the new polynomials */
     x = LINEARROOT(p);
 
     if (x == NIL) {
-
         return L;
     }
 
+    // convert to rationar representation, same as sample points
+    x = AFFRN(x);
+    AFWRITE(x, 'x');
     Word NewCells = NIL; // list of lists of new cells.
     for (int i = 1; i <= LENGTH(L); i++) {
         s = INTERVALSIGN(L, i, x);
@@ -162,12 +168,12 @@ Word LINEARROOT(Word p)
     IFCL2(den,&lm,&ln);
     if (ICOMP(lm,ln) != 0) return NIL;
 
-    Word x = RNLBRN(RNRED(INEG(num),den));
+    Word x = RNRED(INEG(num),den);
     return x;
 }
 
 // convert k-th coordinate of sample point to rational
-Word SAMPLETORATIONAL(Word C, Word k)
+Word __SAMPLETORATIONAL(Word C, Word k)
 {
     Word S, I, p, B;
 
@@ -185,9 +191,21 @@ Word SAMPLETORATIONAL(Word C, Word k)
     return B;
 }
 
+Word SAMPLEK(Word C, Word k)
+{
+    Word S, P, M, I;
+
+    S = LELTI(C, SAMPLE);
+
+    if (LENGTH(S) != 3) return 0;
+
+    FIRST3(S, &M, &I, &P);
+    return LIST3(LELTI(P, k), M, I);
+}
+
 Word INTERVALSIGN(Word L, Word idx, Word x)
 {
-    Word C, k, Cl, Cr, l, r;
+    Word C, k, Cl, Cr, Sl, Sr, l, r, Ml, Il, Mr, Ir;
 
 Step1: /* Initialise */
     C = LELTI(L, idx);
@@ -195,11 +213,11 @@ Step1: /* Initialise */
 
 Step2: /* special case for even cell */
     // next and previous cells
-    l = NIL; r = NIL;
+    Sl = NIL; Sr = NIL;
 
     if (EVEN(idx)) {
-        l = SAMPLETORATIONAL(C, k);
-        r = l;
+        Sl = SAMPLEK(C, k);
+        Sr = Sl;
 
         goto Step3;
     }
@@ -207,29 +225,33 @@ Step2: /* special case for even cell */
     if (idx > 1) {
         Cl = LELTI(L, idx - 1);
 
-        l = SAMPLETORATIONAL(Cl, k);
+        Sl = SAMPLEK(Cl, k);
     }
 
     if (idx < LENGTH(L)) {
         Cr = LELTI(L, idx + 1);
-        r = SAMPLETORATIONAL(Cr, k);
+
+        Sr = SAMPLEK(Cr, k);
     }
 
     // special case for leftmost and rightmost cells (whele l == NIL and r == NIL resp).
-    if (l == NIL) l = r;
-    if (r == NIL) r = l;
+    if (Sl == NIL) Sl = Sr;
+    if (Sr == NIL) Sr = Sl;
 
 Step3: /* endpoint comparison */
+    // get point, M, I for each point
+    FIRST3(Sl, &l, &Ml, &Il);
+    FIRST3(Sr, &r, &Mr, &Ir);
+
     // endpoint comparisons
-    Word xl = LBRNCOMP(x, l); // x is: left < equal < right of l
-    Word xr = LBRNCOMP(x, r); // x is: less < equal < right of r
+    Word xl = AFCOMP(Ml, Il, x, l); // x is: left < equal < right of l
+    Word xr = AFCOMP(Mr, Ir, x, r); // x is: less < equal < right of r
 
     if (xl > 0 && xr < 0) return 0;
     if (xr <= 0) return 1;
     if (xl >= 0) return -1;
     return NIL; // if this happened something went badly wrong
 }
-
 
 void APPENDSIGNPF(Word C, Word sign)
 {

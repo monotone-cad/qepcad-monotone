@@ -2,11 +2,11 @@
                       QEPCAD(Fs; t,F_e,F_n,F_s)
 
 Quantifier Elimination by Partial Cylindrical Algebraic Decomposition.
- 
+
 \Input
   \parm{F*} $=(Q_{f+1} x_{f+1})\cdots(Q_r x_r)\hat{F}(x_1,\ldots,x_r)$,
             $0\leq f < r$, is a quantified formula.
- 
+
 \Output
   \parm{t}  is either \c{EQU} or \c{INEQU}.
   \parm{Fe} is a quantifier-free formula equivalent to~\v{F*}
@@ -33,8 +33,14 @@ Step1: /* Normalize. */
                /*Int*/ Ths = ACLOCK();
        F = NORMQFF(Fh);
        if (GVUA != NIL) GVNA = NORMQFF(GVUA);
-               /*Int*/ Ths = ACLOCK() - Ths;
                /*Int*/ TMNORMQFF = Ths;
+       if (PCMCT == 'y') {
+           F = QUASIAFFINE(F);
+           // normalise again - adding derivatives has messed up the formula
+           // TODO can we avoid this?
+           F = NORMQFF(F);
+       }
+               /*Int*/ Ths = ACLOCK() - Ths;
                /*Int*/ GVNQFF = F;
        //       if (TYPEQFF(F) != UNDET) { t = EQU; F_e = F; goto Return; }
 
@@ -59,6 +65,13 @@ Step3: /* Truth-invariant CAD. */
                /*Int*/ for (i=1; i<=f; i++) NMFPF=NMFPF+LENGTH(LELTI(P,i));
                /*Int*/ PCNSTEP = 1;
        D = TICAD(Q,F,f,P,A);
+        if (PCMCT == 'y' && r > 2) {
+            SEMIMONOTONE(P, A, D, r);
+            D = RECOMPUTE(D,Q,F,f,P,A);
+        }
+        /*if (PCMCT == 'y') {
+            D = MONOTONE(D, r);
+        }*/
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step4: /* Solution. */

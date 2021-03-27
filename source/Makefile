@@ -2,7 +2,7 @@
 #
 #  Makefile for qepcad system.
 #
-#  (c) Copyright 1994 Research Institute for Symbolic Computation  
+#  (c) Copyright 1994 Research Institute for Symbolic Computation
 #                     Hoon Hong
 #
 #  Modified by Chris Brown, 2002. NOTE: You MUST use gmake with this file!
@@ -18,6 +18,8 @@ FLAGSo = -O4
 
 CCd        =  g++
 FLAGSd = -g
+
+ARFLAGS = rvU
 
 # ============================================================
 # The readline library is in different places on solaris, i.e.
@@ -94,6 +96,7 @@ $(LIB)(io/CATTRNRDR.o) \
 $(LIB)(io/CATTRNWR.o) \
 $(LIB)(io/CELLRDR.o) \
 $(LIB)(io/CELLWR.o) \
+$(LIB)(io/CELLWRT.o) \
 $(LIB)(io/CELLSWR.o) \
 $(LIB)(io/COMMNT.o) \
 $(LIB)(io/COMMNTRD.o) \
@@ -116,6 +119,7 @@ $(LIB)(io/GETWORD.o) \
 $(LIB)(io/GREADR.o) \
 $(LIB)(io/IPLDWR.o) \
 $(LIB)(io/IPLLDWR.o) \
+$(LIB)(io/CELLIPLLDWR.o) \
 $(LIB)(io/IPLLDWRMOD.o) \
 $(LIB)(io/IUPRWR.o) \
 $(LIB)(io/LABELWR.o) \
@@ -314,6 +318,10 @@ $(LIB)(ticad/SUBST.o) \
 $(LIB)(ticad/SUBSTR.o) \
 $(LIB)(ticad/TCHILD.o) \
 $(LIB)(ticad/TICAD.o) \
+$(LIB)(ticad/RECOMPUTE.o) \
+$(LIB)(ticad/QUASIAFFINE.o) \
+$(LIB)(ticad/SEMIMONOTONE.o) \
+$(LIB)(ticad/MONOTONE.o) \
 $(LIB)(ticad/TICADauto.o)
 
 OBJS_USERINT = \
@@ -330,6 +338,7 @@ $(LIB)(userint/PRAPPROX.o) \
 $(LIB)(userint/PRCCS.o) \
 $(LIB)(userint/PRCCSF.o) \
 $(LIB)(userint/PRDC.o) \
+$(LIB)(userint/PRDCT.o) \
 $(LIB)(userint/PRDCC.o) \
 $(LIB)(userint/PRDCS.o) \
 $(LIB)(userint/PRDDESIRED.o) \
@@ -358,6 +367,7 @@ $(LIB)(userint/PRFINISH.o) \
 $(LIB)(userint/PRGO.o) \
 $(LIB)(userint/PRHELP.o) \
 $(LIB)(userint/PRIPFZT.o) \
+$(LIB)(userint/PRMCT.o) \
 $(LIB)(userint/PRIGS.o) \
 $(LIB)(userint/PRLDB.o) \
 $(LIB)(userint/PRMCC.o) \
@@ -399,7 +409,7 @@ $(LIB)(util/SVPOWR.o) \
 $(LIB)(util/SVPROD.o) \
 $(LIB)(util/VALIDLBL.o)
 
-#  To replace saclib routines. 
+#  To replace saclib routines.
 OBJS_SACLIB = \
 $(LIB)(saclib/GCSI.o) \
 $(LIB)(saclib/gcword.o) \
@@ -442,6 +452,7 @@ $(LIBD)(io/CATTRNRDR.o) \
 $(LIBD)(io/CATTRNWR.o) \
 $(LIBD)(io/CELLRDR.o) \
 $(LIBD)(io/CELLWR.o) \
+$(LIBD)(io/CELLWRT.o) \
 $(LIBD)(io/CELLSWR.o) \
 $(LIBD)(io/COMMNT.o) \
 $(LIBD)(io/COMMNTRD.o) \
@@ -464,6 +475,7 @@ $(LIBD)(io/GETWORD.o) \
 $(LIBD)(io/GREADR.o) \
 $(LIBD)(io/IPLDWR.o) \
 $(LIBD)(io/IPLLDWR.o) \
+$(LIBD)(io/CELLIPLLDWR.o) \
 $(LIBD)(io/IPLLDWRMOD.o) \
 $(LIBD)(io/IUPRWR.o) \
 $(LIBD)(io/LABELWR.o) \
@@ -662,6 +674,10 @@ $(LIBD)(ticad/SUBST.o) \
 $(LIBD)(ticad/SUBSTR.o) \
 $(LIBD)(ticad/TCHILD.o) \
 $(LIBD)(ticad/TICAD.o) \
+$(LIBD)(ticad/RECOMPUTE.o) \
+$(LIBD)(ticad/QUASIAFFINE.o) \
+$(LIBD)(ticad/SEMIMONOTONE.o) \
+$(LIBD)(ticad/MONOTONE.o) \
 $(LIBD)(ticad/TICADauto.o)
 
 OBJS_USERINTd = \
@@ -678,6 +694,7 @@ $(LIBD)(userint/PRAPPROX.o) \
 $(LIBD)(userint/PRCCS.o) \
 $(LIBD)(userint/PRCCSF.o) \
 $(LIBD)(userint/PRDC.o) \
+$(LIBD)(userint/PRDCT.o) \
 $(LIBD)(userint/PRDCC.o) \
 $(LIBD)(userint/PRDCS.o) \
 $(LIBD)(userint/PRDDESIRED.o) \
@@ -706,6 +723,7 @@ $(LIBD)(userint/PRFINISH.o) \
 $(LIBD)(userint/PRGO.o) \
 $(LIBD)(userint/PRHELP.o) \
 $(LIBD)(userint/PRIPFZT.o) \
+$(LIBD)(userint/PRMCT.o) \
 $(LIBD)(userint/PRIGS.o) \
 $(LIBD)(userint/PRLDB.o) \
 $(LIBD)(userint/PRMCC.o) \
@@ -747,7 +765,7 @@ $(LIBD)(util/SVPOWR.o) \
 $(LIBD)(util/SVPROD.o) \
 $(LIBD)(util/VALIDLBL.o)
 
-#  To replace saclib routines. 
+#  To replace saclib routines.
 OBJS_SACLIBd = \
 $(LIBD)(saclib/GCSI.o) \
 $(LIBD)(saclib/gcword.o) \
@@ -809,6 +827,6 @@ deb:		$(DEPENDENCIESd)
 			 $(LIBD) $(EXTLIBSD) $(LIBD)  $(EXTLIBSD) -o $(EXED) #\
 			#/home/wcbrown/Downloads/duma_2_4_27/libduma.a -lpthread
 
-#.c.o:	
+#.c.o:
 %.o:	%.c
 		$(CC) $(INCLUDES) $(CFLAGS) -o $@ -c $<

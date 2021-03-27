@@ -1,6 +1,6 @@
 ##################################################################
 #
-# Makefile for lift2D.a 
+# Makefile for lift2D.a
 #
 # Updated: 7/3/2001 -- Chris Brown
 #
@@ -18,6 +18,7 @@ LIB = lift2Do.a
 CC = ${CCo}
 FLAGS = ${FLAGSo}
 endif
+ARFLAGS = rvU
 #------------------
 ##################################################################
 
@@ -31,7 +32,7 @@ INCLUDES  = \
 
 ##################################################################
 #
-# Here we list the object files we want in our library. 
+# Here we list the object files we want in our library.
 #
 ##################################################################
 

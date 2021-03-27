@@ -7,7 +7,7 @@ Inputs
   D : A CAD.
 
 Side Effects
-  Information for each true cell in the CAD is written to the output 
+  Information for each true cell in the CAD is written to the output
   stream.
 ======================================================================*/
 #include "qepcad.h"

@@ -6,7 +6,7 @@
 
 both:	opt deb
 
-opt:	
+opt:
 	@echo Making the optimized libraries ...
 	cd sfext; $(MAKE)
 	cd adj2d; $(MAKE)
@@ -15,7 +15,7 @@ opt:
 	cd lift2D; $(MAKE)
 
 
-deb:	
+deb:
 	@echo Making the debugging libraries ...
 	cd sfext; $(MAKE) "deb=x"
 	cd adj2d; $(MAKE) "deb=x"

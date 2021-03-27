@@ -131,7 +131,7 @@ Step2: /* Intemediate polynomials. */
                 SWRITE(")");
                 }
              if (r1 == 0)
-                PLABELWR(A1);                           
+                PLABELWR(A1);
              SWRITE("|");
              if (r2 > 1)
                 {
@@ -149,7 +149,7 @@ Step2: /* Intemediate polynomials. */
                 SWRITE(")");
                 }
              if (r2 == 0)
-                PLABELWR(A2);                           
+                PLABELWR(A2);
              SWRITE(")");
              break;
 
@@ -160,7 +160,7 @@ Step2: /* Intemediate polynomials. */
              if (d > 0)
                GWRITE(d);
              SWRITE("(");
-	     PLABELWR(A);             
+	     PLABELWR(A);
              SWRITE(")");
              break;
 
@@ -168,7 +168,7 @@ Step2: /* Intemediate polynomials. */
              A = LELTI(P1,2);
              SWRITE("nulpt");
              SWRITE("(");
-	     PLABELWR(A);             
+	     PLABELWR(A);
              SWRITE(")");
              break;
 
@@ -176,7 +176,7 @@ Step2: /* Intemediate polynomials. */
               A = LELTI(P1,2);
              SWRITE("prjpt");
              SWRITE("(");
-	     PLABELWR(A);             
+	     PLABELWR(A);
              SWRITE(")");
              break;
 
@@ -184,7 +184,7 @@ Step2: /* Intemediate polynomials. */
              A = LELTI(P1,2);
              SWRITE("delpt");
              SWRITE("(");
-	     PLABELWR(A);             
+	     PLABELWR(A);
              SWRITE(")");
              break;
 

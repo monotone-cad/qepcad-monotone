@@ -1,6 +1,6 @@
 ##################################################################
 #
-# Makefile for adj2D.a 
+# Makefile for adj2D.a
 #
 # Updated: 3/4/97 -- Chris Brown
 #
@@ -18,6 +18,7 @@ LIB = adj2do.a
 CC = ${CCo}
 FLAGS = ${FLAGSo}
 endif
+ARFLAGS = rvU
 #------------------
 ##################################################################
 
@@ -33,7 +34,7 @@ VPATH = 	oldadj:sac_ext:truthbytop
 
 ##################################################################
 #
-# Here we list the object files we want in our library. 
+# Here we list the object files we want in our library.
 #
 ##################################################################
 

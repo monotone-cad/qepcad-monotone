@@ -104,7 +104,7 @@ Word SPLIT(Word L, Word Ps)
 
     C = FIRST(L);
     k = LELTI(C, LEVEL);
-    Ps = ADVN(Ps, LENGTH(LELTI(LELTI(C, SIGNPF), k)));
+    Ps = ADVN(Ps, LENGTH(FIRST(LELTI(C, SIGNPF))));
 
 Step1: /* Iterate through the new polynomials */
     while (Ps != NIL) {

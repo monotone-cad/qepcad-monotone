@@ -34,12 +34,6 @@ Step1: /* Normalize. */
        F = NORMQFF(Fh);
        if (GVUA != NIL) GVNA = NORMQFF(GVUA);
                /*Int*/ TMNORMQFF = Ths;
-       if (PCMCT == 'y') {
-           F = QUASIAFFINE(F);
-           // normalise again - adding derivatives has messed up the formula
-           // TODO can we avoid this?
-           F = NORMQFF(F);
-       }
                /*Int*/ Ths = ACLOCK() - Ths;
                /*Int*/ GVNQFF = F;
        //       if (TYPEQFF(F) != UNDET) { t = EQU; F_e = F; goto Return; }
@@ -47,6 +41,9 @@ Step1: /* Normalize. */
 Step2: /* Projection. */
        if (GVUA != NIL) F = LIST3(ANDOP,GVNA,F);
        A = EXTRACT(r,F);
+       if (PCMCT == 'y') {
+            A = QUASIAFFINE(A, r);
+       }
        if (GVUA != NIL) {
 	 GVNA = SECOND(F);
 	 F = THIRD(F); }
@@ -65,10 +62,6 @@ Step3: /* Truth-invariant CAD. */
                /*Int*/ for (i=1; i<=f; i++) NMFPF=NMFPF+LENGTH(LELTI(P,i));
                /*Int*/ PCNSTEP = 1;
        D = TICAD(Q,F,f,P,A);
-        if (PCMCT == 'y' && r > 2) {
-            SEMIMONOTONE(P, A, D, r);
-            D = RECOMPUTE(D,Q,F,f,P,A);
-        }
         /*if (PCMCT == 'y') {
             D = MONOTONE(D, r);
         }*/

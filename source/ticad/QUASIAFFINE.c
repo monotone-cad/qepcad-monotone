@@ -1,71 +1,50 @@
 /*======================================================================
-                    F -< QUASIAFFINE(FF)
+                    A -< QUASIAFFINE(A, r)
 
-Modify the input formula to allow CAD to construct quasi-affine cells
-by adding critical and singular points.
+Adding first derivatives of projections onto 1 and 2 dimensional
+coordinate subspaces, to result in a CAD with all quasi-affine
+cells.
 
 \Input
-  \parm{FF} is a normalised formula
+  \parm{AA} projection factor structure, obtained by EXTRACT(F) where F is a normalised qff.
+  \parm{r} number of variables
 
-  Output
-  \parm{F} is F with added first derivatives $=F(x_1,\ldots,x_r)$
+Output
+  \parm{A} is AA with added first derivatives of projection to 1 and 2 dimensional subspaces
+
+SideEffect
+  \parm{AA} is modified.
 
 ======================================================================*/
 #include "qepcad.h"
 
-Word QepcadCls::QUASIAFFINE(Word FF)
+Word QepcadCls::QUASIAFFINE(Word A, Word r)
 {
-    Word F;
+Step1: /* decide based on dimension */
+    if (r <= 1) {
+        // nothing to do
 
-Step1: /* Initialise */
-
-Step2: /* figure out what type of formula we have */
-    if (FF == TRUE || FF == FALSE) { F = FF; goto Return; }
-
-    if (FIRST(FF) == OROP || FIRST(FF) == ANDOP) {
-        Word F1, F2, op;
-        op = FIRST(FF);
-        F = LIST1(op);
-        FF = RED(FF);
-
-        while (FF != NIL) {
-            ADV(FF, &F1, &FF);
-            F2 = QUASIAFFINE(F1);
-            F = COMP(F2, F);
-        }
-
-        F = INV(F);
         goto Return;
     }
 
-Step3: /* atomic formula */
-    Word t, P, r, I, Pp, D, S;
-    FIRST4(FF, &t, &P, &r, &I);
-    // calculate first derivatives
-    Pp = IPALLPARTIALS(r, P, 1, 1);
+    if (r > 3) {
+        SWRITE("Dimension > 3 not supported yet.\n");
 
-    F = LIST2(FF, OROP);
-    S = LIST1(ANDOP);
-
-    while (Pp != NIL) {
-        ADV(Pp, &D, &Pp);
-        if (IPCONST(r, D)) continue;
-
-        F = COMP(LIST4(EQOP, D, r, NIL), F);
-        S = COMP(LIST4(EQOP, D, r, NIL), S);
-    }
-
-    if (LENGTH(S) == 1) {
-        // no derivatives - return original
-        F = FF;
         goto Return;
     }
-    if (LENGTH(S) > 2) {
-        S = INV(S);
-        F = COMP(S, F);
-    }
-    F = LIST3(ANDOP, FF, INV(F));
 
-Return:
-    return F;
+    if (r == 2) {
+        SWRITE("# skipping 2d projections.\n");
+
+        goto Step3;
+    }
+
+Step2: /* dim >= 3: derivs of projections to 2d subspaces */
+    SWRITE("# Adding derivs of projections to 2d subspaces.\n");
+
+Step3: /* dim >= 2: derivs of projections onto 1d subspaces */
+    SWRITE("# adding derivs of projections to 1d subspaces.\n");
+
+Return: /* prepare for return */
+    return A;
 }

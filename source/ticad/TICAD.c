@@ -2,20 +2,20 @@
                       D <- TICAD(Q,F,f,P,A)
 
 Truth Invariant CAD Construction Phase.
-     
+
 \Input
   \parm{Q} is the list of quantifiers
            in the input formula.
   \parm{F} $=F(x_1,\ldots,x_r)$
            is the normalized input quantifier-free formula.
   \parm{f} is the number of free variables in the input formula.
-  \parm{P} is the list~$(P_1,\ldots,P_r)$, 
+  \parm{P} is the list~$(P_1,\ldots,P_r)$,
            where $P_i$ is the list of
            $i$--level projection factors.
   \parm{A} is the list~$(A_1,\ldots,A_r)$,
            where $A_i$ is the list of all
            the distinct $i$--level normalized input polynomials.
- 
+
 Output
   \parm{D} is a truth--invariant partial CAD of $f$--space
            in which every leaf cell has a determined truth value.
@@ -38,7 +38,7 @@ Step2: /* Choose. */
 			   D = GVPC;
 			   P = GVPF;
                            /*Int*/ Ths = Thss;
-       CHOOSE(D,&t,&c); 
+       CHOOSE(D,&t,&c);
        if (t == 0 && PCUSEDES == 'n') goto Return;
        if (t == 0 && PCUSEDES == 'y')
           {
@@ -50,12 +50,12 @@ Step2: /* Choose. */
                            /*Int*/ Ths = ACLOCK() - Ths;
                            /*Int*/ TMCHOOSE[k + 1] = TMCHOOSE[k + 1] + Ths;
                            /*Int*/ GVLV = k;
-                        
+
        if (k == 0) goto Step4;
 
 Step3: /* Convert. */
                            /*Int*/ Ths = ACLOCK();
-       s = LELTI(c,SAMPLE); 
+       s = LELTI(c,SAMPLE);
        sh = CONVERT(s,k);
        SLELTI(c,SAMPLE,sh);
                            /*Int*/ Ths = ACLOCK() - Ths;
@@ -63,9 +63,9 @@ Step3: /* Convert. */
 
 Step4: /* Construct stack. */
        Ps = LELTI(P,k + 1); As = LELTI(A,k + 1);
-    
+
                            /*Int*/ Ths = ACLOCK();
-       /* 
+       /*
        SPFRPSFT(P,c,k,&R,&S);
        SWRITE("\n\nR = "); OWRITE(R);
        SWRITE("\nS = "); OWRITE(S);

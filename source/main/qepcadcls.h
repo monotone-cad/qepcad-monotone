@@ -195,11 +195,11 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   Word PROJLA(Word r, Word A);
   Word PROJMC(Word r, Word A);
   Word PROJMCx(Word r, Word A);
+  void QUASIAFFINE(Word A, Word J, Word r, Word* A_, Word* J_);
+  Word PermuteAndProject(Word A, Word r, Word k);
 
   /* TICAD */
   Word TICAD(Word Q, Word F, Word f, Word P, Word A);
-  Word RECOMPUTE(Word DD, Word Q, Word F, Word f, Word P, Word A);
-  Word QUASIAFFINE(Word A, Word r);
   Word ACCCVBC(Word k, Word c, Word M, Word B1, Word b, Word* B1h=0);
   Word ACCCVBCR(Word k, Word c, Word B1, Word b, Word* B1h=0);
   Word NZFOPQR(Word c, Word k, Word b, Word A);

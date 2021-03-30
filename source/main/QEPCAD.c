@@ -41,10 +41,7 @@ Step1: /* Normalize. */
 Step2: /* Projection. */
        if (GVUA != NIL) F = LIST3(ANDOP,GVNA,F);
        A = EXTRACT(r,F);
-       if (PCMCT == 'y') {
-            A = QUASIAFFINE(A, r);
-       }
-       if (GVUA != NIL) {
+     if (GVUA != NIL) {
 	 GVNA = SECOND(F);
 	 F = THIRD(F); }
                /*Int*/ GVNIP = A;
@@ -55,6 +52,10 @@ Step2: /* Projection. */
                /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
                /*Int PCNSTEP = 1; */
        PROJECT(r,A,&P,&J);
+       if (PCMCT == 'y') {
+           QUASIAFFINE(P, J, r, &P, &J);
+       }
+
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step3: /* Truth-invariant CAD. */

@@ -1,6 +1,6 @@
 #include "qepcad.h"
 
-// intuger range, from a to b inclusive
+// integer range, from a to b inclusive
 Word IRANGE(Word a, Word b);
 // swap item at index i with item at index j in the list L (L is modified)
 Word LSWAP(Word i, Word j, Word L);
@@ -26,6 +26,23 @@ Word LWRAP(Word r, Word L)
     return INV(LL);
 }
 
+// given list L, return only polynomials with positive degree in main (r-th) variable
+Word LPPDEG(Word L)
+{
+    Word LL, P;
+
+    LL = NIL;
+    while (L != NIL) {
+        ADV(L, &P, &L);
+
+        if (PDEG(LELTI(P, PO_POLY)) == 0) continue;
+
+        LL = COMP(P, LL);
+    }
+
+    return INV(LL);
+}
+
 // permute and project
 //   A: proj factor structure
 //   r: dimension
@@ -34,7 +51,8 @@ Word LWRAP(Word r, Word L)
 Word QepcadCls::PermuteAndProject(Word A, Word r, Word k)
 {
     Word L = NIL;
-    Word A1 = LELTI(A, r); // TODO r > 3
+    // TODO r > 3
+    Word A1 = CONC(LCOPY(LELTI(A, r)), LWRAP(r-1, LELTI(A, r-1)));
     Word Seq = IRANGE(1, r);
     Word Seq1 = IRANGE(1, r);
 
@@ -48,10 +66,12 @@ Word QepcadCls::PermuteAndProject(Word A, Word r, Word k)
 
             LWRITE(Seq);SWRITE("\n");
             Word Pp = LPERMV(r, A1, Seq);
+            Pp = LPPDEG(Pp);
             Word Pp1 = PROJ(r, Pp);
             Word Pp2 = LWRAP(r-1, Pp1);
             LWRITE(Seq1);SWRITE("\n");
             Word Pp3 = LPERMV(r, Pp2, Seq1);
+            printf("before:%d, not constant: %d, aftor proj: %d\n", LENGTH(A1), LENGTH(Pp), LENGTH(Pp3));
 
             L = CONC(L, Pp3);
 
@@ -99,7 +119,9 @@ Word LPERMV(Word r, Word L, Word R)
     while (L != NIL) {
         ADV(L, &P, &L);
 
+        IPWRITE(r, LELTI(P, PO_POLY), LIST3(LFS("x1"), LFS("x2"), LFS("x3")));SWRITE("\n -> ");
         Word P1 = PPERMV(r, LELTI(P, PO_POLY), R);
+        IPWRITE(r, P1, LIST3(LFS("x1"), LFS("x2"), LFS("x3")));SWRITE("\n");
         LL = COMP(MPOLY(P1, NIL, NIL, PO_OTHER, PO_KEEP), LL);
     }
 

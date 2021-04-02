@@ -16,7 +16,7 @@ void LABELWR(Word N, Word I)
 
 Step1: /* Write the label. */
        CLOUT(N); SWRITE("_");
-       if (I == NIL) goto Return;
+       if (I == NIL || I == 0) goto Return;
        Ip = I; ADV(Ip,&i,&Ip); AWRITE(i);
        while (Ip != NIL)
          { ADV(Ip,&i,&Ip); CWRITE(','); AWRITE(i); }

@@ -68,12 +68,12 @@ Step3: /* dim >= 2: derivs of projection factors */
 
     /* levels. */
     AA = A; i = 0;
-    L = NIL;
     while (AA != NIL) {
         ADV(AA, &A1, &AA);
         i++;
 
         /* polynomials. */
+        L = NIL;
         while (A1 != NIL) {
             ADV(A1, &A11, &A1);
 

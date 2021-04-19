@@ -1,7 +1,7 @@
 ============================================================
                      Q E P C A D   B
 
-                     A program for 
+                     A program for
 
     Quantifier Elimination and Formula Simplification
 
@@ -10,7 +10,7 @@
              Cylindrical Algebraic Decomposition
 ============================================================
 
-Please refer to: http://www.usna.edu/Users/cs/qepcad
+Please refer to: https://www.usna.edu/CS/qepcadweb/B/QEPCAD.html
 
 Making QEPCAD
 -------------
@@ -27,7 +27,7 @@ Using Singular as a Computer Algebra Server
 -------------------------------------------
 QEPCAD B allows you to run Singular to farm out some computations
 that might not be as fast in Saclib, like multivariate polynomial
-factorization, and to provide Groebner Basis computation, which 
+factorization, and to provide Groebner Basis computation, which
 is not available in Saclib.  When Singular is installed on your
 system, add the line
 
@@ -41,7 +41,7 @@ might be right for you.
 
 Making CAD2D
 -------------
-The program "cad2d" is a variant of QEPCAD with some 
+The program "cad2d" is a variant of QEPCAD with some
 optimizations for constructing 2D CADs.  Cd to the adj2d
 directory and type "gmake", AFTER INSTALLING QEPCAD!  After
 this, "$qe/bin/cad2d" should launch the CAD2D program.  Note:
@@ -71,7 +71,7 @@ source - The "original" QEPCAD.  In fact, much has been modified
       and added since the original, but we distinguish this
       from the "extensions".
 
-extensions - Extension packages to QEPCAD: 
+extensions - Extension packages to QEPCAD:
       sfext: solution formula extensions
       adj2d: 2D adjacency extensions
       rend : 2D CAD plotting extensions
@@ -80,7 +80,7 @@ extensions - Extension packages to QEPCAD:
       newadj:Experimental extensions for modified adjacency
              computations.
 
-cad2d - This contains the program "cad2d" is a variant of 
+cad2d - This contains the program "cad2d" is a variant of
       QEPCAD with some optimizations for constructing 2D CADs.
 
 plot2d - The ADJ2D_plot program.

@@ -51,10 +51,11 @@ Step2: /* Projection. */
                /*Int*/ PCNSTEP = 1;
                /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
                /*Int PCNSTEP = 1; */
-       PROJECT(r,A,&P,&J);
        if (PCMCT == 'y') {
-           QUASIAFFINE(P, J, r, &P, &J);
+           QUASIAFFINE(A, r, &A);
        }
+
+       PROJECT(r,A,&P,&J);
 
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
@@ -63,9 +64,9 @@ Step3: /* Truth-invariant CAD. */
                /*Int*/ for (i=1; i<=f; i++) NMFPF=NMFPF+LENGTH(LELTI(P,i));
                /*Int*/ PCNSTEP = 1;
        D = TICAD(Q,F,f,P,A);
-        /*if (PCMCT == 'y') {
-            D = MONOTONE(D, r);
-        }*/
+        if (PCMCT == 'y') {
+            // TODO semi monotone, monotone on A, then split cells.
+        }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step4: /* Solution. */

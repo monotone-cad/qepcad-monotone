@@ -1,22 +1,18 @@
 /*======================================================================
                     A -< QUASIAFFINE(A, J, r; P, J)
 
-Adding first derivatives of projections onto 1 and 2 dimensional
-coordinate subspaces, to result in a CAD with all quasi-affine
-cells.
+Adding first derivatives of projections onto coordinate axes, to result in 2d cells which are either increasing,
+decreasing or constant along coordinate axes.
 
 \Input
   \parm{AA} projection factor structure. ([A_1, ..., A_r], with A_i being i-level proj factors
-  \parm{AJ} projection polynomial (unfactored proj factor) structure. ([A_1, ..., A_r], with A_i being i-level proj factors
   \parm{r} number of variables
 
 Output
   \parm{A}: modified projection factors
-  \parm{J}: modified projection polys
 
 SideEffect
   \parm{AA} is modified.
-  \parm{AJ} is modified.
 
 ======================================================================*/
 #include "qepcad.h"
@@ -27,7 +23,7 @@ Word PARTIALS(Word P, Word k);
 // wrapper for IPLFAC to unset the parents. for when you don't want them referenced
 Word LFAC(Word k, Word L);
 
-void QepcadCls::QUASIAFFINE(Word A, Word J, Word r, Word* A_, Word* J_)
+void QepcadCls::QUASIAFFINE(Word A, Word r, Word* A_)
 {
     Word AA, A1, A11, i, L;
 
@@ -44,26 +40,7 @@ Step1: /* decide based on dimension */
         goto Return;
     }
 
-    if (r == 2) {
-        SWRITE("# skipping 2d projections.\n");
-
-        goto Step3;
-    }
-
-Step2: /* dim >= 3: derivs of projections to 1 and  2d subspaces (add projections) */
-    SWRITE("# adding projections to (other [than x1,x2]) 2d subspaces.\n");
-
-    AA = PermuteAndProject(A, r, 2);
-    printf("%d\n", LENGTH(AA));
-    L = NIL;
-    while (AA != NIL) {
-        ADV(AA, &A11, &AA);
-
-        L = CONC(L, PARTIALS(A11, r));
-    }
-    A = APPEND(A, r, LFAC(r, L));
-
-Step3: /* dim >= 2: derivs of projection factors */
+Step3: /* dim >= 2: all partials of input polynomials */
     SWRITE("# adding derivs of projections to 1d subspaces.\n");
 
     /* levels. */
@@ -79,12 +56,12 @@ Step3: /* dim >= 2: derivs of projection factors */
 
             L = CONC(L, PARTIALS(A11, i));
         } /* END polynomials. */
+        // TODO append unfactored to J for a record
         A = APPEND(A, i, LFAC(i, L));
     } /* END level. */
 
 Return: /* prepare for return */
     *A_ = A;
-    *J_ = J;
 }
 
 Word PARTIALS(Word P, Word k)
@@ -121,3 +98,4 @@ Word LFAC(Word k, Word L)
 
     return LL;
 }
+

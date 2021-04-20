@@ -83,6 +83,7 @@ Word   TMAPPEND[MNV1];     /* Time for Appending, APPEND */
 
 /* Statistics on Truth Invariant CAD Construction Phase */
 Word TMTICAD[MNV1];     /* Time for Truth invariant CAD Construnction Phase, TICAD */
+void SEMIMONOTONE(Word P, Word J, Word D, Word r);
 Word   TMCHOOSE[MNV1];    /* Time for Choosing a cell, CHOOSE */
 Word   TMCONVERT[MNV1];   /* Time for Conversion, CONVERT */
 Word     TMTCN[MNV1];       /* Time for Trivial Conversion */

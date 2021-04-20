@@ -65,7 +65,7 @@ Step3: /* Truth-invariant CAD. */
                /*Int*/ PCNSTEP = 1;
        D = TICAD(Q,F,f,P,A);
         if (PCMCT == 'y') {
-            // TODO semi monotone, monotone on A, then split cells.
+            SEMIMONOTONE(P, J, D, r);
         }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 

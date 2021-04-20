@@ -319,6 +319,7 @@ $(LIB)(ticad/SUBST.o) \
 $(LIB)(ticad/SUBSTR.o) \
 $(LIB)(ticad/TCHILD.o) \
 $(LIB)(ticad/TICAD.o) \
+$(LIB)(ticad/SEMIMONOTONE.o) \
 $(LIB)(proj/QUASIAFFINE.o) \
 $(LIB)(proj/PermuteAndProject.o) \
 $(LIB)(ticad/TICADauto.o)
@@ -675,6 +676,7 @@ $(LIBD)(ticad/SUBST.o) \
 $(LIBD)(ticad/SUBSTR.o) \
 $(LIBD)(ticad/TCHILD.o) \
 $(LIBD)(ticad/TICAD.o) \
+$(LIBD)(ticad/SEMIMONOTONE.o) \
 $(LIBD)(proj/QUASIAFFINE.o) \
 $(LIBD)(proj/PermuteAndProject.o) \
 $(LIBD)(ticad/TICADauto.o)

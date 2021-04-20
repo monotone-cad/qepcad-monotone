@@ -169,9 +169,7 @@ Word LINEARROOT(Word p)
         return 0;
     }
 
-    Word lm, ln;
-    IFCL2(den,&lm,&ln);
-    if (ICOMP(lm,ln) != 0) return NIL;
+    if (den == 0) return NIL;
 
     Word x = RNRED(INEG(num),den);
     return x;

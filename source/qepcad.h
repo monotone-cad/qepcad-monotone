@@ -217,6 +217,8 @@ void PRUDB();
 void PRWHATIS();
 void PSIGTBL(Word c, Word f, Word T_t, Word T_f, Word *Tp_t_, Word *Tp_f_);
 void PSIMREP(Word r, Word P, Word *rs_, Word *Ps_);
+void ADDPOL(Word P, BDigit k, Word Z, Word *A_, Word *L_);
+void ADDPOLS(Word Ps, BDigit k, Word Z, Word *A_);
 void QEGLOBALS();
 const char* QEPCADBVersion();
 Word QFFFSOP(Word H, Word P, Word f);

@@ -20,10 +20,7 @@ SideEffect
 // all (non-constant) partials of P (level k), factorised and formatted ready to append
 Word PARTIALS(Word P, Word k);
 
-// wrapper for IPLFAC to unset the parents. for when you don't want them referenced
-Word LFAC(Word k, Word L);
-
-void QepcadCls::QUASIAFFINE(Word A, Word r, Word* A_)
+void QepcadCls::QUASIAFFINE(Word A, Word r, Word* A_, Word *J_)
 {
     Word AA, A1, A11, i, L;
 
@@ -53,15 +50,21 @@ Step3: /* dim >= 2: all partials of input polynomials */
         L = NIL;
         while (A1 != NIL) {
             ADV(A1, &A11, &A1);
+            // only work on input polynomials - skip projection factors
+            if (LELTI(A11, PO_PARENT) != NIL) continue;
 
             L = CONC(L, PARTIALS(A11, i));
         } /* END polynomials. */
         // TODO append unfactored to J for a record
-        A = APPEND(A, i, LFAC(i, L));
+	    ADDPOLS(L, i, LFS("D"), J_);
+        A = APPEND(A, i, IPLFAC(i, L));
     } /* END level. */
 
 Return: /* prepare for return */
+    printf("> %d, %d\n", LENGTH(FIRST(*J_)), LENGTH(SECOND(*J_)));
     *A_ = A;
+    GVPF = A;
+    GVPJ = *J_;
 }
 
 Word PARTIALS(Word P, Word k)
@@ -82,20 +85,5 @@ Word PARTIALS(Word P, Word k)
     } /* END derivatives. */
 
     return L;
-}
-
-Word LFAC(Word k, Word L)
-{
-    Word LL, P;
-
-    L = IPLFAC(k, L);
-
-    LL = L;
-    while (L != NIL) {
-        ADV(L, &P, &L);
-        SLELTI(P, PO_PARENT, NIL);
-    }
-
-    return LL;
 }
 

@@ -51,11 +51,11 @@ Step2: /* Projection. */
                /*Int*/ PCNSTEP = 1;
                /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
                /*Int PCNSTEP = 1; */
-       if (PCMCT == 'y') {
-           QUASIAFFINE(A, r, &A);
-       }
-
        PROJECT(r,A,&P,&J);
+
+       if (PCMCT == 'y') {
+           QUASIAFFINE(P, r, &P, &J);
+       }
 
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 

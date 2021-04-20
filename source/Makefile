@@ -193,7 +193,8 @@ $(LIB)(normqff/TYPEQFF.o)
 
 OBJS_PROJ = \
 $(LIB)(proj/APPEND.o) \
-$(LIB)(proj/APPENDEC.o) \
+$(LIB)(util/ADDPOLS.o) \
+$(LIB)(util/APPENDEC.o) \
 $(LIB)(proj/ECLEVEL.o) \
 $(LIB)(proj/EXTRACT.o) \
 $(LIB)(proj/EXTRACTS.o) \
@@ -547,6 +548,8 @@ $(LIBD)(normqff/TYPEQFF.o)
 
 OBJS_PROJd = \
 $(LIBD)(proj/APPEND.o) \
+$(LIBD)(util/ADDPOL.o) \
+$(LIBD)(util/ADDPOLS.o) \
 $(LIBD)(proj/APPENDEC.o) \
 $(LIBD)(proj/ECLEVEL.o) \
 $(LIBD)(proj/EXTRACT.o) \

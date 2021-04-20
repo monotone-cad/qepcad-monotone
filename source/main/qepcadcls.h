@@ -195,7 +195,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   Word PROJLA(Word r, Word A);
   Word PROJMC(Word r, Word A);
   Word PROJMCx(Word r, Word A);
-  void QUASIAFFINE(Word A, Word r, Word* A_);
+  void QUASIAFFINE(Word A, Word r, Word* A_, Word* J_);
   Word PermuteAndProject(Word A, Word r, Word k);
 
   /* TICAD */
@@ -332,5 +332,4 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void QEPCADauto(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_);
   void PROJECTauto(Word r, Word A, Word *P_, Word *J_);
   Word TICADauto(Word Q, Word F, Word f, Word P, Word A);
-
 };

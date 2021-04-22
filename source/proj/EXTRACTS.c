@@ -29,7 +29,7 @@ Step1: /* Non-constant normalized atomic formula. */
 	if (FIRST(F) == IROOT) goto Step2;
         FIRST4(F,&T,&P,&k,&I);
 	if (k == 0) { Ap = A; goto Return; }
-	ADDPOL(P,k,LFS("A"),&A,&L);
+	ADDPOL(P,k,LFS("A"), &A,&L);
 	SLELTI(F,4,L);
         Ap = A;
         goto Return;

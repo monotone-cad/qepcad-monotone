@@ -397,6 +397,8 @@ $(LIB)(userint/PRRESALG.o) \
 $(LIB)(userint/USERINT.o)
 
 OBJS_UTIL = \
+$(LIB)(util/ADDPOL.o) \
+$(LIB)(util/ADDPOLS.o) \
 $(LIB)(util/CELLDEG.o) \
 $(LIB)(util/CELLDIM.o) \
 $(LIB)(util/MATCHWORD.o) \
@@ -755,6 +757,8 @@ $(LIBD)(userint/PRRESALG.o) \
 $(LIBD)(userint/USERINT.o)
 
 OBJS_UTILd = \
+$(LIBD)(util/ADDPOL.o) \
+$(LIBD)(util/ADDPOLS.o) \
 $(LIBD)(util/CELLDEG.o) \
 $(LIBD)(util/CELLDIM.o) \
 $(LIBD)(util/MATCHWORD.o) \

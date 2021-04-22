@@ -92,6 +92,8 @@ Word EXPAFLT(Word L);
 Word EXPAFLTS(Word L);
 Word EXTRACT(Word r, Word F);
 void EXTRACTS(Word F, Word A, Word *Ap_);
+void ADDPOL(Word P, BDigit k, Word Z, Word *A_, Word *L_);
+void ADDPOLS(Word Ps, BDigit k, Word Z, Word *A_);
 void FGWRITE(Word A, Word n);
 void FILINE();
 void FILLIN(Word n, Word vs, Word S_r, Word S_s, Word R_c, Word R_s, Word *v_);

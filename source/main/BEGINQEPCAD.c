@@ -23,7 +23,7 @@ void QEPCAD_Usage(int cols);
   This is a somewhat graceful way for me to work on experimental
   features.
  */
-int experimentalExtensionFlag = 0; 
+int experimentalExtensionFlag = 0;
 
 ServerBase GVSB;
 CAPolicy *GVCAP = 0;
@@ -31,16 +31,16 @@ QEPCADContext* GVContext = 0;
 
 void BEGINQEPCAD(int &argc, char**& argv)
 {
-  /* Process QEPCAD's command line arguments. 
+  /* Process QEPCAD's command line arguments.
      NOTE: The -exp version is there to give me a nice way to work
      on experimental features in the same branch as I'm releasing!
    */
 
-  /* With an invalid command-line argument (or -h) just print usage 
+  /* With an invalid command-line argument (or -h) just print usage
      and exit*/
   int usageAndExit = -1; /* -1 means don't print usage and exit! */
 
-  /* #cols for usage message output is 80 or terminal width if 
+  /* #cols for usage message output is 80 or terminal width if
      stdout attached to a terminal*/
   int cols = 80;         /* number of columns for help output */
   int isStdoutTerm = system("test -t 1");
@@ -76,13 +76,13 @@ void BEGINQEPCAD(int &argc, char**& argv)
 
   QEGLOBALS();
   SETUPSYS();
-  
+
   /* Line buffer output */
-  setlinebuf(stdout); 
-  
+  setlinebuf(stdout);
+
   /* Initialize the qepcad system globals. */
   INITSYS();
-  
+
   /* Launch CA Servers and set up CA Policy */
   if (GVContext->SingularPath == "")
     GVCAP = new OriginalPolicy;
@@ -91,6 +91,7 @@ void BEGINQEPCAD(int &argc, char**& argv)
     pair<string,CAServer*> tp(string("Singular"),new SingularServer(GVContext->SingularPath));
     GVSB.insert(tp);
     GVCAP = new SingSacPolicy;
+    printf("=== USING SINGULAR AS A CA SERVER. ====================\n");
   }
 
 }
@@ -108,7 +109,7 @@ void QEPCAD_ProcessRC(int argc, char **argv)
     slwcistream sin(rcin,slwcistream::skipleadingws);
     if (!(sin >> name)) { continue; }
     if (name == "SINGULAR")
-    {      
+    {
       if (!(sin >> tmp)) { cerr << "Error reading SINGULAR path in " << rcFileName << "!" << endl; }
       else { GVContext->SingularPath = tmp; }
     }
@@ -138,18 +139,18 @@ Saclib options\n\
       while(i < N)
       {
 	char c = out.str()[i];
-	if (isspace(c)) 
-	{ 
-	  cout << c; 
-	  ++i; 
+	if (isspace(c))
+	{
+	  cout << c;
+	  ++i;
 	  ++x;
 	  if (c == '\n') { x = 0; }
-	  else if (x >= cols) { x = 0; cout << endl; } 
+	  else if (x >= cols) { x = 0; cout << endl; }
 	}
 	else
 	{
 	  int j = i + 1; while(j < N && !isspace(out.str()[j])) ++j;
-	  if (x + j - i > cols) { cout << endl; x = 0; }	  
+	  if (x + j - i > cols) { cout << endl; x = 0; }
 	  for(int k = i; k < j; ++k, ++x) cout << out.str()[k];
 	  if (x >= cols) { x = 0; cout << endl; }
 	  i = j;

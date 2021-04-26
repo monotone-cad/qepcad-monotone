@@ -1,59 +1,59 @@
 /*======================================================================
-                      QEPCAD(Fs; t,F_e,F_n,F_s)
+  QEPCAD(Fs; t,F_e,F_n,F_s)
 
-Quantifier Elimination by Partial Cylindrical Algebraic Decomposition.
+  Quantifier Elimination by Partial Cylindrical Algebraic Decomposition.
 
-\Input
+  \Input
   \parm{F*} $=(Q_{f+1} x_{f+1})\cdots(Q_r x_r)\hat{F}(x_1,\ldots,x_r)$,
-            $0\leq f < r$, is a quantified formula.
+  $0\leq f < r$, is a quantified formula.
 
-\Output
+  \Output
   \parm{t}  is either \c{EQU} or \c{INEQU}.
   \parm{Fe} is a quantifier-free formula equivalent to~\v{F*}
-            if \v{t} is \c{EQU}, otherwise \v{Fe} is undefined.
+  if \v{t} is \c{EQU}, otherwise \v{Fe} is undefined.
   \parm{Fn} is a quantifier-free formula necssary for~\v{F*}
-            if \v{t} is \c{INEQU}, otherwise \v{Fn} is undefined.
+  if \v{t} is \c{INEQU}, otherwise \v{Fn} is undefined.
   \parm{Fs} is a quantifier-free formula sufficient for~\v{F*}
-            if \v{t} is \c{INEQU}, otherwise \v{Fs} is undefined.
-======================================================================*/
+  if \v{t} is \c{INEQU}, otherwise \v{Fs} is undefined.
+  ======================================================================*/
 #include "qepcad.h"
 
 void QepcadCls::QEPCAD(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_)
 {
-       Word A,D,F,F_e,F_n,F_s,Fh,J,P,Q,Ths,f,i,r,t, T;
-       /* hide Ths,i,t; */
-       Word cL,**cC,cr,ce,ci,*cT,cj,cs,cl,ct; /* Chris variables. */
-       Word Cs,Ps,Qs,Pps,Cps,Qps,SF; /* Chris variables. */
-       char c1,c2; /* Chris variables. */
+    Word A,D,F,F_e,F_n,F_s,Fh,J,P,Q,Ths,f,i,r,t, T;
+    /* hide Ths,i,t; */
+    Word cL,**cC,cr,ce,ci,*cT,cj,cs,cl,ct; /* Chris variables. */
+    Word Cs,Ps,Qs,Pps,Cps,Qps,SF; /* Chris variables. */
+    char c1,c2; /* Chris variables. */
 Step1: /* Normalize. */
-       FIRST4(Fs,&r,&f,&Q,&Fh);
-               /*Int*/ PCNSTEP = 1;
-               /*Int*/ if (INTERACT()) USERINT(LFS("Before Normalization"),'a');
-               /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
-               /*Int*/ Ths = ACLOCK();
-       F = NORMQFF(Fh);
-       if (GVUA != NIL) GVNA = NORMQFF(GVUA);
-               /*Int*/ TMNORMQFF = Ths;
-               /*Int*/ Ths = ACLOCK() - Ths;
-               /*Int*/ GVNQFF = F;
-       //       if (TYPEQFF(F) != UNDET) { t = EQU; F_e = F; goto Return; }
+    FIRST4(Fs,&r,&f,&Q,&Fh);
+    /*Int*/ PCNSTEP = 1;
+    /*Int*/ if (INTERACT()) USERINT(LFS("Before Normalization"),'a');
+    /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
+    /*Int*/ Ths = ACLOCK();
+    F = NORMQFF(Fh);
+    if (GVUA != NIL) GVNA = NORMQFF(GVUA);
+    /*Int*/ TMNORMQFF = Ths;
+    /*Int*/ Ths = ACLOCK() - Ths;
+    /*Int*/ GVNQFF = F;
+    //       if (TYPEQFF(F) != UNDET) { t = EQU; F_e = F; goto Return; }
 
 Step2: /* Projection. */
-       if (GVUA != NIL) F = LIST3(ANDOP,GVNA,F);
-       A = EXTRACT(r,F);
-     if (GVUA != NIL) {
-	 GVNA = SECOND(F);
-	 F = THIRD(F); }
-               /*Int*/ GVNIP = A;
-               /*Int*/ for (i = 1; i <= r; i++) NMNIP[i] = LENGTH(LELTI(A,i));
-               /*Int*/ GVPF = LLCOPY(A);
-               /*Int*/ GVLV = r;
-               /*Int*/ PCNSTEP = 1;
-               /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
-               /*Int PCNSTEP = 1; */
-       PROJECT(r,A,&P,&J);
+    if (GVUA != NIL) F = LIST3(ANDOP,GVNA,F);
+    A = EXTRACT(r,F);
+    if (GVUA != NIL) {
+        GVNA = SECOND(F);
+        F = THIRD(F); }
+    /*Int*/ GVNIP = A;
+    /*Int*/ for (i = 1; i <= r; i++) NMNIP[i] = LENGTH(LELTI(A,i));
+    /*Int*/ GVPF = LLCOPY(A);
+    /*Int*/ GVLV = r;
+    /*Int*/ PCNSTEP = 1;
+    /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
+    /*Int PCNSTEP = 1; */
+    PROJECT(r,A,&P,&J);
 
-       if (PCMCT == 'y') {
+    if (PCMCT == 'y') {
            QUASIAFFINE(P, r, &P, &J);
        }
 
@@ -66,6 +66,7 @@ Step3: /* Truth-invariant CAD. */
        D = TICAD(Q,F,f,P,A);
         if (PCMCT == 'y') {
             SEMIMONOTONE(P, J, D, r);
+            MONOTONE(P, J, D, r);
             D = RECOMPUTE(D, Q, F, f, P, A);
         }
                /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }

@@ -194,6 +194,7 @@ $(LIB)(normqff/TYPEQFF.o)
 OBJS_PROJ = \
 $(LIB)(proj/APPEND.o) \
 $(LIB)(util/ADDPOLS.o) \
+$(LIB)(util/LEVELIDX.o) \
 $(LIB)(util/APPENDEC.o) \
 $(LIB)(proj/ECLEVEL.o) \
 $(LIB)(proj/EXTRACT.o) \
@@ -320,6 +321,7 @@ $(LIB)(ticad/SUBSTR.o) \
 $(LIB)(ticad/TCHILD.o) \
 $(LIB)(ticad/TICAD.o) \
 $(LIB)(ticad/SEMIMONOTONE.o) \
+$(LIB)(ticad/MONOTONE.o) \
 $(LIB)(ticad/RECOMPUTE.o) \
 $(LIB)(proj/QUASIAFFINE.o) \
 $(LIB)(proj/PermuteAndProject.o) \
@@ -554,6 +556,7 @@ OBJS_PROJd = \
 $(LIBD)(proj/APPEND.o) \
 $(LIBD)(util/ADDPOL.o) \
 $(LIBD)(util/ADDPOLS.o) \
+$(LIBD)(util/LEVELIDX.o) \
 $(LIBD)(proj/APPENDEC.o) \
 $(LIBD)(proj/ECLEVEL.o) \
 $(LIBD)(proj/EXTRACT.o) \
@@ -680,6 +683,7 @@ $(LIBD)(ticad/SUBSTR.o) \
 $(LIBD)(ticad/TCHILD.o) \
 $(LIBD)(ticad/TICAD.o) \
 $(LIBD)(ticad/SEMIMONOTONE.o) \
+$(LIBD)(ticad/MONOTONE.o) \
 $(LIBD)(ticad/RECOMPUTE.o) \
 $(LIBD)(proj/QUASIAFFINE.o) \
 $(LIBD)(proj/PermuteAndProject.o) \

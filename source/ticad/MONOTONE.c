@@ -1,7 +1,7 @@
 /*======================================================================
-                    F -< SEMIMONOTONE(FF)
+                    F -< MONOTONE(FF)
 
-Adds extra polynomials to projection factor set to ensure semi-monotone cells will be produced
+Adds extra polynomials to projection factor set to ensure monotone cells will be produced
 Does not recompute the cad
 
 \Input
@@ -13,7 +13,7 @@ Does not recompute the cad
 ======================================================================*/
 #include "qepcad.h"
 
-void QepcadCls::SEMIMONOTONE(Word A, Word AA, Word D, Word r)
+void QepcadCls::MONOTONE(Word A, Word AA, Word D, Word r)
 {
     Word Ct, Cf, C, I, i ,j, A1, P, p, P1, p1, L;
 
@@ -38,23 +38,8 @@ Step2: /* calculate: looping through true cells */
         FIRST2(I, &i, &j);
 
         printf("# two dimensional index: %d %d\n", i, j);
-        /* adding partials of level j polynomials with respect to variable i */
-        L = NIL;
-        A1 = LELTI(A, j);
-        while (A1 != NIL) {
-            ADV(A1, &P, &A1);
-            p = LELTI(P, PO_POLY);
-            p1 = IPDER(j, p, i);
-
-            if (IPCONST(j, p1)) continue;
-
-            P1 = MPOLY(p1, NIL, NIL, PO_OTHER, PO_KEEP);
-            L = COMP(P1, L);
-        }
-
-        printf("# %d ", LENGTH(LELTI(A, i)));
-        ADDPOLS(L, j, LFS("D"), &AA);
-        A = APPEND(A, j, IPLFAC(j, L));
+        // TODO lagrange
     }
 }
+
 

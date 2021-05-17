@@ -34,7 +34,7 @@ int PFIDXOFZERO(Word S, Word i, Word r)
 }
 
 // top and bottom of cell in decomposition D with index x, at level j.
-// sets to c_top and c_bottom. both are NIL in case of error
+// sets to c_top and c_bottom. in case of error, return 0, otherwise return 1
 int FINDTOPANDBOTTOM(Word D, Word x, Word j, Word *C_top, Word *C_bottom)
 {
     Word t1, t2;
@@ -62,7 +62,12 @@ int FINDTOPANDBOTTOM(Word D, Word x, Word j, Word *C_top, Word *C_bottom)
 Word IPTDER(Word r, Word P, Word i)
 {
     Word D = IPDER(r, P, i);
-    Word D1 = NIL; Word A = NIL; Word e = NIL;
+    Word D0 = IPDER(r, P, r);
+    if (!IPCONST(r, D0)) {
+        SWRITE("ERROR: not sure what to do here!!\n");
+        // TODO something with D0 to take this into account.
+    }
+    Word D1 = NIL, A = NIL, e = NIL;
     while (D != NIL) {
         ADV2(D, &e, &A, &D);
         if (D1 != NIL) D1 = IPSUM(r-1, D1, A);
@@ -84,6 +89,8 @@ Word LAGRANGE(Word Surface, Word Curve)
     // TODO total derivs
     Word f1 = IPTDER(3, f, 1);
     Word f2 = IPTDER(3, f, 2);
+    Word f3 = IPTDER(3, f, 3);
+
     Word g1 = IPDER(2, g, 1);
     Word g2 = IPDER(2, g, 2);
     Word jacobiDet = IPSUM(
@@ -91,15 +98,12 @@ Word LAGRANGE(Word Surface, Word Curve)
         IPPROD(2, f1, g2),
         IPNEG(2, IPPROD(2, f2, g1))
     );
-    SWRITE("Solve:\n");
     IPWRITE(2, jacobiDet, Vs); SWRITE("\n");
     IPWRITE(2, g, Vs); SWRITE("\n");
     // check if we can compute resultant - i.e., they both have degree > 0 in variable v2
     if (PDEG(jacobiDet) == 0) return NIL;
 
     Word res = IPRESQE(2, jacobiDet, g);
-    IPWRITE(1, res, Vs); SWRITE("\n");
-
 
     return MPOLY(res, NIL, NIL, PO_OTHER, PO_KEEP);
 }
@@ -121,7 +125,7 @@ Step1: /* calculate: looping through true cells */
 
             return;
         } else if (LENGTH(I) < 2) {
-            printf("# cell dim < 2 - continue\n");
+            SWRITE("# cell dim < 2 - continue\n");
 
             continue;
         }
@@ -130,20 +134,18 @@ Step1: /* calculate: looping through true cells */
         FIRST2(I, &i, &j);
 
         printf("# two dimensional index: %d %d\n", i, j);
-        // ALGORITHM
-        // find top and bottom of 2d part (part with i,j)
-        // X := (I_i, I_j), X_B = (I_i, I_{j-1}), X_T = (I_i, I_{j+1})
-        // X_T = g_T(x,y) = 0, X_B = g_B(x,y) = 0
-        // C := f(X)
-        // C_T := f(X_T), C_B := f(X_B)
-        // f := C -> R | f(C) = 0
-        // use lagrange method to find critical points of f along curve G_T and g_B
+
+        // algorithm:
+        // given our 2d cell, find the curves defining it's tob and bottom.
+        // the cell will "fold over" at any critical points along these curves
+        // use the lagrange multiplier method to find the critical points of curve (top / bottom of cell)
+        // on the surface (function defining the graph, section cell)
 
         // find g_T and g_B - functions defining the top and bottom of 2d cell X
         Word C_top, C_bottom;
         A1 = LELTI(A, j);
 
-        if (FINDTOPANDBOTTOM(D, LELTI(C, INDX), j, &C_top, &C_bottom) == 0) return;
+        if (!FINDTOPANDBOTTOM(D, LELTI(C, INDX), j, &C_top, &C_bottom)) return;
 
         Word S_top = LELTI(C_top, SIGNPF);
         int Ij_top = PFIDXOFZERO(S_top, j, r);
@@ -156,9 +158,11 @@ Step1: /* calculate: looping through true cells */
         int Ik = PFIDXOFZERO(S, k, r);
 
         P = LELTI(LELTI(A, k), Ik);
+        // critical points of curve along the top of the cell
         P1 = LAGRANGE(P, LELTI(A1, Ij_top));
         if (P1 != NIL) L = COMP(P1, L);
 
+        // same for the bottom
         P1 = LAGRANGE(P, LELTI(A1, Ij_bottom));
         if (P1 != NIL) L = COMP(P1, L);
 

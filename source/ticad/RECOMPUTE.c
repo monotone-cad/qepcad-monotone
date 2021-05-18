@@ -214,28 +214,26 @@ Step1: /* Initialise */
     if (EVEN(idx)) {
         Sl = SAMPLEK(C, k);
         Sr = Sl;
+    } else {
+        // standard case - sample point of cell to the left of C
+        if (idx > 1) {
+            Cl = LELTI(L, idx - 1);
 
-        goto Step3;
+            Sl = SAMPLEK(Cl, k);
+        }
+
+        // standard case - sample point of cell to the right of C
+        if (idx < LENGTH(L)) {
+            Cr = LELTI(L, idx + 1);
+
+            Sr = SAMPLEK(Cr, k);
+        }
+
+        // special case for leftmost and rightmost cells
+        // set Sl and Sr equal
+        if (Sl == NIL) Sl = Sr;
+        if (Sr == NIL) Sr = Sl;
     }
-
-    // standard case - sample point of cell to the left of C
-    if (idx > 1) {
-        Cl = LELTI(L, idx - 1);
-
-        Sl = SAMPLEK(Cl, k);
-    }
-
-    // standard case - sample point of cell to the right of C
-    if (idx < LENGTH(L)) {
-        Cr = LELTI(L, idx + 1);
-
-        Sr = SAMPLEK(Cr, k);
-    }
-
-    // special case for leftmost and rightmost cells
-    // set Sl and Sr equal
-    if (Sl == NIL) Sl = Sr;
-    if (Sr == NIL) Sr = Sl;
 
     /* endpoint comparison */
     // get point, M, I for each point

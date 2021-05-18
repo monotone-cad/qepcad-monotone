@@ -31,14 +31,14 @@ Step1: /* decide based on dimension */
         goto Return;
     }
 
-    if (r > 3) {
+    if (r > 3) { // TODO dim > 3
         SWRITE("Dimension > 3 not supported yet.\n");
 
         goto Return;
     }
 
 Step3: /* dim >= 2: all partials of input polynomials */
-    SWRITE("# adding derivs of projections to 1d subspaces.\n");
+    SWRITE("# adding derivs of projections.\n");
 
     /* levels. */
     AA = A; i = 0;
@@ -55,14 +55,16 @@ Step3: /* dim >= 2: all partials of input polynomials */
 
             L = CONC(L, PARTIALS(A11, i));
         } /* END polynomials. */
-        // TODO append unfactored to J for a record
-	    ADDPOLS(L, i, LFS("D"), J_);
+
+        // appending new level i polynomials
+        ADDPOLS(L, i, LFS("D"), J_);
         A = APPEND(A, i, IPLFAC(i, L));
     } /* END level. */
 
 Return: /* prepare for return */
     printf("> %d, %d\n", LENGTH(FIRST(*J_)), LENGTH(SECOND(*J_)));
     *A_ = A;
+
     GVPF = A;
     GVPJ = *J_;
 }

@@ -17,7 +17,7 @@ void QepcadCls::SEMIMONOTONE(Word A, Word AA, Word D, Word r)
 {
     Word Ct, Cf, C, I, i ,j, A1, P, p, P1, p1, L;
 
-Step2: /* calculate: looping through true cells */
+Step2: /* calculate: looping through true cells with CELLDIM == 2 */
     LISTOFCWTV(D, &Ct, &Cf);
     while (Ct != NIL) {
         ADV(Ct, &C, &Ct);

@@ -81,7 +81,11 @@ Step3: /* Recurse on children. */
         ADV(Children, &Child, &Children);
 
         S = FIRST(LELTI(Child, SIGNPF)); // Note SIGNPF comes in reverse order
+        // we are missing some signs of projection factors. add these, and insert new cells.
         if (LENGTH(S) < LENGTH(P1)) {
+            // TODO this resets the loop variable, so we wil restart the loop. this is inefficient. better to update the
+            // variable's contents, but point to the next cell in the list. so we recurse on new cells, bet do not loop
+            // twice
             Children = SPLIT(L, P1);
         }
 
@@ -96,8 +100,12 @@ Word SPLIT(Word L, Word Ps)
 {
     Word P, p, x, s, C, k;
 
+    // TODO whyyy???
     if (LENGTH(L) < 2) goto Return;
 
+    // initialiseng variables. we assume all cells in the list have the same lever, we also assume that the new proj
+    // factors with missing signs are at the end of the list, and that all cells are missing the same number of proj
+    // factors.
     C = FIRST(L);
     k = LELTI(C, LEVEL);
     Ps = ADVN(Ps, LENGTH(FIRST(LELTI(C, SIGNPF))));
@@ -114,13 +122,14 @@ Step1: /* Iterate through the new polynomials */
             return L;
         }
 
-        // convert to rational representation, same as sample points
+        // convert to algebraic extension representation, to be consistent with sample points
         x = AFFRN(x);
         Word NewCells = NIL; // list of lists of new cells.
+        // TODO it's linked lists. can we do it more efficiently with ADV rather than LELTI?
         for (int i = 1; i <= LENGTH(L); i++) {
             s = INTERVALSIGN(L, i, x);
 
-            // not sign invariant
+            // current cell is not sign invarient - split according to point x
             if (s == 0) {
                 NewCells = SPLITCELL(
                     LELTI(L, i),
@@ -128,14 +137,12 @@ Step1: /* Iterate through the new polynomials */
                     SAMPLEK(LELTI(L, MAX(i-1, 1)), k),
                     SAMPLEK(LELTI(L, MIN(i+1, LENGTH(L))), k)
                 );
-
-                continue;
+            } else { // it's sign invarient already, simply add the new sign
+                APPENDSIGNPF(LELTI(L, i), s);
             }
-
-            APPENDSIGNPF(LELTI(L, i), s);
         }
 
-        // add new cells (Ds) to list, deleting C
+        // add new cells to list, replacing any cells that were split by a new polynomial
         L = INSERTCELLS(L, NewCells);
     }
 
@@ -147,8 +154,7 @@ Word ADVN(Word L, Word n)
 {
     Word v;
 
-    for (int i = 0; i < n; i++) {
-        if (L == NIL) break;
+    for (int i = 0; i < n && L != NIL; i++) {
         ADV(L, &v, &L);
     }
 
@@ -158,9 +164,11 @@ Word ADVN(Word L, Word n)
 Word LINEARROOT(Word p)
 {
     Word n = PDEG(p);
+
+    // not linear
     if (n > 1) return NIL; // TODO what to do if it's not linear
 
-    // directly solve P := den X - num = 0
+    // directly solve P := den X + num = 0
     Word den = PLDCF(p);
     Word num = PCOEFF(p,0);
 
@@ -169,10 +177,11 @@ Word LINEARROOT(Word p)
         return 0;
     }
 
+    // div by 0
     if (den == 0) return NIL;
 
-    Word x = RNRED(INEG(num),den);
-    return x;
+    // directly solve x = -num/den
+    return RNRED(INEG(num),den);
 }
 
 Word SAMPLEK(Word C, Word k)
@@ -181,8 +190,10 @@ Word SAMPLEK(Word C, Word k)
 
     S = LELTI(C, SAMPLE);
 
+    // fail if the sample point is not in the standard representation (which it should be by now)
     if (LENGTH(S) != 3) return 0;
 
+    // return [ coordinate k, algebraic extension polynomial M, interval I ]
     FIRST3(S, &M, &I, &P);
     return LIST3(LELTI(P, k), M, I);
 }
@@ -195,10 +206,11 @@ Step1: /* Initialise */
     C = LELTI(L, idx);
     k = LELTI(C, LEVEL);
 
-Step2: /* special case for even cell */
     // next and previous cells
     Sl = NIL; Sr = NIL;
 
+    // special case for even (section) cell
+    // we set cells on either side to the value of C
     if (EVEN(idx)) {
         Sl = SAMPLEK(C, k);
         Sr = Sl;
@@ -206,31 +218,35 @@ Step2: /* special case for even cell */
         goto Step3;
     }
 
+    // standard case - sample point of cell to the left of C
     if (idx > 1) {
         Cl = LELTI(L, idx - 1);
 
         Sl = SAMPLEK(Cl, k);
     }
 
+    // standard case - sample point of cell to the right of C
     if (idx < LENGTH(L)) {
         Cr = LELTI(L, idx + 1);
 
         Sr = SAMPLEK(Cr, k);
     }
 
-    // special case for leftmost and rightmost cells (whele l == NIL and r == NIL resp).
+    // special case for leftmost and rightmost cells
+    // set Sl and Sr equal
     if (Sl == NIL) Sl = Sr;
     if (Sr == NIL) Sr = Sl;
 
-Step3: /* endpoint comparison */
+    /* endpoint comparison */
     // get point, M, I for each point
     FIRST3(Sl, &l, &Ml, &Il);
     FIRST3(Sr, &r, &Mr, &Ir);
 
-    // endpoint comparisons
+    // comparisons
     Word xl = AFCOMP(Ml, Il, x, l); // x is: left < equal < right of l
     Word xr = AFCOMP(Mr, Ir, x, r); // x is: less < equal < right of r
 
+    // decide whether our x is inside, left of, or right of our interval
     if (xl > 0 && xr < 0) return 0;
     if (xr <= 0) return 1;
     if (xl >= 0) return -1;
@@ -241,17 +257,19 @@ void APPENDSIGNPF(Word C, Word sign)
 {
     Word S, M, D, l;
 
+    // pulling values we need to update off the cell
     S = FIRST(LELTI(C, SIGNPF));
     l = LENGTH(S); // how many SIGNPF
     M = LELTI(C, MULSUB);
     D = LELTI(C, DEGSUB);
 
-    // append sign
+    // append new sign
     CONC(S, LIST1(sign));
 
     // append new degsub (degsub = [d_1, ..., d_n], degrees of k-level projection factors
     // we know it's a linear polynomial
-    if (D != NIL) { CONC(D, LIST1(1)); }
+    // TODO do we?? what if it isn't?
+    if (D != NIL) CONC(D, LIST1(1));
 
     // append multiplicity - ((i_1,e_1),...,(i_n,e_n)) where i_j is the index at level k and e_j is the multiplicity
     if (sign == 0) { // only applies to section cells
@@ -285,7 +303,9 @@ Word CELLCOPY(Word C)
 {
     Word Children, Ch, NewChildren;
 
-    // TODO figure out which ones should be LLCOPied
+    // TODO check if all the deep copies were done right
+
+    // deep copy children
     Children = LELTI(C, CHILD);
     NewChildren = NIL;
     while (Children != NIL) {
@@ -299,6 +319,7 @@ Word CELLCOPY(Word C)
 
     if (NewChildren != NIL) NewChildren = INV(NewChildren);
 
+    // deep copy C, adding new deep copy of children
     return MCELL(
         LELTI(C, LEVEL),
         NewChildren,
@@ -319,7 +340,6 @@ void SETSAMPLEK(Word C, Word k, Word m)
     SLELTI(S, k, m);
 }
 
-
 Word SPLITCELL(Word C, Word x, Word Sl, Word Sr)
 {
     Word Cl, Cr, k, M, l, r, m;
@@ -328,20 +348,20 @@ Word SPLITCELL(Word C, Word x, Word Sl, Word Sr)
     Cl = CELLCOPY(C);
     Cr = CELLCOPY(C);
 
-    // Update indices
+    // Update indices - Cl takes C's current index, C and Cr are slipped in after it
     INCINDEX(C, k, 1);
     INCINDEX(Cr, k, 2);
 
-    // sat sample points
-    // < x
+    // set sample points
+    // Sl : less than x
     FIRST2(Sl, &l, &M);
     m = MIDPOINT(M, l, x);
     SETSAMPLEK(Cl, k, m);
 
-    // = x
+    // C : equal to x
     SETSAMPLEK(C, k, x);
 
-    // > x
+    // Cr : greater than x
     FIRST2(Sr, &r, &M);
     m = MIDPOINT(M, x, r);
     SETSAMPLEK(Cr, k, m);
@@ -358,6 +378,7 @@ Word INSERTCELLS(Word LL, Word NewCells)
 {
     Word C, k, i, t, L, LRed, NewRed;
 
+    // initialising variables
     C = FIRST(NewCells);
     NewRed = RED(NewCells);
     k = LELTI(C, LEVEL);
@@ -370,7 +391,7 @@ Word INSERTCELLS(Word LL, Word NewCells)
     t = LENGTH(NewCells) - 1;
     INCINDEXL(LRed, k, t);
 
-    // concotenate new cells onto remaining cells, and replace first by first new cell
+    // concatenate new cells onto remaining cells, and replace first by first new cell
     SRED(L, CONC(NewRed, LRed));
     SFIRST(L, C);
 
@@ -386,3 +407,4 @@ Word MIDPOINT(Word M, Word l, Word r)
         two
     ));
 }
+

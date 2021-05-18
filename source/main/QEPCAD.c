@@ -33,8 +33,8 @@ Step1: /* Normalize. */
     /*Int*/ Ths = ACLOCK();
     F = NORMQFF(Fh);
     if (GVUA != NIL) GVNA = NORMQFF(GVUA);
-    /*Int*/ TMNORMQFF = Ths;
     /*Int*/ Ths = ACLOCK() - Ths;
+    /*Int*/ TMNORMQFF = Ths;
     /*Int*/ GVNQFF = F;
     //       if (TYPEQFF(F) != UNDET) { t = EQU; F_e = F; goto Return; }
 
@@ -52,42 +52,44 @@ Step2: /* Projection. */
     /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
     /*Int PCNSTEP = 1; */
     PROJECT(r,A,&P,&J);
-
+    // add extra derivatives for quasi-affine cells if needed
     if (PCMCT == 'y') {
-           QUASIAFFINE(P, r, &P, &J);
-       }
+        QUASIAFFINE(P, r, &P, &J);
+    }
 
-               /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
+    /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step3: /* Truth-invariant CAD. */
-               /*Int*/ NMFPF = 0;
-               /*Int*/ for (i=1; i<=f; i++) NMFPF=NMFPF+LENGTH(LELTI(P,i));
-               /*Int*/ PCNSTEP = 1;
-       D = TICAD(Q,F,f,P,A);
-        if (PCMCT == 'y') {
-            SEMIMONOTONE(P, J, D, r);
-            MONOTONE(P, J, D, r);
-            D = RECOMPUTE(D, Q, F, f, P, A);
-        }
-               /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
+    /*Int*/ NMFPF = 0;
+    /*Int*/ for (i=1; i<=f; i++) NMFPF=NMFPF+LENGTH(LELTI(P,i));
+    /*Int*/ PCNSTEP = 1;
+    D = TICAD(Q,F,f,P,A);
+    // add extra polynomials for [semi]-monotone cells and recompute the cad if needed
+    if (PCMCT == 'y') {
+        SEMIMONOTONE(P, J, D, r);
+        MONOTONE(P, J, D, r);
+        // TODO frontier condition here
+        D = RECOMPUTE(D, Q, F, f, P, A);
+    }
+    /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step4: /* Solution. */
-               /*Int*/ GVPC = D;
-               /*Int*/ PCNSTEP = 1;
-               /*Int*/ if (INTERACT()) USERINT(LFS("Before Solution"),'e');
-               /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
-                       T = ACLOCK();
-       if (!PCMZERROR)
-	 SFC3(GVPC,GVPF,GVPJ,GVNFV,CCONC(LIST10(0,0,0,1,0,3,2,4,1,5),LIST1(-1)));
-       else
-	 SFCFULLD(GVPC,GVPF,GVPJ,GVNFV);
-                       T = ACLOCK() - T;
-                       TMSFCONST = COMP(T,TMSFCONST);
+    /*Int*/ GVPC = D;
+    /*Int*/ PCNSTEP = 1;
+    /*Int*/ if (INTERACT()) USERINT(LFS("Before Solution"),'e');
+    /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
+    T = ACLOCK();
+    if (!PCMZERROR)
+        SFC3(GVPC,GVPF,GVPJ,GVNFV,CCONC(LIST10(0,0,0,1,0,3,2,4,1,5),LIST1(-1)));
+    else
+        SFCFULLD(GVPC,GVPF,GVPJ,GVNFV);
+    T = ACLOCK() - T;
+    TMSFCONST = COMP(T,TMSFCONST);
 
 Return: /* Prepare for return. */
-       *t_ = t;
-       *F_e_ = F_e;
-       *F_n_ = F_n;
-       *F_s_ = F_s;
-       return;
+    *t_ = t;
+    *F_e_ = F_e;
+    *F_n_ = F_n;
+    *F_s_ = F_s;
+    return;
 }

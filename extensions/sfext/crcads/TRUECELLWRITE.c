@@ -14,14 +14,15 @@ Side Effects
 
 void QepcadCls::TRUECELLWRITE(Word D)
 {
-      Word T,F,c;
+    Word T,F,c;
 
 Step1: /* Get list of true cells, and write info for each element. */
-      LISTOFCWTV(D,&T,&F);
-      while (T != NIL) {
-	ADV(T,&c,&T);
-	CELLWR(c); }
+    LISTOFCWTV(D,&T,&F);
+    while (T != NIL) {
+        ADV(T,&c,&T);
+        CELLWR(c);
+    }
 
 Return: /* Prepare to return. */
-      return;
+    return;
 }

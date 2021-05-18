@@ -41,16 +41,16 @@ int FINDTOPANDBOTTOM(Word D, Word x, Word j, Word *C_top, Word *C_bottom)
     Word x1 = LCOPY(x);
     Word xj = LELTI(x, j);
 
-    // top
+    // top: index level j + 1
     SLELTI(x1, j, xj + 1);
     CELLFIDX(x1, D, C_top, &t1);
 
-    // bottom
+    // bottom: index level j - 1
     SLELTI(x1, j, xj - 1);
     CELLFIDX(x1, D, C_bottom, &t2);
 
     if (t1 == 0 || t2 == 0) {
-        printf("ERROR: cannot find top and bottom cells.\n");
+        SWRITE("ERROR: cannot find top and bottom cells.\n");
 
         return 0;
     }
@@ -67,6 +67,8 @@ Word IPTDER(Word r, Word P, Word i)
         SWRITE("ERROR: not sure what to do here!!\n");
         // TODO something with D0 to take this into account.
     }
+
+    // representation of D0 contains variable r (degree 0), this will remove it
     Word D1 = NIL, A = NIL, e = NIL;
     while (D != NIL) {
         ADV2(D, &e, &A, &D);
@@ -89,7 +91,6 @@ Word LAGRANGE(Word Surface, Word Curve)
     // TODO total derivs
     Word f1 = IPTDER(3, f, 1);
     Word f2 = IPTDER(3, f, 2);
-    Word f3 = IPTDER(3, f, 3);
 
     Word g1 = IPDER(2, g, 1);
     Word g2 = IPDER(2, g, 2);
@@ -98,11 +99,13 @@ Word LAGRANGE(Word Surface, Word Curve)
         IPPROD(2, f1, g2),
         IPNEG(2, IPPROD(2, f2, g1))
     );
+
     IPWRITE(2, jacobiDet, Vs); SWRITE("\n");
     IPWRITE(2, g, Vs); SWRITE("\n");
     // check if we can compute resultant - i.e., they both have degree > 0 in variable v2
     if (PDEG(jacobiDet) == 0) return NIL;
 
+    // since we have 2 polynomials in 2 variables, we can solve for x by computing the resultant
     Word res = IPRESQE(2, jacobiDet, g);
 
     return MPOLY(res, NIL, NIL, PO_OTHER, PO_KEEP);
@@ -112,7 +115,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
 {
     Word Ct, Cf, C, I, i ,j, A1, P, P1, L;
 
-Step1: /* calculate: looping through true cells */
+Step1: /* calculate: looping through true cells with CELLDIM == 2 */
     LISTOFCWTV(D, &Ct, &Cf);
     L = NIL;
     while (Ct != NIL) {

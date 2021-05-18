@@ -17,35 +17,36 @@ Add (unfactored) polynomial to "A" with given label prefix Z
 
 void ADDPOL(Word P, BDigit k, Word Z, Word *A_, Word *L_)
 {
-        Word A,A_k,As_k,n,i,As_k_i,Ap,L,Q,Ap_k;
+    Word A,A_k,As_k,n,i,As_k_i,Ap,L,Q,Ap_k;
 
 Step1: /* Initialize */
-        A = *A_;
-        A_k = LELTI(A,k);
+    A = *A_;
+    A_k = LELTI(A,k);
 
 Step2: /* Search A for P */
-        As_k = A_k; n = LENGTH(A_k);
-        for (i = 1; i <= n; i++)
-	{
-          ADV(As_k,&As_k_i,&As_k);
-          if (EQUAL(P,LELTI(As_k_i,PO_POLY)))
-	  {
-	    L = LIST2(k,i);
-	    Ap = A;
-	    goto Return;
-	  }
-	}
+    As_k = A_k; n = LENGTH(A_k);
+    for (i = 1; i <= n; i++)
+    {
+        ADV(As_k,&As_k_i,&As_k);
+        if (EQUAL(P,LELTI(As_k_i,PO_POLY)))
+        {
+            L = LIST2(k,i);
+            Ap = A;
+            goto Return;
+        }
+    }
 
 Step3: /* P not found in A */
-        L = LIST2(k,n + 1);
-        Q = MPOLY(P,LIST3(Z,k,n+1),NIL,PO_OTHER,PO_KEEP);
-        Ap_k = SUFFIX(A_k,Q);
-        SLELTI(A,k,Ap_k);
-        Ap = A;
-        goto Return;
+    L = LIST2(k,n + 1);
+    Q = MPOLY(P,LIST3(Z,k,n+1),NIL,PO_OTHER,PO_KEEP);
+    Ap_k = SUFFIX(A_k,Q);
+    SLELTI(A,k,Ap_k);
+    Ap = A;
+    goto Return;
 
 Return: /* Prepare to return */
-	*A_ = Ap;
-	*L_ = L;
-	return;
+    *A_ = Ap;
+    *L_ = L;
+
+    return;
 }

@@ -1,5 +1,8 @@
 #include "qepcad.h"
 
+// TODO this is not used anywhere
+// it is old code for permutation of coordinates and project to obtain monotone cells.
+
 // integer range, from a to b inclusive
 Word IRANGE(Word a, Word b);
 // swap item at index i with item at index j in the list L (L is modified)

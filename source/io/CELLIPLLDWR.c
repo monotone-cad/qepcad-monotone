@@ -13,44 +13,49 @@ Cell signs; Integral Polynomial, List of Lists, Distributed Write.
 
 void CELLIPLLDWR(Word V, Word A, Word S, Word k)
 {
-       Word A1,A11,i,P,xp,s;
-       /* hide i,j,n,r; */
+    Word A1, A11, i, P, xp, s;
+    /* hide i,j,n,r; */
 
 Step1: /* Write. */
-       i = 0;
-       while (A != NIL)
-         {
-         if (k-i <= 0) break;
+    i = 0;
+    while (A != NIL)
+    {
+        if (k-i <= 0) break;
 
-         ADV(A,&A1,&A);
-         xp = LELTI(S,k-i);
-	     i = i + 1;
+        ADV(A,&A1,&A);
+        // get signs for level i (they come in reverse level order)
+        xp = LELTI(S,k-i);
+        i++;
 
-         while (A1 != NIL && xp != NIL)
-           {
-           ADV(A1,&A11,&A1);
-           ADV(xp,&s,&xp);
+        while (A1 != NIL && xp != NIL)
+        {
+            ADV(A1,&A11,&A1);
+            ADV(xp,&s,&xp);
 
-           if (LELTI(A11,PO_STATUS) == PO_REMOVE || LELTI(A11,PO_TYPE) == PO_POINT)
-	           continue;
+            if (LELTI(A11,PO_STATUS) == PO_REMOVE || LELTI(A11,PO_TYPE) == PO_POINT)
+                continue;
 
-	   P = LELTI(A11, PO_POLY);
-	   IPDWRITE(i,P,V);
-	   switch (s)
-             {
-             case POSITIVE: SWRITE(" > "); break;
-             case ZERO: SWRITE(" = "); break;
-             case NEGATIVE: SWRITE(" < "); break;
-             default: SWRITE(" ? "); break;
-             }
-	   GWRITE(0);
-           SWRITE("\n");
-           }
+            // write polynomial
+            P = LELTI(A11, PO_POLY);
+            IPDWRITE(i,P,V);
 
-         if (A != NIL)
-           SWRITE("\n");
-         }
+            // write sign (< 0, = 0, > 0)
+            switch (s)
+            {
+                case POSITIVE: SWRITE(" > "); break;
+                case ZERO: SWRITE(" = "); break;
+                case NEGATIVE: SWRITE(" < "); break;
+                default: SWRITE(" ? "); break;
+            }
+
+            GWRITE(0);
+            SWRITE("\n");
+        }
+
+        if (A != NIL)
+            SWRITE("\n");
+    }
 
 Return: /* Prepare for return. */
-       return;
+    return;
 }

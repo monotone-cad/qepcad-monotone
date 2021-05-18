@@ -7,16 +7,16 @@ Process "display cell as tarski formula" command.
 
 void QepcadCls::PRDCT()
 {
-       Word c,t;
-       /* hide t; */
+    Word c,t;
+    /* hide t; */
 
 Step1: /* Read in an argument. */
-       CELLRDR(GVPC,&c,&t); if (t == 0) goto Return;
+    CELLRDR(GVPC,&c,&t); if (t == 0) goto Return;
 
 Step2: /* Display the cell info. */
-       CELLWRT(c);
+    CELLWRT(c);
 
 Return: /* Prepare for return. */
-       return;
+    return;
 }
 

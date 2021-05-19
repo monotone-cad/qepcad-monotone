@@ -65,34 +65,35 @@ Word QepcadCls::RECOMPUTE(Word C, Word Q, Word F, Word f, Word P, Word A)
 {
     Word D, k, L, Children, Child, P1, S;
 
-Step1: /* Initialise. */
+    /* Initialise. */
     D = C;
 
-Step2: /* Recursive cad walk, looking for proj factors that need fixing. (Setup) */
+    /* Recursive cad walk, looking for proj factors that need fixing. (Setup) */
     k = LELTI(C, LEVEL);
     Children = LELTI(C, CHILD);
-    if (Children == NIL) goto Return;
+    if (Children == NIL) return D;
 
     L = Children;
     P1 = LELTI(P, k+1);
 
-Step3: /* Recurse on children. */
+    /* Recurse on children and figure out if any splitting is needed */
+    bool needs_splitting = false;
+    int n_p1 = LENGTH(P1);
     while (Children != NIL) {
         ADV(Children, &Child, &Children);
 
-        S = FIRST(LELTI(Child, SIGNPF)); // Note SIGNPF comes in reverse order
-        // we are missing some signs of projection factors. add these, and insert new cells.
-        if (LENGTH(S) < LENGTH(P1)) {
-            // TODO this resets the loop variable, so we wil restart the loop. this is inefficient. better to update the
-            // variable's contents, but point to the next cell in the list. so we recurse on new cells, bet do not loop
-            // twice
-            Children = SPLIT(L, P1);
-        }
+        // we short circuit to prevent doing the length comparison if we already know we need to recompute
+        // Note SIGNPF comes in reverse order
+        needs_splitting = needs_splitting ||
+            LENGTH(FIRST(LELTI(Child, SIGNPF))) < n_p1;
 
         Child = RECOMPUTE(Child,Q,F,f,P,A);
     }
 
-Return: /* return. */
+    /* if we need to split, do it now */
+    if (needs_splitting) Children = SPLIT(L, P1);
+
+    /* return. */
     return D;
 }
 

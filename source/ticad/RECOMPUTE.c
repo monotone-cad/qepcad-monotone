@@ -30,7 +30,7 @@ Word SPLIT(Word L, Word P);
 Word ADVN(Word L, Word n);
 
 // -1 if < 0, 1 if > 0, 0 if there is a root within the cell
-Word INTERVALSIGN(Word L, Word idx, Word x);
+Word INTERVALSIGN(Word Cl, Word C, Word Cr, Word x);
 
 // get the k-th coordinate of sample point of C
 Word SAMPLEK(Word C, Word k);
@@ -99,17 +99,23 @@ Word QepcadCls::RECOMPUTE(Word C, Word Q, Word F, Word f, Word P, Word A)
 
 Word SPLIT(Word L, Word Ps)
 {
-    Word P, p, x, s, C, k;
+    Word P, p, x, s, C, Next, Prev, Lp, Lp1, Lc, Lc1, Ln, Ln1, NewCells, k;
 
-    // TODO whyyy???
-    if (LENGTH(L) < 2) goto Return;
-
-    // initialiseng variables. we assume all cells in the list have the same lever, we also assume that the new proj
-    // factors with missing signs are at the end of the list, and that all cells are missing the same number of proj
-    // factors.
+    // initialising variables. we assume all cells in the list have the same level, we also assume that the new proj
+    // factors with missing signs are at the end of the list, and that all cells have the same number of proj factors so
+    // far
     C = FIRST(L);
     k = LELTI(C, LEVEL);
+    // the missing proj factors
     Ps = ADVN(Ps, LENGTH(FIRST(LELTI(C, SIGNPF))));
+
+    // construct list pointers for looping over cells later
+    // walk along the list L of cells, keeping track of Current, Next and Previous.
+    // this is done by having 3 list pointers, for Prev, Current and Next, and advancing them in sync
+    Lc = LCOPY(L), Lp = Lc, Ln = INV(Lc);
+    Lp = COMP(FIRST(Lp), Lp); // = [a1, a1, ..., an], Note we won't need an
+    Ln = RED(INV(COMP(FIRST(Ln), Ln))); // = [a2, ..., an, an]
+    printf("%d %d %d %d\n", LENGTH(L), LENGTH(Lp), LENGTH(Lc), LENGTH(Ln));
 
 Step1: /* Iterate through the new polynomials */
     while (Ps != NIL) {
@@ -125,26 +131,38 @@ Step1: /* Iterate through the new polynomials */
 
         // convert to algebraic extension representation, to be consistent with sample points
         x = AFFRN(x);
-        Word NewCells = NIL; // list of lists of new cells.
-        // TODO it's linked lists. can we do it more efficiently with ADV rather than LELTI?
-        for (int i = 1; i <= LENGTH(L); i++) {
-            s = INTERVALSIGN(L, i, x);
 
-            // current cell is not sign invarient - split according to point x
+        NewCells = NIL, Lp1 = Lp, Lc1 = Lc, Ln1 = Ln, Prev = NIL, C = NIL, Next = NIL;
+        // LENGTH(Ln) == LENGTH(L) - Ln is the only list having the correct length
+        // since Lc has concatenated last element (from Ln) and Lp has concatenated first and last elements
+        // this is the price of pass by reference I guess :(
+        while (Ln != NIL) {
+            // advance the 3 list pointers in step
+            ADV(Lp, &Prev, &Lp);
+            ADV(Lc, &C, &Lc);
+            ADV(Ln, &Next, &Ln);
+
+            Prev != NIL ?LWRITE(LELTI(Prev, INDX)) : SWRITE("NIL"); SWRITE(" ");
+            C != NIL ? LWRITE(LELTI(C, INDX)) : SWRITE("NIL"); SWRITE(" ");
+            Next != NIL ? LWRITE(LELTI(Next, INDX)) : SWRITE("NIL"); SWRITE("\n");
+
+            s = INTERVALSIGN(Prev, C, Next, x);
             if (s == 0) {
+                // we have a change of sign within C
                 NewCells = SPLITCELL(
-                    LELTI(L, i),
+                    C,
                     x,
-                    SAMPLEK(LELTI(L, MAX(i-1, 1)), k),
-                    SAMPLEK(LELTI(L, MIN(i+1, LENGTH(L))), k)
+                    SAMPLEK(Prev, k),
+                    SAMPLEK(Next, k)
                 );
+
+                // add new cells to list, replacing any cells that were split by a new polynomial
+                // TODO hopefully editing L won't screw things up
+                L = INSERTCELLS(L, NewCells);
             } else { // it's sign invarient already, simply add the new sign
-                APPENDSIGNPF(LELTI(L, i), s);
+                APPENDSIGNPF(C, s);
             }
         }
-
-        // add new cells to list, replacing any cells that were split by a new polynomial
-        L = INSERTCELLS(L, NewCells);
     }
 
 Return:
@@ -199,16 +217,13 @@ Word SAMPLEK(Word C, Word k)
     return LIST3(LELTI(P, k), M, I);
 }
 
-Word INTERVALSIGN(Word L, Word idx, Word x)
+Word INTERVALSIGN(Word Cl, Word C, Word Cr, Word x)
 {
-    Word C, k, Cl, Cr, Sl, Sr, l, r, Ml, Il, Mr, Ir;
+    Word k, idx, Sl, Sr, l, r, Ml, Il, Mr, Ir;
 
 Step1: /* Initialise */
-    C = LELTI(L, idx);
     k = LELTI(C, LEVEL);
-
-    // next and previous cells
-    Sl = NIL; Sr = NIL;
+    idx = LELTI(LELTI(C, INDX), k);
 
     // special case for even (section) cell
     // we set cells on either side to the value of C
@@ -216,28 +231,13 @@ Step1: /* Initialise */
         Sl = SAMPLEK(C, k);
         Sr = Sl;
     } else {
-        // standard case - sample point of cell to the left of C
-        if (idx > 1) {
-            Cl = LELTI(L, idx - 1);
-
-            Sl = SAMPLEK(Cl, k);
-        }
-
-        // standard case - sample point of cell to the right of C
-        if (idx < LENGTH(L)) {
-            Cr = LELTI(L, idx + 1);
-
-            Sr = SAMPLEK(Cr, k);
-        }
-
-        // special case for leftmost and rightmost cells
-        // set Sl and Sr equal
-        if (Sl == NIL) Sl = Sr;
-        if (Sr == NIL) Sr = Sl;
+        Sl = SAMPLEK(Cl, k);
+        Sr = SAMPLEK(Cr, k);
+        // note that we padded the cell list so that leftmost and rightmost cells will have Cl == C and Cr == C resp.
     }
 
     /* endpoint comparison */
-    // get point, M, I for each point
+    // get value, M, I for each point
     FIRST3(Sl, &l, &Ml, &Il);
     FIRST3(Sr, &r, &Mr, &Ir);
 

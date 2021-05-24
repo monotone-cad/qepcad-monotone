@@ -59,21 +59,31 @@ int FINDTOPANDBOTTOM(Word D, Word x, Word j, Word *C_top, Word *C_bottom)
 }
 
 // total derivative of P with respect to variable i
+
 Word IPTDER(Word r, Word P, Word i)
 {
     Word D = IPDER(r, P, i);
-    Word D0 = IPDER(r, P, r);
-    if (!IPCONST(r, D0)) {
-        SWRITE("ERROR: not sure what to do here!!\n");
-        // TODO something with D0 to take this into account.
-    }
 
     // representation of D0 contains variable r (degree 0), this will remove it
     Word D1 = NIL, A = NIL, e = NIL;
+    bool error = false; // indicates whether the derivative has positive degree in variable r
     while (D != NIL) {
         ADV2(D, &e, &A, &D);
+        if (e > 0) error = true;
+
         if (D1 != NIL) D1 = IPSUM(r-1, D1, A);
         else D1 = A;
+    }
+
+    if (!error) return D1;
+
+    // in case of error (?)
+    Word D0 = IPDER(r, P, r);
+    if (!IPCONST(r, D0)) {
+        // exclude any roots of D0, these will be the points with "infinite gradient", i.e., when the line is vertical.
+        // it should never happen because of quasi-affine cells (splitting based on critical points)
+        // TODO
+        printf("Non-constant denominator, and non-zero degree in variable r of numerator\n");
     }
 
     return D1;

@@ -195,7 +195,7 @@ OBJS_PROJ = \
 $(LIB)(proj/APPEND.o) \
 $(LIB)(util/ADDPOLS.o) \
 $(LIB)(util/LEVELIDX.o) \
-$(LIB)(util/APPENDEC.o) \
+$(LIB)(proj/APPENDEC.o) \
 $(LIB)(proj/ECLEVEL.o) \
 $(LIB)(proj/EXTRACT.o) \
 $(LIB)(proj/EXTRACTS.o) \

@@ -49,13 +49,14 @@ int FINDTOPANDBOTTOM(Word D, Word x, Word j, Word *C_top, Word *C_bottom)
     SLELTI(x1, j, xj - 1);
     CELLFIDX(x1, D, C_bottom, &t2);
 
-    if (t1 == 0 || t2 == 0) {
-        SWRITE("ERROR: cannot find top and bottom cells.\n");
-
-        return 0;
+    if (t1 == 0) {
+        *C_top = NIL;
+    }
+    if (t2 == 0) {
+        *C_bottom = NIL;
     }
 
-    return 1;
+    return t1 || t2;
 }
 
 // total derivative of P with respect to variable i
@@ -158,28 +159,30 @@ Step1: /* calculate: looping through true cells with CELLDIM == 2 */
         Word C_top, C_bottom;
         A1 = LELTI(A, j);
 
-        if (!FINDTOPANDBOTTOM(D, LELTI(C, INDX), j, &C_top, &C_bottom)) return;
-
-        Word S_top = LELTI(C_top, SIGNPF);
-        int Ij_top = PFIDXOFZERO(S_top, j, r);
-
-        Word S_bottom = LELTI(C_bottom, SIGNPF);
-        int Ij_bottom = PFIDXOFZERO(S_bottom, j, r);
-
+        if (!FINDTOPANDBOTTOM(D, LELTI(C, INDX), j, &C_top, &C_bottom)) continue;
         int k = r; // TODO for r > 3
+        // finding f (surface)
         Word S = LELTI(C, SIGNPF);
         int Ik = PFIDXOFZERO(S, k, r);
-
         P = LELTI(LELTI(A, k), Ik);
+
         // critical points of curve along the top of the cell
-        P1 = LAGRANGE(P, LELTI(A1, Ij_top));
-        if (P1 != NIL) L = COMP(P1, L);
+        if (C_top != NIL) {
+            Word S_top = LELTI(C_top, SIGNPF);
+            int Ij_top = PFIDXOFZERO(S_top, j, r);
+
+            P1 = LAGRANGE(P, LELTI(A1, Ij_top));
+            if (P1 != NIL) L = COMP(P1, L);
+        }
 
         // same for the bottom
-        P1 = LAGRANGE(P, LELTI(A1, Ij_bottom));
-        if (P1 != NIL) L = COMP(P1, L);
+        if (C_bottom != NIL) {
+            Word S_bottom = LELTI(C_bottom, SIGNPF);
+            int Ij_bottom = PFIDXOFZERO(S_bottom, j, r);
 
-        printf("top: (%d,%d), bottom: (%d,%d), k: (%d,%d)\n", j, Ij_top, j, Ij_bottom, k, Ik);
+            P1 = LAGRANGE(P, LELTI(A1, Ij_bottom));
+            if (P1 != NIL) L = COMP(P1, L);
+        }
     }
 
     // construct and append list of new polynomials from L.

@@ -526,7 +526,7 @@ Word SPLITCELL(Word C, Word x, Word Sl, Word Sr)
     // Cr : greater than x
     FIRST3(Sr, &b, &M, &I);
     m = MIDPOINT(xx, Mx, Ix, b, M, I);
-    SETSAMPLEK(Cl, k, m);
+    SETSAMPLEK(Cr, k, m);
 
     // add signs of new projection factor
     APPENDSIGNPF(Cl, -1);

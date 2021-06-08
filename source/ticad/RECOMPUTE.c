@@ -156,11 +156,11 @@ Word SPLIT(Word L, Word Ps)
         // LENGTH(Ln) == LENGTH(L) - Ln is the only list having the correct length
         // since Lc has concatenated last element (from Ln) and Lp has concatenated first and last elements
         // this is the price of pass by reference I guess :(
-        while (Ln != NIL) {
+        while (Ln1 != NIL) {
             // advance the 3 list pointers in step
-            ADV(Lp, &Prev, &Lp);
-            ADV(Lc, &C, &Lc);
-            ADV(Ln, &Next, &Ln);
+            ADV(Lp1, &Prev, &Lp1);
+            ADV(Lc1, &C, &Lc1);
+            ADV(Ln1, &Next, &Ln1);
             section = !section;
 
             // section cell, append new sign

@@ -569,10 +569,14 @@ Word MIDPOINT(Word l, Word Ml, Word Il, Word r, Word Mr, Word Ir)
     // convert to binary rational representation for later.
     if (PDEG(Ml) > 1) {
         l = SECOND(Il);
+    } else {
+        l = RATIONALPART(l);
     }
 
     if (PDEG(Mr) > 1) {
         r = FIRST(Ir);
+    } else {
+        r = RATIONALPART(r);
     }
 
     // return midpoint of two rational endpoints (approximate, returning a simple fraction)

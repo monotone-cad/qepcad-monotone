@@ -444,17 +444,23 @@ void INCINDEXL(Word L, Word k, Word t)
     }
 }
 
+// LCOPY append from parent
+Word LCOPYAFP(Word C, Word Parent, Word i)
+{
+    Word L = LELTI(Parent, i);
+    L = COMP(
+        LCOPY(FIRST(LELTI(C, i))),
+        L
+    );
+
+    return L;
+}
+
 // helper for cell copy
 // copies a child cell, handling the structure sharing some pointers with it's parent
 Word CELLCOPYCHILD(Word C, Word Parent)
 {
     // TODO everywhere where it's LLCOPY, should take list from parent and append first of list from child to be copied.
-
-    Word signpf = LELTI(Parent, SIGNPF);
-    signpf = COMP(
-        LCOPY(FIRST(LELTI(C, SIGNPF))),
-        signpf
-    );
 
     Word NewC = MCELL(
         LELTI(C, LEVEL),
@@ -463,10 +469,10 @@ Word CELLCOPYCHILD(Word C, Word Parent)
         LELTI(C, TRUTH),
         LLCOPY(LELTI(C, SAMPLE)),
         LCOPY(LELTI(C, INDX)),
-        signpf,
+        LCOPYAFP(C, Parent, SIGNPF),
         LELTI(C, HOWTV),
         LCOPY(LELTI(C, DEGSUB)),
-        LCOPY(LELTI(C, MULSUB))
+        LCOPYAFP(C, Parent, MULSUB)
     );
 
     Word Children = LELTI(C, CHILD);

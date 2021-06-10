@@ -111,7 +111,7 @@ Word QepcadCls::RECOMPUTE(Word C, Word Q, Word F, Word f, Word P, Word A)
 
 Word SPLIT(Word L, Word Ps)
 {
-    Word P, p, xs, xs1, x, s, C, Next, Prev, Lp, Lp1, Lc, Lc1, Ln, Ln1, NewCells, k;
+    Word P, p, xs, xs1, deg, x, s, C, Next, Prev, Lp, Lp1, Lc, Lc1, Ln, Ln1, NewCells, k;
 
     // initialising variables. we assume all cells in the list have the same level, we also assume that the new proj
     // factors with missing signs are at the end of the list, and that all cells have the same number of proj factors so
@@ -142,55 +142,64 @@ Word SPLIT(Word L, Word Ps)
             return L;
         }
 
-        xs = CONC(xs, xs1);
+        xs = COMP(LIST2(PDEG(p), xs1), xs);
     }
+
+    xs = INV(xs);
 
     printf("number of roots: %d\n", LENGTH(xs));
     /* iterate through the new roots, add new signatures and split if needed */
-    while (xs != NIL) {
-        ADV(xs, &x, &xs);
-        SWRITE("### splitting point: ");
-        Word Ix = THIRD(x);
-        SWRITE("I=("); RNWRITE(FIRST(Ix)); SWRITE(", "); RNWRITE(SECOND(Ix)); SWRITE(") "); LWRITE(SECOND(x));
-        SWRITE(" "); RNWRITE(FIRST(FIRST(x))); SWRITE("\n");
+    // TODO make double loop, grab deg off of first and roots off of second and iterate for each poly, append deg in
+    // APPENDSIGNPF
+    while (xs != NIL) { // iterate over polynomials
+        ADV(xs, &xs1, &xs);
+        FIRST2(xs1, &deg, &xs1);
 
-        NewCells = NIL, Lp1 = Lp, Lc1 = Lc, Ln1 = Ln, Prev = NIL, C = NIL, Next = NIL;
-        bool section = true; // currently looking at a section cell? (initially we are looking at -\infty)
-        // LENGTH(Ln) == LENGTH(L) - Ln is the only list having the correct length
-        // since Lc has concatenated last element (from Ln) and Lp has concatenated first and last elements
-        // this is the price of pass by reference I guess :(
-        while (Ln1 != NIL) {
-            // advance the 3 list pointers in step
-            ADV(Lp1, &Prev, &Lp1);
-            ADV(Lc1, &C, &Lc1);
-            ADV(Ln1, &Next, &Ln1);
-            section = !section;
+        while (xs1 != NIL) { // iterate over roots
+            ADV(xs1, &x, &xs1);
+            SWRITE("### splitting point: ");
+            Word Ix = THIRD(x);
+            SWRITE("I=("); RNWRITE(FIRST(Ix)); SWRITE(", "); RNWRITE(SECOND(Ix)); SWRITE(") "); LWRITE(SECOND(x));
+            SWRITE(" "); RNWRITE(FIRST(FIRST(x))); SWRITE("\n");
 
-            // section cell, append new sign
-            if (section) {
-                APPENDSIGNPF(C, CELLSIGN(C, x), 1, 0);
+            NewCells = NIL, Lp1 = Lp, Lc1 = Lc, Ln1 = Ln, Prev = NIL, C = NIL, Next = NIL;
+            bool section = true; // currently looking at a section cell? (initially we are looking at -\infty)
+            // LENGTH(Ln) == LENGTH(L) - Ln is the only list having the correct length
+            // since Lc has concatenated last element (from Ln) and Lp has concatenated first and last elements
+            // this is the price of pass by reference I guess :(
+            while (Ln1 != NIL) {
+                // advance the 3 list pointers in step
+                ADV(Lp1, &Prev, &Lp1);
+                ADV(Lc1, &C, &Lc1);
+                ADV(Ln1, &Next, &Ln1);
+                section = !section;
 
-                continue;
-            }
+                // section cell, append new sign
+                if (section) {
+                    APPENDSIGNPF(C, CELLSIGN(C, x), 1, 0);
 
-            // sector cell. may contain splitting point, otherwise just add the sign
-            s = INTERVALSIGN(Prev, C, Next, x);
-            if (s == 0) {
-                // we have a change of sign within C
-                printf("splitting cell "); LWRITE(LELTI(C, INDX)); printf("\n");
-                NewCells = SPLITCELL(
-                    C,
-                    x,
-                    SAMPLEK(Prev, k),
-                    SAMPLEK(Next, k)
-                );
+                    continue;
+                }
 
-                // add new cells to list, replacing any cells that were split by a new polynomial
-                // TODO hopefully editing L won't screw things up
-                // maybe we can append newCells to the end and add all at once??
-                L = INSERTCELLS(L, NewCells);
-            } else {
-                APPENDSIGNPF(C, s, 1, 0);
+                // sector cell. may contain splitting point, otherwise just add the sign
+                s = INTERVALSIGN(Prev, C, Next, x);
+                if (s == 0) {
+                    // we have a change of sign within C
+                    printf("splitting cell "); LWRITE(LELTI(C, INDX)); printf("\n");
+                    NewCells = SPLITCELL(
+                        C,
+                        x,
+                        SAMPLEK(Prev, k),
+                        SAMPLEK(Next, k)
+                    );
+
+                    // add new cells to list, replacing any cells that were split by a new polynomial
+                    // TODO hopefully editing L won't screw things up
+                    // maybe we can append newCells to the end and add all at once??
+                    L = INSERTCELLS(L, NewCells);
+                } else {
+                    APPENDSIGNPF(C, s, 1, 0);
+                }
             }
         }
     }

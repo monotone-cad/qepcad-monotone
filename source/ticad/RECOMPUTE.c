@@ -553,6 +553,11 @@ void SETSAMPLEK(Word C, Word k, Word m)
     // set sample point of cell C
     Word S, Ms, Is, B, My, Iy, y;
     S = LELTI(C, SAMPLE);
+
+    if (!ISPRIMIT(S)) {
+        printf("\nNOT PRIMITIVE!!");
+    }
+
     FIRST3(S, &Ms, &Is, &B); // qepcad sample point
     FIRST3(m, &y, &My, &Iy); // pseudo-sample point (yes it's confusing, should probably change it to be consistent)
 
@@ -562,8 +567,6 @@ void SETSAMPLEK(Word C, Word k, Word m)
     // set the new algebraic extension
 
     if (PDEG(My) == 1) return; // we're good, new point is rational
-    printf("%d ", PDEG(My)); LWRITE(My); printf("\n");
-    LWRITE(LELTI(C, INDX)); SWRITE("\n");
 
     if (PDEG(Ms) == 1) { // all other points are rational, we can overwrite M and I.
         SLELTI(S, 1, My);
@@ -581,15 +584,17 @@ void SETSAMPLEK(Word C, Word k, Word m)
 
     // update sample point structure
     SIMPLEQE(Ms, Is, My, Iy, &G, &t, &u, &J, &a, &b, &junk, &junk);
+    SLELTI(B, k, 0); // because we'lll be overwriting it, no need to convert
     MODCRDB(B, G, a, b, &L);
-    L = INV(L);
-    a1 = FIRST(L); // new point for coordinate k
+
     SLELTI(S, 1, G); // new minimal polynomial
     SLELTI(S, 2, J); // new isolating interval
 
-    B = INV(RED(L)); // converted sample points
-    SLELTI(B, k, a1);
-    SLELTI(S, 3, B);
+    L = CINV(L);
+    a1 = FIRST(L);
+    L = INV(RED(L));
+    SLELTI(L, k, a1);
+    SLELTI(S, 3, L);
 }
 
 Word SPLITCELL(Word C, Word x, Word deg, Word mul, Word Sl, Word Sr)

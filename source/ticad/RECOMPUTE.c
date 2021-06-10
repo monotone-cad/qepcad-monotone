@@ -47,7 +47,8 @@ Word SAMPLEK(Word C, Word k);
 Word ROOTS(Word p);
 
 // Append sign of projection factor to C at (C, LEVEL)
-void APPENDSIGNPF(Word C, Word S);
+// also adds info about degree and multiplicity
+void APPENDSIGNPF(Word C, Word S, Word d, Word m);
 
 // increment index at level k by t
 void INCINDEXL(Word C, Word k, Word t);
@@ -167,7 +168,7 @@ Word SPLIT(Word L, Word Ps)
 
             // section cell, append new sign
             if (section) {
-                APPENDSIGNPF(C, CELLSIGN(C, x));
+                APPENDSIGNPF(C, CELLSIGN(C, x), 1, 0);
 
                 continue;
             }
@@ -189,7 +190,7 @@ Word SPLIT(Word L, Word Ps)
                 // maybe we can append newCells to the end and add all at once??
                 L = INSERTCELLS(L, NewCells);
             } else {
-                APPENDSIGNPF(C, s);
+                APPENDSIGNPF(C, s, 1, 0);
             }
         }
     }
@@ -398,7 +399,7 @@ Word INTERVALSIGN(Word Cl, Word C, Word Cr, Word x)
     }
 }
 
-void APPENDSIGNPF(Word C, Word sign)
+void APPENDSIGNPF(Word C, Word sign, Word d, Word m)
 {
     Word S, M, D, l;
 
@@ -412,15 +413,12 @@ void APPENDSIGNPF(Word C, Word sign)
     CONC(S, LIST1(sign));
 
     // append new degsub (degsub = [d_1, ..., d_n], degrees of k-level projection factors
-    // we know it's a linear polynomial
-    // TODO do we?? what if it isn't?
-    if (D != NIL) CONC(D, LIST1(1));
+    if (D != NIL) CONC(D, LIST1(d));
 
     // append multiplicity - ((i_1,e_1),...,(i_n,e_n)) where i_j is the index at level k and e_j is the multiplicity
     if (sign == 0) { // only applies to section cells
-        // TODO does order matter?
         if (M != NIL) {
-            CONC(M, LIST1(LIST2(l+1, 1)));
+            CONC(M, LIST1(LIST2(l+1, m)));
         } else {
             SLELTI(C, MULSUB, LIST1(LIST2(l+1, 1)));
         }
@@ -595,9 +593,9 @@ Word SPLITCELL(Word C, Word x, Word Sl, Word Sr)
     SETSAMPLEK(Cr, k, m);
 
     // add signs of new projection factor
-    APPENDSIGNPF(Cl, -1);
-    APPENDSIGNPF(C, 0);
-    APPENDSIGNPF(Cr, 1);
+    APPENDSIGNPF(Cl, -1, 1, 0);
+    APPENDSIGNPF(C, 0, 1, 1);
+    APPENDSIGNPF(Cr, 1, 1, 0);
 
     return LIST3(Cl, C, Cr);
 }

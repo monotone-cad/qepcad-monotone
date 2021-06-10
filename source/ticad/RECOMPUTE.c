@@ -470,7 +470,7 @@ Word CELLCOPYCHILD(Word C, Word Parent)
         LCOPYAFP(C, Parent, SIGNPF),
         LELTI(C, HOWTV),
         LCOPY(LELTI(C, DEGSUB)),
-        LCOPYAFP(C, Parent, MULSUB)
+        LLCOPY(LELTI(C, MULSUB))
     );
 
     Word Children = LELTI(C, CHILD);

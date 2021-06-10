@@ -319,21 +319,10 @@ Word ANCOMPARE(Word Mx, Word Ix, Word y, Word My, Word Iy)
     Word G, J, t, u, a, b, junk, L, a1, a2;
     // convert My into Q(alpha)[y] representation.
     My = CONVERTPOLYNOMIAL(My);
-    // printf("Mx = "); LWRITE(Mx); printf(" ");
-    // printf("My = "); LWRITE(My); printf("\n");
 
     SIMPLEQE(Mx, Ix, My, Iy, &G, &t, &u, &J, &a, &b, &junk, &junk);
     MODCRDB(LIST1(y), G, a, b, &L);
     FIRST2(L, &a1, &a2);
-    // printf("t = %d, a = ", t); (a == 0 ? IWRITE(0) : LWRITE(a)); printf(" ");
-    // printf("u = %d; b = ", u); (b == 0 ? IWRITE(0) : LWRITE(b)); printf("\n");
-    // printf("GAMMA = "); LWRITE(G); printf(" ");
-    // printf("J = "); LWRITE(J); printf("\n");
-    // printf("AFCOMP of ");
-    // (a1 == 0 ? IWRITE(0) : LWRITE(a1));
-    // printf(" ");
-    // (a2 == 0 ? IWRITE(0) : LWRITE(a2));
-    // printf("\n");
 
     // -1 because x and y are swapped // TODO maybe swap it back so it is less confusing?
     return -AFCOMP(G, J, a1, a2);

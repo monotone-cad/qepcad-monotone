@@ -1,7 +1,9 @@
 /*======================================================================
-                      D <- TICAD(Q,F,f,P,A)
+                      D <- RECOMPUTE(C,Q,F,f,P,A)
 
-Truth Invariant CAD Construction Phase. Recompute based on new (linear) proj factors.
+Recompute cad taking into account new projection factors. Takes as input an existing CAD along with a projection factor
+structure which may contain projection factors not included in the CAD. Cells are split, and their data (signature and
+sample points) are updated according to these new polynomials.
 
 \Input
   \parm{C} is the original cad with missing signs of proj factors (may be recursive i.e., level of C may be > 1)

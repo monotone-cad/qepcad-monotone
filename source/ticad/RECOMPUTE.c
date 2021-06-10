@@ -444,30 +444,59 @@ void INCINDEXL(Word L, Word k, Word t)
     }
 }
 
-Word CELLCOPY(Word C)
+// helper for cell copy
+// copies a child cell, handling the structure sharing some pointers with it's parent
+Word CELLCOPYCHILD(Word C, Word Parent)
 {
-    Word Children, Ch, NewChildren;
+    // TODO everywhere where it's LLCOPY, should take list from parent and append first of list from child to be copied.
 
-    // TODO check if all the deep copies were done right
+    Word signpf = LELTI(Parent, SIGNPF);
+    signpf = COMP(
+        LCOPY(FIRST(LELTI(C, SIGNPF))),
+        signpf
+    );
 
-    // deep copy children
-    Children = LELTI(C, CHILD);
-    NewChildren = NIL;
+    Word NewC = MCELL(
+        LELTI(C, LEVEL),
+        NIL, // children, set later
+        NIL,
+        LELTI(C, TRUTH),
+        LLCOPY(LELTI(C, SAMPLE)),
+        LCOPY(LELTI(C, INDX)),
+        signpf,
+        LELTI(C, HOWTV),
+        LCOPY(LELTI(C, DEGSUB)),
+        LCOPY(LELTI(C, MULSUB))
+    );
+
+    Word Children = LELTI(C, CHILD);
+    if (Children == NIL) return NewC;
+
+    Word NewChildren = NIL, Child = NIL;
     while (Children != NIL) {
-        ADV(Children, &Ch, &Children);
+        ADV(Children, &Child, &Children);
 
         NewChildren = COMP(
-            CELLCOPY(Ch),
+            CELLCOPYCHILD(Child, NewC),
             NewChildren
         );
     }
 
-    if (NewChildren != NIL) NewChildren = INV(NewChildren);
+    SLELTI(NewC, CHILD, INV(NewChildren));
+    return NewC;
+}
 
-    // deep copy C, adding new deep copy of children
-    return MCELL(
+Word CELLCOPY(Word C)
+{
+    Word Children, Ch, NewChildren, NewC;
+
+    // TODO check if all the deep copies were done right
+
+    // deep copy of C
+    // initially set children to NULL, as they depend on the copy of C and will be updated later
+    NewC = MCELL(
         LELTI(C, LEVEL),
-        NewChildren,
+        NIL, // children, set later
         NIL,
         LELTI(C, TRUTH),
         LLCOPY(LELTI(C, SAMPLE)),
@@ -477,6 +506,27 @@ Word CELLCOPY(Word C)
         LCOPY(LELTI(C, DEGSUB)),
         LCOPY(LELTI(C, MULSUB))
     );
+
+    // deep copy children.
+    Children = LELTI(C, CHILD);
+
+    if (Children == NIL) { // we're done, no children to copy
+        return NewC;
+    }
+
+    NewChildren = NIL;
+    while (Children != NIL) {
+        ADV(Children, &Ch, &Children);
+
+        NewChildren = COMP(
+            CELLCOPYCHILD(Ch, NewC),
+            NewChildren
+        );
+    }
+
+    SLELTI(NewC, CHILD, INV(NewChildren));
+
+    return NewC;
 }
 
 void SETSAMPLEK(Word C, Word k, Word m)

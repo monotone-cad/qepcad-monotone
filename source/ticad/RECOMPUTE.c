@@ -479,7 +479,15 @@ Word CELLCOPY(Word C)
 
 void SETSAMPLEK(Word C, Word k, Word m)
 {
-    const Word Px = PMON(1,1);
+    // set sample point for all of C's children
+    Word Children, Child;
+    Children = LELTI(C, CHILD);
+    while (Children != NIL) {
+        ADV(Children, &Child, &Children);
+        SETSAMPLEK(Child, k, m);
+    }
+
+    // set sample point of cell C
     Word S, Ms, Is, B, My, Iy, y;
     S = LELTI(C, SAMPLE);
     FIRST3(S, &Ms, &Is, &B); // qepcad sample point

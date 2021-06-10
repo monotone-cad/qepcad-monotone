@@ -564,14 +564,34 @@ void SETSAMPLEK(Word C, Word k, Word m)
     // set the new algebraic extension
 
     if (PDEG(My) == 1) return; // we're good, new point is rational
+    printf("%d ", PDEG(My)); LWRITE(My); printf("\n");
+    LWRITE(LELTI(C, INDX)); SWRITE("\n");
 
     if (PDEG(Ms) == 1) { // all other points are rational, we can overwrite M and I.
         SLELTI(S, 1, My);
         SLELTI(S, 2, Iy);
-    } else { // we will have to find a new algebraic extension encompassing both M and M1.
-        // TODO
-        printf("TODO: comput a new algebraic extension\n");
+
+        return;
     }
+
+    // we will have to find a new algebraic extension encompassing both M and M1.
+    // we have sample point represented in terms of Ms (minimal for sample), and we also have My representing our new
+    // point
+    Word G, J, t, u, a, b, junk, L, a1;
+    // convert My into Q(alpha)[y] representation.
+    My = CONVERTPOLYNOMIAL(My);
+
+    // update sample point structure
+    SIMPLEQE(Ms, Is, My, Iy, &G, &t, &u, &J, &a, &b, &junk, &junk);
+    MODCRDB(B, G, a, b, &L);
+    L = INV(L);
+    a1 = FIRST(L); // new point for coordinate k
+    SLELTI(S, 1, G); // new minimal polynomial
+    SLELTI(S, 2, J); // new isolating interval
+
+    B = INV(RED(L)); // converted sample points
+    SLELTI(B, k, a1);
+    SLELTI(S, 3, B);
 }
 
 Word SPLITCELL(Word C, Word x, Word deg, Word mul, Word Sl, Word Sr)

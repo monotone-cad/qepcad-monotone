@@ -59,7 +59,7 @@ Word CELLCOPY(Word C);
 
 // Given cell C which is not sign invariant and rational number p which is the point at which new polynomial changes
 // sign, return a list of 3 cells having the same truth values as C but which are sign invarient
-Word SPLITCELL(Word C, Word p, Word Sl, Word Sr);
+Word SPLITCELL(Word C, Word p, Word Deg, Word Mul, Word Sl, Word Sr);
 
 // insert new cells into list L
 Word INSERTCELLS(Word L, Word NewCells);
@@ -149,8 +149,6 @@ Word SPLIT(Word L, Word Ps)
 
     printf("number of roots: %d\n", LENGTH(xs));
     /* iterate through the new roots, add new signatures and split if needed */
-    // TODO make double loop, grab deg off of first and roots off of second and iterate for each poly, append deg in
-    // APPENDSIGNPF
     while (xs != NIL) { // iterate over polynomials
         ADV(xs, &xs1, &xs);
         FIRST2(xs1, &deg, &xs1);
@@ -176,7 +174,7 @@ Word SPLIT(Word L, Word Ps)
 
                 // section cell, append new sign
                 if (section) {
-                    APPENDSIGNPF(C, CELLSIGN(C, x), 1, 0);
+                    APPENDSIGNPF(C, CELLSIGN(C, x), deg, 0);
 
                     continue;
                 }
@@ -189,6 +187,8 @@ Word SPLIT(Word L, Word Ps)
                     NewCells = SPLITCELL(
                         C,
                         x,
+                        deg,
+                        1,
                         SAMPLEK(Prev, k),
                         SAMPLEK(Next, k)
                     );
@@ -198,7 +198,7 @@ Word SPLIT(Word L, Word Ps)
                     // maybe we can append newCells to the end and add all at once??
                     L = INSERTCELLS(L, NewCells);
                 } else {
-                    APPENDSIGNPF(C, s, 1, 0);
+                    APPENDSIGNPF(C, s, deg, 0);
                 }
             }
         }
@@ -574,7 +574,7 @@ void SETSAMPLEK(Word C, Word k, Word m)
     }
 }
 
-Word SPLITCELL(Word C, Word x, Word Sl, Word Sr)
+Word SPLITCELL(Word C, Word x, Word deg, Word mul, Word Sl, Word Sr)
 {
     Word Cl, Cr, k, M, I, b, m, xx, Mx, Ix;
 
@@ -602,9 +602,9 @@ Word SPLITCELL(Word C, Word x, Word Sl, Word Sr)
     SETSAMPLEK(Cr, k, m);
 
     // add signs of new projection factor
-    APPENDSIGNPF(Cl, -1, 1, 0);
-    APPENDSIGNPF(C, 0, 1, 1);
-    APPENDSIGNPF(Cr, 1, 1, 0);
+    APPENDSIGNPF(Cl, -1, deg, 0);
+    APPENDSIGNPF(C, 0, deg, mul);
+    APPENDSIGNPF(Cr, 1, deg, 0);
 
     return LIST3(Cl, C, Cr);
 }

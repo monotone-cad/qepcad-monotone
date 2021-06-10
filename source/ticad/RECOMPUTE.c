@@ -425,6 +425,15 @@ void APPENDSIGNPF(Word C, Word sign, Word d, Word m)
 
 void INCINDEX(Word C, Word k, Word t)
 {
+    Word Children = LELTI(C, CHILD);
+    Word Child = NIL;
+
+    while (Children != NIL) {
+        ADV(Children, &Child, &Children);
+
+        INCINDEX(Child, k, t);
+    }
+
     Word I = LELTI(C, INDX);
     SLELTI(I, k, LELTI(I, k) + t);
 }

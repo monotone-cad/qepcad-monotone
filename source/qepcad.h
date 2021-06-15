@@ -497,7 +497,6 @@ extern Word TCEPIMP;   /* Essential Prime Implicant */
 extern Word TCSTAT;    /* Statistics at the end */
 extern Word TCDSTAT;   /* Dissertation statistics at the end */
 extern Word PCIPFZT;   /* 'y' if IPFZT is turned on, 'n' otherise. */
-extern Word PCMCT; /* 'y' if MCT is turned on, 'n' otherwise. */
 extern Word PCVERBOSE;/* Verbose mode: 0 means not verbose, 1 means verbose 06/19/02 */
 
 

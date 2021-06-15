@@ -50,6 +50,7 @@ public:
   GCWord PCRSP;       /* 'y' if rational sample point is treated,
 		     * 'n' otherwise */
   GCWord PCFULL;      /* 'y' if a full CAD is to be build */
+  GCWord PCMCT;      /* 'y' if a full CAD is to be build */
   GCWord PCPROJOP;    /* Projection operators */
   GCWord PCCCS;       /* Cell Choice Strategy for cells of level >= f. */
   GCWord PCCCSF;      /* Cell Choice Strategy for cells of level < f. */

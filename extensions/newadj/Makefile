@@ -15,6 +15,7 @@ LIB = newadjo.a
 CC = ${CCo}
 FLAGS = ${FLAGSo}
 endif
+ARFLAGS = rvU
 #------------------
 ##################################################################
 
@@ -39,7 +40,7 @@ $(LIB)(HA.o) \
 $(LIB)(HALDCOEFMASK.o) \
 $(LIB)(HAS_CONS.o) \
 $(LIB)(HAC_CONS.o) \
-$(LIB)(HATEST.o) 
+$(LIB)(HATEST.o)
 
 
 ##################################################################

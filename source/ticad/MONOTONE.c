@@ -64,6 +64,7 @@ int FINDTOPANDBOTTOM(Word D, Word x, Word j, Word *C_top, Word *C_bottom)
 Word IPTDER(Word r, Word P, Word i)
 {
     Word D = IPDER(r, P, i);
+    if (D == 0) return 0;
 
     // representation of D0 contains variable r (degree 0), this will remove it
     Word D1 = NIL, A = NIL, e = NIL;

@@ -687,6 +687,16 @@ If C is 'y', turn MCT on.
 Otherwise,  turn it off.
 @
 
+frt 151 ab m
+@
+frt  C
+
+CAD with frontier condition
+If C is 'y', turn MCT on.
+Otherwise,  turn it off.
+
+Only currently available when the number of free variables is less than or equal to 3.
+@
 
 limit-entry-db 6 abcde m
 @

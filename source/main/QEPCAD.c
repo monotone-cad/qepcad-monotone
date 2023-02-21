@@ -71,6 +71,9 @@ Step3: /* Truth-invariant CAD. */
         // TODO frontier condition here
         D = RECOMPUTE(D, Q, F, f, P, A);
     }
+    if (PCFRT == 'y') {
+        SWRITE("MONOTONE CAD TURNED ON. TODO!");
+    }
     /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step4: /* Solution. */

@@ -65,6 +65,7 @@ Word PCDBLIMIT;
 Word PCRESALG;    /* Choice of resultant algorithm. */
 Word PCIPFZT;     /* 'y' if IPFZT is turned on, 'n' otherise. */
 Word PCMCT;       /* 'y' if we want monotone cells, 'n' otherwise. */
+Word PCFRT;       /* 'y' if we want the frontier condition, 'n' otherwise. */
 Word PCVERBOSE;   /* Verbose mode: 0 means not verbose, 1 means verbose 06/19/02 */
 Word PCCONTINUE;   /* Flag to show that the "continue" command has been issued. */
 
@@ -161,6 +162,7 @@ void QepcadCls::INITGLOBALS()
   PCUSEDES  = 'n';
   PCIPFZT = 'y';
   PCMCT = 'n';
+  PCFRT = 'n';
   PCNUMDEC = 10;
   PCSIMPLIFY = 'b';
   PCEQC  = 0;

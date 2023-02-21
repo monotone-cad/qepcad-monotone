@@ -21,7 +21,9 @@ Step2: /* Check for the validity. */
     }
 
 Step3: /* Set. */
-    PCMCT = C; goto Return;
+    PCMCT = C;
+    PCFRT = C;
+    goto Return;
 
 Return: /* Prepare for return. */
     return;

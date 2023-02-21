@@ -50,7 +50,8 @@ public:
   GCWord PCRSP;       /* 'y' if rational sample point is treated,
 		     * 'n' otherwise */
   GCWord PCFULL;      /* 'y' if a full CAD is to be build */
-  GCWord PCMCT;      /* 'y' if a full CAD is to be build */
+  GCWord PCMCT;      /* 'y' if a monotone CAD is to be constructed (also enables frontier condition) */
+  GCWord PCFRT;      /* 'y' if CAD with frontier condition is to be built */
   GCWord PCPROJOP;    /* Projection operators */
   GCWord PCCCS;       /* Cell Choice Strategy for cells of level >= f. */
   GCWord PCCCSF;      /* Cell Choice Strategy for cells of level < f. */
@@ -278,6 +279,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void PRGO();
   void PRIPFZT();
   void PRMCT();
+  void PRFRT();
   void PRMCC(Word *t_);
   void PRPROJOP();
   void PRPROPEC();

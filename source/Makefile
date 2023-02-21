@@ -371,6 +371,7 @@ $(LIB)(userint/PRGO.o) \
 $(LIB)(userint/PRHELP.o) \
 $(LIB)(userint/PRIPFZT.o) \
 $(LIB)(userint/PRMCT.o) \
+$(LIB)(userint/PRFRT.o) \
 $(LIB)(userint/PRIGS.o) \
 $(LIB)(userint/PRLDB.o) \
 $(LIB)(userint/PRMCC.o) \
@@ -733,6 +734,7 @@ $(LIBD)(userint/PRGO.o) \
 $(LIBD)(userint/PRHELP.o) \
 $(LIBD)(userint/PRIPFZT.o) \
 $(LIBD)(userint/PRMCT.o) \
+$(LIBD)(userint/PRFRT.o) \
 $(LIBD)(userint/PRIGS.o) \
 $(LIBD)(userint/PRLDB.o) \
 $(LIBD)(userint/PRMCC.o) \

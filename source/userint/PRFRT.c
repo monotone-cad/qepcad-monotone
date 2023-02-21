@@ -1,11 +1,11 @@
 /*======================================================================
-                      PRMCT()
+                      PRFRT()
 
-Process MCT command.
+Process FRT command.
 ======================================================================*/
 #include "qepcad.h"
 
-void QepcadCls::PRMCT()
+void QepcadCls::PRFRT()
 {
     Word C;
     /* hide C; */
@@ -15,13 +15,16 @@ Step1: /* Get the argument. */
 
 Step2: /* Check for the validity. */
     if (C != 'y' && C != 'n') {
-        SWRITE("Error PRMCT 'y' or 'n' was expected.\n");
+        SWRITE("Error PRFRT 'y' or 'n' was expected.\n");
+        DIELOC();
+        goto Return;
+    } else if (LENGTH(GVVL) > 3) { // only implemented in up to R^3
+        SWRITE("Error PRFRT only implemented for up to R^3\n");
         DIELOC();
         goto Return;
     }
 
 Step3: /* Set. */
-    PCMCT = C;
     PCFRT = C;
     PCFULL = C;
     goto Return;

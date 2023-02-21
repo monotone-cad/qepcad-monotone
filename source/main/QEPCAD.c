@@ -68,11 +68,10 @@ Step3: /* Truth-invariant CAD. */
     if (PCMCT == 'y') {
         SEMIMONOTONE(P, J, D, r);
         MONOTONE(P, J, D, r);
-        // TODO frontier condition here
         D = RECOMPUTE(D, Q, F, f, P, A);
     }
     if (PCFRT == 'y') {
-        SWRITE("MONOTONE CAD TURNED ON. TODO!");
+        D = FRONTIER(D, Q, F, f, P, A);
     }
     /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 

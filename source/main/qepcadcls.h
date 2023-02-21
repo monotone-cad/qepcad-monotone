@@ -88,6 +88,7 @@ Word TMTICAD[MNV1];     /* Time for Truth invariant CAD Construnction Phase, TIC
 void SEMIMONOTONE(Word P, Word J, Word D, Word r);
 void MONOTONE(Word P, Word J, Word D, Word r);
 Word RECOMPUTE(Word C, Word Q, Word F, Word f, Word P, Word A);
+Word FRONTIER(Word C, Word Q, Word F, Word f, Word P, Word A);
 Word   TMCHOOSE[MNV1];    /* Time for Choosing a cell, CHOOSE */
 Word   TMCONVERT[MNV1];   /* Time for Conversion, CONVERT */
 Word     TMTCN[MNV1];       /* Time for Trivial Conversion */

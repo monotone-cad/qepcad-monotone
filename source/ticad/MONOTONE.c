@@ -112,13 +112,16 @@ Word LAGRANGE(Word Surface, Word Curve)
         IPNEG(2, IPPROD(2, f2, g1))
     );
 
-    IPWRITE(2, jacobiDet, Vs); SWRITE("\n");
+    SWRITE("g and jacobian determinant\n");
     IPWRITE(2, g, Vs); SWRITE("\n");
+    IPWRITE(2, jacobiDet, Vs); SWRITE("\n");
     // check if we can compute resultant - i.e., they both have degree > 0 in variable v2
     if (PDEG(jacobiDet) == 0) return NIL;
 
     // since we have 2 polynomials in 2 variables, we can solve for x by computing the resultant
     Word res = IPRESQE(2, jacobiDet, g);
+    LWRITE(res); SWRITE("\n");
+    //IPWRITE(1, res, Vs); SWRITE("\n");
 
     return MPOLY(res, NIL, NIL, PO_OTHER, PO_KEEP);
 }
@@ -188,7 +191,8 @@ Step1: /* calculate: looping through true cells with CELLDIM == 2 */
 
     // construct and append list of new polynomials from L.
     printf("length %d\n", LENGTH(L));
-    ADDPOLS(L, 1, LFS("D"), &J);
+    SWRITE("-- appended "); LWRITE(L); SWRITE("\n");
+    ADDPOLS(L, 1, LFS("M"), &J);
     A = APPEND(A, 1, IPLFAC(1, L));
 }
 

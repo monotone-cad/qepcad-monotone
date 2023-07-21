@@ -53,7 +53,7 @@ Step2: /* calculate: looping through true cells with CELLDIM == 2 */
         }
 
         printf("# %d ", LENGTH(LELTI(A, i)));
-        ADDPOLS(L, j, LFS("D"), &AA);
+        ADDPOLS(L, j, LFS("S"), &AA);
         A = APPEND(A, j, IPLFAC(j, L));
     }
 }

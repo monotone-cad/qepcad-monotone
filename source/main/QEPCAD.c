@@ -44,18 +44,21 @@ Step2: /* Projection. */
     if (GVUA != NIL) {
         GVNA = SECOND(F);
         F = THIRD(F); }
-    /*Int*/ GVNIP = A;
+
+    // add extra derivatives for quasi-affine cells if needed
+    if (PCMCT == 'y') {
+        QUASIAFFINE(A, r, &A);
+    }
+
     /*Int*/ for (i = 1; i <= r; i++) NMNIP[i] = LENGTH(LELTI(A,i));
     /*Int*/ GVPF = LLCOPY(A);
+    /*Int*/ GVNIP = A;
     /*Int*/ GVLV = r;
     /*Int*/ PCNSTEP = 1;
+
     /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
     /*Int PCNSTEP = 1; */
     PROJECT(r,A,&P,&J);
-    // add extra derivatives for quasi-affine cells if needed
-    if (PCMCT == 'y') {
-        QUASIAFFINE(P, r, &P, &J);
-    }
 
     /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 

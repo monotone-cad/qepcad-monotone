@@ -92,7 +92,7 @@ Word EXPAFLT(Word L);
 Word EXPAFLTS(Word L);
 Word EXTRACT(Word r, Word F);
 void EXTRACTS(Word F, Word A, Word *Ap_);
-void ADDPOL(Word P, BDigit k, Word Z, Word *A_, Word *L_);
+void ADDPOL(Word P, Word PP, BDigit k, Word Z, Word *A_, Word *L_);
 void ADDPOLS(Word Ps, BDigit k, Word Z, Word *A_);
 Word LEVELIDX(Word C);
 void FGWRITE(Word A, Word n);

@@ -29,7 +29,7 @@ Step1: /* Non-constant normalized atomic formula. */
 	if (FIRST(F) == IROOT) goto Step2;
         FIRST4(F,&T,&P,&k,&I);
 	if (k == 0) { Ap = A; goto Return; }
-	ADDPOL(P,k,LFS("A"), &A,&L);
+	ADDPOL(P,NIL,k,LFS("A"), &A,&L);
 	SLELTI(F,4,L);
         Ap = A;
         goto Return;
@@ -39,7 +39,7 @@ Step2: /* Normalized atomic Extended Tarski formula */
 	I = NIL;
 	for(Pp = CINV(P); Pp != NIL; Pp = RED(Pp))
 	{
-	  ADDPOL(FIRST(Pp),k,LFS("A"),&A,&L);
+	  ADDPOL(FIRST(Pp),NIL,k,LFS("A"),&A,&L);
 	  I = COMP(L,I);
 	}
 	SLELTI(F,6,I);

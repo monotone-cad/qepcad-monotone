@@ -56,11 +56,11 @@ Step3: /* dim >= 2: all partials of input polynomials */
         while (A1 != NIL) {
             ADV(A1, &A11, &A1);
 
-            L = CONC(L, PARTIALS(k, A11));
+            L = CONC(L, IPLFAC(k,PARTIALS(k, A11)));
         } /* END polynomials. */
 
-        // factorise and append -- same function as used on input formula
-	    ADDPOLS(IPLFAC(k, L),k,LFS("D"), &A);
+        // append -- same function as used on input formula
+	    ADDPOLS(L,k,LFS("D"), &A);
     } /* END level. */
 
 Return: /* prepare for return */

@@ -69,13 +69,14 @@ Step3: /* Truth-invariant CAD. */
     D = TICAD(Q,F,f,P,A);
     // add extra polynomials for [semi]-monotone cells and recompute the cad if needed
     if (PCMCT == 'y') {
-        SEMIMONOTONE(P, J, D, r);
         MONOTONE(P, J, D, r);
         D = RECOMPUTE(D, Q, F, f, P, A);
     }
-    if (PCFRT == 'y') {
+
+    // TODO reinstate after monotone rewrite
+    /*if (PCFRT == 'y') {
         D = FRONTIER(D, Q, F, f, P, A);
-    }
+    }*/
     /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 
 Step4: /* Solution. */

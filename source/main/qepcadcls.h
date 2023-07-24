@@ -85,7 +85,6 @@ Word   TMAPPEND[MNV1];     /* Time for Appending, APPEND */
 
 /* Statistics on Truth Invariant CAD Construction Phase */
 Word TMTICAD[MNV1];     /* Time for Truth invariant CAD Construnction Phase, TICAD */
-void SEMIMONOTONE(Word P, Word J, Word D, Word r);
 void MONOTONE(Word P, Word J, Word D, Word r);
 Word RECOMPUTE(Word C, Word Q, Word F, Word f, Word P, Word A);
 Word FRONTIER(Word C, Word Q, Word F, Word f, Word P, Word A);

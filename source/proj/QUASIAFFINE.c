@@ -47,20 +47,20 @@ Step1: /* decide based on dimension */
 Step3: /* dim >= 2: all partials of input polynomials */
     /* levels. */
     AA = A; k = 0;
-    L = NIL;
     while (AA != NIL) {
         ADV(AA, &A1, &AA);
+        L = NIL;
         k++;
 
         /* polynomials. */
         while (A1 != NIL) {
             ADV(A1, &A11, &A1);
 
-            L = CONC(L, IPLFAC(k,PARTIALS(k, A11)));
+            L = CONC(L, PARTIALS(k, A11));
         } /* END polynomials. */
 
-        // append -- same function as used on input formula
-	    ADDPOLS(L,k,LFS("D"), &A);
+        // factorise and append -- same function as used on input formula
+	    ADDPOLS(IPLFAC(k, L),k,LFS("D"), &A);
     } /* END level. */
 
 Return: /* prepare for return */

@@ -71,18 +71,56 @@ Word FindByIndex(Word L, Word I, Word j, Word k)
     return NIL;
 }
 
-// return a list (f_j,...,f_k), where f_i is a level j polynomial which is 0 on C.
+// evaluate r-variate integer polynomial P at sample point S = (c_1,...,c_k)
+// return Q in Z[x_{k+1},...,k_r] = P(c_1,...,c_k,x_{k+1},...,k_r)
+// r : positive integer
+// P : integer polynomial in Z[x_1,...,x_r]
+// S : sample point (Q, I, (c_1,...,c_k)), in primitive form
+// return : substituted polynomial in Z[x_{k+1},...,x_r]
+Word Substitute(Word r, Word P, Word S)
+{
+    Word LL, P1, Q, J, c;
+
+    // determine if S is rational or algebraic
+    FIRST3(S, &Q, &J, &c);
+
+    // sample subset R^0, nothing to do
+    if (c == NIL) return P;
+
+    if (PDEG(Q) == 1) {
+        P1 = IPFRP(r - LENGTH(c), IPRNME(r, P, RCFAFC(c)));
+    }
+
+    return P1;
+}
+
+// rewrite P, a polynomial in r variables, polynomial in r+k variables
+// basically just add zeroes.
+Word PolynomialAddVars(Word P, Word k)
+{
+    Word i = 0;
+
+    while (i < k) {
+        P = LIST2(0, P);
+        ++i;
+    }
+
+    return P;
+}
+
+// return a list (f_j,...,f_k), where f_i is a level j polynomial which is 0 on C with sample point S substituted in.
 // A : reversed list of projection factors
 // r : ambient dimension of CAD
 // C : cell to check
 // i1 <= i1 : min and max indices to search
+// S : sample point of level l < i1 to substitute. give the empty sample point of D to do nothing.
 // return : (f_{i_1}, ..., f_{i2})
-Word ZeroPols(Word A, Word r, Word C, Word i1, Word i2)
+Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l)
 {
     Word k, L, A1, P, Q, S, S1, s;
     k = LELTI(C, LEVEL);
     S = REDI(LELTI(C, SIGNPF), k - i2);
-    A = REDI(A, r-i2); // throw out polynomials of higher level
+    A = REDI(A, r - i2); // throw out polynomials of higher level
     L = NIL;
 
     while (A != NIL && S != NIL) {
@@ -99,7 +137,10 @@ Word ZeroPols(Word A, Word r, Word C, Word i1, Word i2)
             ADV(S1, &s, &S1);
 
             if (s == ZERO) {
-                Q = LELTI(P, PO_POLY);
+                // write substituted polynomial Q in r variables
+                // P in Q[x_1,...,i_2]
+                // Q in Q[x_l+1,...,i_2]
+                Q = PolynomialAddVars(Substitute(i2, LELTI(P, PO_POLY), S0), l + r - i2);
 
                 break;
             }
@@ -115,37 +156,63 @@ Word ZeroPols(Word A, Word r, Word C, Word i1, Word i2)
     return L; // note: L is in ascending level order.
 }
 
-
-
-// evaluate r-variate integer polynomial P at sample point S = (c_1,...,c_k)
-// return Q in Z[x_{k+1},...,k_r] = P(c_1,...,c_k,x_{k+1},...,k_r)
-// r : positive integer
-// P : integer polynomial in Z[x_1,...,x_r]
-// S : sample point (Q, I, (c_1,...,c_k)), in primitive form
-// return : substituted polynomial in Z[x_{k+1},...,x_r]
-Word Substitute(Word r, Word P, Word S)
+// jacobi matrix row.
+// f : polynomial in Q[x_1,...,x_r]
+// return list [ \f/\x_k, ..., \f/\x_1, ..., \f/\x_1 ], note if i > r then \f/\x_i := 0
+Word JacobiRow(Word r, Word f)
 {
-    Word LL, P1, Q, J, c;
+    Word D, L = NIL, i = 1;
 
-    // determine if S is rational or algebraic
-    FIRST3(S, &Q, &J, &c);
+    // \x_1,...,\x_(min(k,r))
+    while (i < r) {
+        D = IPDER(r, f, i);
+        LWRITE(D); SWRITE("; ");
 
-    // sample subset R^0, nothing to do
-    if (LENGTH(c) == 0) return P;
-    LWRITE(P); SWRITE("\n");
+        // D is zero, then D == 0
+        // if derivative is constant, add 1 (multiplying a polynomial by a contsant doesn't change its roots)
+        // more precisely, add 1 * x1^0 * ... * xn^0
+        if (IPCONST(r, D)) {
+            D = PMONSV(r, 1, 1, 0);
+        }
 
-    if (PDEG(Q) == 1) {
-        LWRITE(RCFAFC(c)); SWRITE("\n");
-        P1 = IPFRP(r - LENGTH(c), IPRNME(r, P, RCFAFC(c)));
+        // TODO is the derivative of an irreducible polynomial and irreducible polynomial?
+        // if so, we can factorise, i.e., divide by some constant, and get simpler polynomials
+        L = COMP(D, L);
+        ++i;
     }
-    LWRITE(P1); SWRITE("\n");
 
-    return P1;
+    return L;
+}
+
+// find the local maxima and minima of function f in Q[x_1,...,x_r] subject to constraints
+// Gs in Q[k_1,...,x_i], 2 <= i < r using the method of Lagrange Multipliers.
+// return a list of polynomials, each h in Q[x_1]
+// such that the roots of h give the x_1-coordinates of the critical points of f.
+Word LagrangeRefinement(Word r, Word f, Word Gs)
+{
+    Word Q, M = NIL, i = 2, g;
+
+    // construct jacobi matrix M.
+    while (i < r) {
+        ADV(Gs, &g, &Gs);
+        M = COMP(JacobiRow(r, g), M);
+        ++i;
+
+        SWRITE("\n");
+    }
+    M = COMP(JacobiRow(r, f), M);
+
+    // TODO can we do better? it's almost upper triangular. but if saclib uses gaussian, then it's fine
+    Q = MAIPDE(r-1, M);
+    SWRITE("\njacobi det ");
+    LWRITE(Q); SWRITE("\n");
+
+    return 0;
 }
 
 void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
 {
-    Word AA, Ds, TrueCells, junk, C, I, I1, Ij, Ik, C0, S0, CT, CB, Gs, FT, FB, Fs, P, P1;
+    Word AA, Ds, TrueCells, junk, C, I, I1, Ij, Ij1, Ik, C0, S0, CT, CB, Gs, FT, FB, Fs, P, P1;
 
     // consider true cells
     LISTOFCWTV(D, &TrueCells, &junk);
@@ -158,6 +225,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
 
         // only consider two-dimensional cells
         if (!TwoDimIndex(I, &Ij, &Ik)) continue;
+        Ij1 = Ij - 1;
 
         // TODO
         SWRITE("----------\n");
@@ -186,42 +254,49 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
         // TODO
         printf("sub-cad level "); IWRITE(LELTI(C, LEVEL)); SWRITE(", ");
         printf("sub-cad index "); LWRITE(LELTI(C0, INDX)); SWRITE("\n");
-        printf("top C index "); LWRITE(LELTI(CT, INDX)); SWRITE("\n");
-        printf("bottom C index "); LWRITE(LELTI(CB, INDX)); SWRITE("\n");
+        if (CT != NIL) { printf("top C index "); LWRITE(LELTI(CT, INDX)); SWRITE("\n"); }
+        if (CB != NIL) { printf("bottom C index "); LWRITE(LELTI(CB, INDX)); SWRITE("\n"); }
 
-        // find polynomials:
+        // find polynomials in sub-cad
+        // TODO
+        //   it takes a lot of work to find these polynomials, and work is often repeated.
+        //   each label is unique, so we can check whether we have already substituted to save on effort.
+        //   what other things could i cache? can i use the existing db faciility?
+        // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
-        Gs = ZeroPols(AA, r, C, Ij + 1, Ik - 1);
-        Word LL = Gs, P, Q, i = Ij; // TODO
+        Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1);
+        Word LL = Gs, P, Q; // TODO
+        SWRITE("Gs:\n");
         while (LL != NIL) {
             ADV(LL, &P, &LL);
-            IPDWRITE(i, P, GVVL); SWRITE("\n");
-            Q = Substitute(i, P, S0);
-            IPDWRITE(i+1-Ij, Q, GVVL); SWRITE("\n");
-
-            i++;
+            IPDWRITE(r, P, GVVL); SWRITE("\n");
         }
 
         // Fk (f_{k,T}, f_{k,B}) are 0 on CT and CB respectively.
-        FT  = ZeroPols(AA, r, CT, Ik, Ik);
-        FB  = ZeroPols(AA, r, CB, Ik, Ik);
-        SWRITE("f_top := "); IPDWRITE(Ik, FIRST(FT), GVVL); SWRITE("\n");
-        Q = Substitute(Ik, FIRST(FT), S0);
-        SWRITE("  subst := "); IPDWRITE(Ik + 1 - Ij, Q, GVVL); SWRITE("\n");
-        SWRITE("f_bottom := "); IPDWRITE(Ik, FIRST(FB), GVVL); SWRITE("\n");
-        Q = Substitute(Ik, FIRST(FB), S0);
-        SWRITE("  subst := "); IPDWRITE(Ik + 1 - Ij, Q, GVVL); SWRITE("\n");
+        if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1));
+        if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1));
+        if (CT != NIL) { SWRITE("f_top := "); IPDWRITE(r, FT, GVVL); SWRITE("\n"); }
+        if (CB != NIL) { SWRITE("f_bottom := "); IPDWRITE(r, FB, GVVL); SWRITE("\n"); }
 
         // Fs = (f_{K+1},...,f_n) is a map from proj_{k}(C) to R^{n-k}, of which C is the graph.
-        Fs = ZeroPols(AA, r, C, Ik + 1, r);
-        LL = Fs, i = Ik + 1;
+        Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1);
+        SWRITE("Fs:\n");
+        LL = Fs;
         while (LL != NIL) {
             ADV(LL, &P, &LL);
-            IPDWRITE(i, P, GVVL); SWRITE("\n");
-            i++;
+            IPDWRITE(r, P, GVVL); SWRITE("\n");
         }
 
-        // semi-monotone -- Lagrange on f_T and f_B
+        // semi-monotone -- critical points of top and bottom of sector below, if they exist
+        // TODO PolynomialAddVars should be done here to avoid doing extra work., then just add one more on each round
+        SWRITE("semi-mon, top\n");
+        if (CT != NIL) // TODO what should r be?
+            LagrangeRefinement(r, FT, Gs);
+
+        //SWRITE("semi-mon, bottom\n");
+        //if (CB != NIL)
+        //    LagrangeRefinement(Ik, FB, Gs);
+
 
         // monotone
     }

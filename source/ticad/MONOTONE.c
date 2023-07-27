@@ -113,9 +113,9 @@ Word PolynomialAddVars(Word P, Word k)
 // r : ambient dimension of CAD
 // C : cell to check
 // i1 <= i1 : min and max indices to search
-// S : sample point of level l < i1 to substitute. give the empty sample point of D to do nothing.
-// return : (f_{i_1}, ..., f_{i2})
-Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l)
+// S : sample point of level l < i1 to substitute. give the empty sample point of D to do no substitution.
+// return : (f_{i_1}, ..., f_{i2}) in Q[x_{l+1},...,k_n]
+Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word n)
 {
     Word k, L, A1, P, Q, S, S1, s;
     k = LELTI(C, LEVEL);
@@ -137,10 +137,10 @@ Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l)
             ADV(S1, &s, &S1);
 
             if (s == ZERO) {
-                // write substituted polynomial Q in r variables
+                // write substituted polynomial Q in Q[x_l+1,...,x_n]
                 // P in Q[x_1,...,i_2]
                 // Q in Q[x_l+1,...,i_2]
-                Q = PolynomialAddVars(Substitute(i2, LELTI(P, PO_POLY), S0), l + r - i2);
+                Q = PolynomialAddVars(Substitute(i2, LELTI(P, PO_POLY), S0), l + n - i2);
 
                 break;
             }
@@ -166,7 +166,6 @@ Word JacobiRow(Word r, Word f)
     // \x_1,...,\x_(min(k,r))
     while (i < r) {
         D = IPDER(r, f, i);
-        LWRITE(D); SWRITE("; ");
 
         // D is zero, then D == 0
         // if derivative is constant, add 1 (multiplying a polynomial by a contsant doesn't change its roots)
@@ -190,29 +189,48 @@ Word JacobiRow(Word r, Word f)
 // such that the roots of h give the x_1-coordinates of the critical points of f.
 Word LagrangeRefinement(Word r, Word f, Word Gs)
 {
-    Word Q, M = NIL, i = 2, g;
+    Word Q, M = NIL, g;
 
     // construct jacobi matrix M.
-    while (i < r) {
+    while (Gs != NIL) {
         ADV(Gs, &g, &Gs);
         M = COMP(JacobiRow(r, g), M);
-        ++i;
-
-        SWRITE("\n");
     }
     M = COMP(JacobiRow(r, f), M);
 
     // TODO can we do better? it's almost upper triangular. but if saclib uses gaussian, then it's fine
-    Q = MAIPDE(r-1, M);
+    Q = MAIPDE(r, M);
     SWRITE("\njacobi det ");
-    LWRITE(Q); SWRITE("\n");
+    if (Q == 0) IWRITE(0); else LWRITE(Q); SWRITE("\n");
 
     return 0;
 }
 
+// iterative application of lagrange multipliers then projection to x1.
+// r  : number of variables
+// Gs : minimal constraints
+// P  : polynomial denoting top / bottom of sector cell
+// Fs : polynomials constituting map from sector cell to section cell
+// lagrange is done on P and each element of Fs, adding more constraints each time.
+Word Refinement(Word r, Word Gs, Word P, Word Fs)
+// TODO collect, project and return!
+{
+    Word Q;
+    if (Gs != NIL)
+        LagrangeRefinement(r, P, Gs);
+
+    while (Fs != NIL) {
+        ADV(Fs, &Q, &Fs);
+        Gs = COMP(P, Gs);
+        P = Q;
+
+        LagrangeRefinement(r, Q, Gs);
+    }
+}
+
 void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
 {
-    Word AA, Ds, TrueCells, junk, C, I, I1, Ij, Ij1, Ik, C0, S0, CT, CB, Gs, FT, FB, Fs, P, P1;
+    Word AA, Ds, TrueCells, junk, C, I, I1, Ij, Ij1, nv, Ik, C0, S0, CT, CB, Gs, FT, FB, Fs, P, P1;
 
     // consider true cells
     LISTOFCWTV(D, &TrueCells, &junk);
@@ -226,6 +244,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
         // only consider two-dimensional cells
         if (!TwoDimIndex(I, &Ij, &Ik)) continue;
         Ij1 = Ij - 1;
+        nv = r - Ij1;
 
         // TODO
         SWRITE("----------\n");
@@ -234,7 +253,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
 
         // C0 := proj_{j-1}(C) is a 0-dimensional cell (c_1,...,c_{j-1})
         if (Ij > 1) {
-            C0 = FindByIndex(Ds, I, Ij-1, 1);
+            C0 = FindByIndex(Ds, I, Ij1, 1);
         } else {
             C0 = D;
         }
@@ -264,41 +283,40 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
         //   what other things could i cache? can i use the existing db faciility?
         // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
-        Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1);
+        Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv);
         Word LL = Gs, P, Q; // TODO
         SWRITE("Gs:\n");
         while (LL != NIL) {
             ADV(LL, &P, &LL);
-            IPDWRITE(r, P, GVVL); SWRITE("\n");
+            IPDWRITE(nv, P, GVVL); SWRITE("\n");
         }
 
         // Fk (f_{k,T}, f_{k,B}) are 0 on CT and CB respectively.
-        if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1));
-        if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1));
-        if (CT != NIL) { SWRITE("f_top := "); IPDWRITE(r, FT, GVVL); SWRITE("\n"); }
-        if (CB != NIL) { SWRITE("f_bottom := "); IPDWRITE(r, FB, GVVL); SWRITE("\n"); }
+        if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1, nv));
+        if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1, nv));
+        if (CT != NIL) { SWRITE("f_top := "); IPDWRITE(nv, FT, GVVL); SWRITE("\n"); }
+        if (CB != NIL) { SWRITE("f_bottom := "); IPDWRITE(nv, FB, GVVL); SWRITE("\n"); }
 
         // Fs = (f_{K+1},...,f_n) is a map from proj_{k}(C) to R^{n-k}, of which C is the graph.
-        Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1);
+        Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1, nv);
         SWRITE("Fs:\n");
         LL = Fs;
         while (LL != NIL) {
             ADV(LL, &P, &LL);
-            IPDWRITE(r, P, GVVL); SWRITE("\n");
+            IPDWRITE(nv, P, GVVL); SWRITE("\n");
         }
 
         // semi-monotone -- critical points of top and bottom of sector below, if they exist
-        // TODO PolynomialAddVars should be done here to avoid doing extra work., then just add one more on each round
-        SWRITE("semi-mon, top\n");
-        if (CT != NIL) // TODO what should r be?
-            LagrangeRefinement(r, FT, Gs);
-
-        //SWRITE("semi-mon, bottom\n");
-        //if (CB != NIL)
-        //    LagrangeRefinement(Ik, FB, Gs);
-
-
         // monotone
+        if (CT != NIL) {
+            SWRITE("top\n");
+            Refinement(nv, Gs, FT, Fs);
+        }
+
+        if (CB != NIL) {
+            SWRITE("bottom\n");
+            Refinement(nv, Gs, FB, Fs);
+        }
     }
 }
 

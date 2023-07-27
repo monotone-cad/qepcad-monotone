@@ -70,7 +70,7 @@ Step3: /* Truth-invariant CAD. */
     // add extra polynomials for [semi]-monotone cells and recompute the cad if needed
     if (PCMCT == 'y') {
         MONOTONE(P, J, D, r);
-        D = RECOMPUTE(D, Q, F, f, P, A);
+        // D = RECOMPUTE(D, Q, F, f, P, A); // TODO reinstate
     }
 
     // TODO reinstate after monotone rewrite

@@ -94,20 +94,6 @@ Word Substitute(Word r, Word P, Word S)
     return P1;
 }
 
-// rewrite P, a polynomial in r variables, polynomial in r+k variables
-// basically just add zeroes.
-Word PolynomialAddVars(Word P, Word k)
-{
-    Word i = 0;
-
-    while (i < k) {
-        P = LIST2(0, P);
-        ++i;
-    }
-
-    return P;
-}
-
 // return a list (f_j,...,f_k), where f_i is a level j polynomial which is 0 on C with sample point S substituted in.
 // A : reversed list of projection factors
 // r : ambient dimension of CAD
@@ -140,7 +126,7 @@ Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word
                 // write substituted polynomial Q in Q[x_l+1,...,x_n]
                 // P in Q[x_1,...,i_2]
                 // Q in Q[x_l+1,...,i_2]
-                Q = PolynomialAddVars(Substitute(i2, LELTI(P, PO_POLY), S0), l + n - i2);
+                Q = PADDVS(Substitute(i2, LELTI(P, PO_POLY), S0), l + n - i2);
 
                 break;
             }

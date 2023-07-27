@@ -142,50 +142,14 @@ Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word
     return L; // note: L is in ascending level order.
 }
 
-// jacobi matrix row.
-// f : polynomial in Q[x_1,...,x_r]
-// return list [ \f/\x_k, ..., \f/\x_1, ..., \f/\x_1 ], note if i > r then \f/\x_i := 0
-Word JacobiRow(Word r, Word f)
-{
-    Word D, L = NIL, i = 1;
-
-    // \x_1,...,\x_(min(k,r))
-    while (i < r) {
-        D = IPDER(r, f, i);
-
-        // D is zero, then D == 0
-        // if derivative is constant, add 1 (multiplying a polynomial by a contsant doesn't change its roots)
-        // more precisely, add 1 * x1^0 * ... * xn^0
-        if (IPCONST(r, D)) {
-            D = PMONSV(r, 1, 1, 0);
-        }
-
-        // TODO is the derivative of an irreducible polynomial and irreducible polynomial?
-        // if so, we can factorise, i.e., divide by some constant, and get simpler polynomials
-        L = COMP(D, L);
-        ++i;
-    }
-
-    return L;
-}
-
 // find the local maxima and minima of function f in Q[x_1,...,x_r] subject to constraints
 // Gs in Q[k_1,...,x_i], 2 <= i < r using the method of Lagrange Multipliers.
 // return a list of polynomials, each h in Q[x_1]
 // such that the roots of h give the x_1-coordinates of the critical points of f.
-Word LagrangeRefinement(Word r, Word f, Word Gs)
+Word LagrangeRefinement(Word r, Word f, Word i, Word Gs, Word Is)
 {
-    Word Q, M = NIL, g;
+    Word Q = JACOBI(r, f, i, Gs, Is);
 
-    // construct jacobi matrix M.
-    while (Gs != NIL) {
-        ADV(Gs, &g, &Gs);
-        M = COMP(JacobiRow(r, g), M);
-    }
-    M = COMP(JacobiRow(r, f), M);
-
-    // TODO can we do better? it's almost upper triangular. but if saclib uses gaussian, then it's fine
-    Q = MAIPDE(r, M);
     SWRITE("\njacobi det ");
     if (Q == 0) IWRITE(0); else LWRITE(Q); SWRITE("\n");
 
@@ -199,19 +163,32 @@ Word LagrangeRefinement(Word r, Word f, Word Gs)
 // Fs : polynomials constituting map from sector cell to section cell
 // lagrange is done on P and each element of Fs, adding more constraints each time.
 Word Refinement(Word r, Word Gs, Word P, Word Fs)
-// TODO collect, project and return!
 {
-    Word Q;
+    // TODO collect, project and return!
+    Word Q, i, k, Is;
+    // generate sequence Is = (1,...,k-1)
+    i = 1;
+    k = LENGTH(Gs) + 1;
+    Is = NIL;
+    while (i < k) {
+        Is = COMP(i, Is);
+        ++i;
+    }
+
     if (Gs != NIL)
-        LagrangeRefinement(r, P, Gs);
+        LagrangeRefinement(r, P, k, Gs, Is);
 
     while (Fs != NIL) {
         ADV(Fs, &Q, &Fs);
         Gs = COMP(P, Gs);
+        Is = COMP(k, Is);
         P = Q;
+        ++k;
 
-        LagrangeRefinement(r, Q, Gs);
+        LagrangeRefinement(r, Q, k, Gs, Is);
     }
+
+    return NIL;
 }
 
 void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)

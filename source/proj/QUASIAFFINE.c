@@ -20,151 +20,142 @@ SideEffect
 // convenience function for multi-degree of polynomial, returns (d_r,...,d_1) where d_i is degree of P in variable i
 inline Word DEG(Word r, Word P)
 {
-    return PDEGV(r, P);
+    return INV(PDEGV(r, P));
 }
 
 // recover index from count
+// TODO this is only for debugging, can be deleted when done.
 // count = (c1 + c2 * m1 + ... + cn * m(n-1))
-Word IndexHelper(Word *m, Word* count, Word M)
+Word IndexHelper(Word m, Word I, Word* count_)
 {
-    Word a, M1;
-    ADV(M, &a, &M1);
+    Word a, I1;
+    ADV(I, &a, &I1);
 
-    // update m = (m1 * ... * mk)
-    // special case for a = 0
-    if (a > 0)
-        *m = (a * *m);
-
-    // base case: last element
-    if (M1 == NIL) {
-        return NIL;
+    Word J = NIL;
+    if (I1 != NIL) {
+        J = IndexHelper(a + 1 * m, I1, count_);
     }
 
-    Word I = IndexHelper(m, count, M1);
+    Word count = *count_;
+    Word j = count / m;
+    *count_ = count % m;
 
-    // special case for a == 0
-    if (a == 0)
-        return COMP(0, I);
-
-    Word j = *count / *m;
-
-    *count = *count % *m;
-    return COMP(j, I);
+    return COMP(j, J);
 }
 
 inline Word INDEX(Word count, Word M)
 {
-    Word J, m = 1;
-    J = IndexHelper(&m, &count, M);
+    if (count < 0) return NIL;
 
-    return COMP(count, J);
+    Word J = IndexHelper(1, M, &count);
+
+    return J;
 }
 
 // recursive smooth stratification of polynomials Fs
 // np: number of polynomials
 // r: number of variables
-// Fs: list of polynomials and degrees (..., deg(P), Ps, ...)
+// Fs: list of polynomials and degrees (..., P_i, deg(P_i), ...)
+// Is: indices (i1,...,ik)
+// Hs: list of polynomials h_i1,...,h_ik
 // return: TODO NIL
-Word STRAT(Word np, Word r, Word** Fs)
+Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs)
 {
-    Word* Ps[np]; // pointer to next polynomial to take derivative of, index (m_1,...,m_i1,0,...,0)
-    Word* Qs[np]; // chaser list of polynomials (m_1,...,m_i1 - 1,0,...,0) // TODO don't need, i used Ps
-    Word Ds[np]; // degrees of input polynomials, to calculate differentiation index
+    SWRITE("STRAT() Is = "); LWRITE(Is); SWRITE("\n");
+    Word* Ps[np]; // array of pointers to elements of Fs, first element is equal to h1
+    Word Degrees[np]; // degrees of input polynomials, gives the max index
     Word Ms[np]; // how many steps until we update v
-    Word v_index[np];
-
+    Word V_index[np];
+    Word Chase_index[np]; // chase indices TODO delete
+    Word init_v = LENGTH(Is); // initial differentiation variable, i1, incremented later
+    Word nv = r - init_v; // number of differentiation variables
     Word p_index = 0; // initial index, variable to be differentiated in h1 to obtain s1
 
-    // initialise
-    printf("initialising...\n");
+    // initialise Ps, Degrees, Ms and variable indices
     while (p_index < np) {
         // for each input polynomial P_i
         Word* F1s = Fs[p_index];
         Word D = SECOND(F1s[0]);
 
-        // store backup and chaser list
+        // initialise "chaser" lists, allows quickly finding function h1 such that s1 = partial_i h1
         Ps[p_index] = F1s;
-        Qs[p_index] = F1s;
 
-        // save initial degree
-        Ds[p_index] = D;
+        // Degree of initial polynomial, gives max index
+        Degrees[p_index] = D;
 
-        // set Ms: initially d1
+        // initial differentiation variable
+        V_index[p_index] = 1;
+        Chase_index[p_index] = 0;
+
+        // M: maximum order of derivative at variable 1
         Ms[p_index] = FIRST(D);
-
-        // initial v_index
-        v_index[p_index] = 1;
 
         // increment
         ++p_index;
     }
 
     // take derivatives
-    Word nv = LENGTH(SECOND(Fs[0][0])); // length of index == number of variables
-    Word n_rollover = 0; // when we rolled over nv * k times, we're done.
-    Word count = 0; // counts how many derivatives we have computed so far
-    while (n_rollover < nv * np) {
-        // loop polynomial list
+    Word max_rollover = np * nv; // maximum number of times a differentiation variable "rollover" should occer
+    Word n_rollover = 0; // tracks current number of "rollovers", allows us to check when we're done
+    Word count = 0; // number of derivatives computed so far, can be viewed as a scalar representation of the index
+    ++init_v; // initial variable = i1 + 1
+
+    while (n_rollover < max_rollover) {
+        // cycle back to the beginnig of polynomial list when we reached the end
         if (p_index == np) {
             p_index = 0;
             ++count;
         }
 
-        Word v = v_index[p_index];
+        // differentiation variable
+        Word v = V_index[p_index];
+        Word ch_index = Chase_index[p_index];
 
-        // no more derivatives
+        // no more derivatives to take -- skip.
         if (v > nv) {
-            ++p_index; // move to next polynomial
+            ++p_index;
 
             continue;
         }
 
-        // get data for polynomial P_i
-        Word D = Ds[p_index];
+        // polynomial h_1 and its degree
+        Word D = Degrees[p_index];
         Word P = FIRST(*Ps[p_index]);
 
         // s1 = partial h_1 / x_i
+        // TODO partial differential operator with h1,...,hk
         Word Q = IPDER(r, P, v);
 
         // TODO recursion
         // we know P == h1, i1 == v
 
         // append new derivative Q
-        IWRITE(p_index); SWRITE(", "); LWRITE(INDEX(count, D)); SWRITE(" -- "); Q == 0 ? SWRITE("00") : LWRITE(Q); SWRITE("\n");
         Fs[p_index][count] = LIST2(Q, DEG(r, Q));
 
-        // update variable v and chase list
-        if (count < Ms[p_index]) {
-            // same variable, higher order
-            Ps[p_index] = Ps[p_index] + 1; // move the "chase" pointer along by one
-        } else {
-            // next variable, order 0 (index "roll-over"
-            v_index[p_index] = v + 1;
-            Ps[p_index] = Fs[p_index]; // reset chase ist
-            Ms[p_index] = Ms[p_index] * LELTI(Ds[p_index], v);
-            printf("update i1 = %d, m = %d\n", v_index[p_index], Ms[p_index]);
+        IWRITE(count); SWRITE(": compute derivative, variable "); IWRITE(v); SWRITE(" ("); IWRITE(p_index); SWRITE(") ");
+        LWRITE(Degrees[p_index]); SWRITE("\n  ");
+        LWRITE(INDEX(ch_index, D)); SWRITE(" ");
+        P == 0 ? SWRITE("0") : LWRITE(P); SWRITE("\n  ");
+        LWRITE(INDEX(count, D)); SWRITE(" "); Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
 
-            // keep track of how many times this was done. if we rollower n+1 times, that polynomial is note.
-            ++n_rollover;
+        // update variable v and chaser list
+        if (count < Ms[p_index]) { // don't need to rollover
+            // same variable, higher order -- get next element in "chase" list
+            Ps[p_index] = Ps[p_index] + 1;
+            Chase_index[p_index] = Chase_index[p_index] + 1;
+        } else { // need to rollover
+            ++n_rollover; // keep tratk of rollovers to determine when we're finished.
+            V_index[p_index] = v + 1; // next variable
+            Ps[p_index] = Fs[p_index]; // back to beginning of chase list
+            Ms[p_index] = Ms[p_index] * LELTI(Degrees[p_index], v); // how many derivatives until we need to roll over again
+            Chase_index[p_index] = 0;
         }
 
-        // increment
+        // next polynomial
         ++p_index;
     }
+
     return NIL;
-}
-
-inline Word LPROD(Word L)
-{
-    Word a, m;
-
-    m = 1;
-    while (L != NIL) {
-        ADV(L, &a, &L);
-        m *= a;
-    }
-
-    return m;
 }
 
 // list of all partials, sufficient for smooth stratification
@@ -183,13 +174,22 @@ Word PARTIALS(Word r, Word L)
         // each F_1 is of the form (..., P, deg(P), )
         D = DEG(r, P);
         P1 = LIST2(P, D);
-        Fs[j] = (Word*) malloc(LPROD(D) * sizeof(Word));
+
+        // calculate max number of derivatives possible in list
+        Word len, d = 0;
+        while (D != NIL) {
+            ADV(D, &d, &D);
+            len = len * (d + 1);
+        }
+
+        Fs[j] = (Word*) malloc(len * sizeof(Word));
+
         Fs[j][0] = P1;
 
         ++j;
     }
 
-    STRAT(k, r, Fs);
+    STRAT(k, r, Fs, NIL, NIL);
 
     // free 2d Fs
     for (j = 0; j < k; j++) free(Fs[j]);

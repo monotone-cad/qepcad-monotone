@@ -17,119 +17,185 @@ SideEffect
 ======================================================================*/
 #include "qepcad.h"
 
-// return the index immediately after I in {1,...,m1} times ... times {1,...,ik} with respect to lex order.
-// if no greater index exists, returns NIL
-Word LexNext(Word I, Word n, Word *j_)
+// convenience function for multi-degree of polynomial, returns (d_r,...,d_1) where d_i is degree of P in variable i
+inline Word DEG(Word r, Word P)
 {
-    Word m, I1, J1;
-    ADV(I, &m, &I1);
+    return PDEGV(r, P);
+}
 
-    // increment m, if we can
-    if (m < n) {
-        return COMP(m + 1, I1);
-    }
+// recover index from count
+// count = (c1 + c2 * m1 + ... + cn * m(n-1))
+Word IndexHelper(Word *m, Word* count, Word M)
+{
+    Word a, M1;
+    ADV(M, &a, &M1);
 
-    // maximal index
-    if (I1 == NIL) {
+    // update m = (m1 * ... * mk)
+    // special case for a = 0
+    if (a > 0)
+        *m = (a * *m);
+
+    // base case: last element
+    if (M1 == NIL) {
         return NIL;
     }
 
-    // try to roll over
-    J1 = LexNext(I1, n, j_);
+    Word I = IndexHelper(m, count, M1);
 
-    if (J1 == NIL) { // fail, maximal index
-        return NIL;
-    }
+    // special case for a == 0
+    if (a == 0)
+        return COMP(0, I);
 
-    // roll over
-    ++(*j_);
-    return COMP(0, J1);
+    Word j = *count / *m;
+
+    *count = *count % *m;
+    return COMP(j, I);
 }
 
-// return list 0^k
-Word ZEROS(Word k)
+inline Word INDEX(Word count, Word M)
 {
-    Word L = NIL;
-    while (k > 0) {
-        L = COMP(0, L);
-        --k;
-    }
+    Word J, m = 1;
+    J = IndexHelper(&m, &count, M);
 
-    return L;
+    return COMP(count, J);
 }
 
-// vector component-wise max
-Word VCMAX(Word V)
+// recursive smooth stratification of polynomials Fs
+// np: number of polynomials
+// r: number of variables
+// Fs: list of polynomials and degrees (..., deg(P), Ps, ...)
+// return: TODO NIL
+Word STRAT(Word np, Word r, Word** Fs)
 {
-    Word m, a, V1;
-    ADV(V, &a, &V1);
+    Word* Ps[np]; // pointer to next polynomial to take derivative of, index (m_1,...,m_i1,0,...,0)
+    Word* Qs[np]; // chaser list of polynomials (m_1,...,m_i1 - 1,0,...,0) // TODO don't need, i used Ps
+    Word Ds[np]; // degrees of input polynomials, to calculate differentiation index
+    Word Ms[np]; // how many steps until we update v
+    Word v_index[np];
 
-    // base case
-    if (V1 == NIL) return a;
+    Word p_index = 0; // initial index, variable to be differentiated in h1 to obtain s1
 
-    // recursive case
-    return MAX(a, VCMAX(V1));
-}
-
-Word LPROD(Word L)
-{
-    Word a, L1;
-    ADV(L, &a, &L1);
-
-    // base
-    if (L1 == NIL) return a;
-
-    return a * LPROD(L1);
-}
-
-// hash index
-// Word
-
-// generate derivatives required for smooth stratification
-Word STRAT(Word r, Word Fs, Word Is, Word Hs)
-{
-    Word j, k, k1, l, r1, j1, i1, I, P;
-    k = LENGTH(Fs), k1 = k - 1, l = LENGTH(Is), r1 = r - l, j = k1;
-
-    int Ms[k]; Word* Ds[k];
     // initialise
-    while (Fs != NIL) {
-        ADV(Fs, &P, &Fs);
+    printf("initialising...\n");
+    while (p_index < np) {
+        // for each input polynomial P_i
+        Word* F1s = Fs[p_index];
+        Word D = SECOND(F1s[0]);
 
-        // degree of P_j
-        Ms[j] = VCMAX(PDEGV(r, P));
+        // store backup and chaser list
+        Ps[p_index] = F1s;
+        Qs[p_index] = F1s;
 
-        // Ds: (..., (j,0,...,0), P_j, ... )
-        // TODO is this bad for using loads of memory?
-        Ds[j] = (Word*) malloc(sizeof(Word) * IEXP(Ms[j], r1));
+        // save initial degree
+        Ds[p_index] = D;
 
-        --j;
+        // set Ms: initially d1
+        Ms[p_index] = FIRST(D);
+
+        // initial v_index
+        v_index[p_index] = 1;
+
+        // increment
+        ++p_index;
     }
 
-    // generate derivatives
-    j1 = 2, i1 = j1; I = COMP2(0, 1, ZEROS(r1 - 1)); // initial index of derivative
-    while (I != NIL) {
-        j = FIRST(I);
-        printf("j1 = %d ", j1); LWRITE(I); SWRITE("\n");
+    // take derivatives
+    Word nv = LENGTH(SECOND(Fs[0][0])); // length of index == number of variables
+    Word n_rollover = 0; // when we rolled over nv * k times, we're done.
+    Word count = 0; // counts how many derivatives we have computed so far
+    while (n_rollover < nv * np) {
+        // loop polynomial list
+        if (p_index == np) {
+            p_index = 0;
+            ++count;
+        }
 
-        int inc = 0;
-        I = LexNext(I, Ms[j], &inc);
+        Word v = v_index[p_index];
 
-        // update j1, i1
-        if (inc > 0) j1 = inc;
-        if (i1 < j1) i1 = j1;
+        // no more derivatives
+        if (v > nv) {
+            ++p_index; // move to next polynomial
+
+            continue;
+        }
+
+        // get data for polynomial P_i
+        Word D = Ds[p_index];
+        Word P = FIRST(*Ps[p_index]);
+
+        // s1 = partial h_1 / x_i
+        Word Q = IPDER(r, P, v);
+
+        // TODO recursion
+        // we know P == h1, i1 == v
+
+        // append new derivative Q
+        IWRITE(p_index); SWRITE(", "); LWRITE(INDEX(count, D)); SWRITE(" -- "); Q == 0 ? SWRITE("00") : LWRITE(Q); SWRITE("\n");
+        Fs[p_index][count] = LIST2(Q, DEG(r, Q));
+
+        // update variable v and chase list
+        if (count < Ms[p_index]) {
+            // same variable, higher order
+            Ps[p_index] = Ps[p_index] + 1; // move the "chase" pointer along by one
+        } else {
+            // next variable, order 0 (index "roll-over"
+            v_index[p_index] = v + 1;
+            Ps[p_index] = Fs[p_index]; // reset chase ist
+            Ms[p_index] = Ms[p_index] * LELTI(Ds[p_index], v);
+            printf("update i1 = %d, m = %d\n", v_index[p_index], Ms[p_index]);
+
+            // keep track of how many times this was done. if we rollower n+1 times, that polynomial is note.
+            ++n_rollover;
+        }
+
+        // increment
+        ++p_index;
     }
-
-    // free the Dps array.
-    for (int i = 0; i < k; ++i) free(Ds[i]);
-
     return NIL;
+}
+
+inline Word LPROD(Word L)
+{
+    Word a, m;
+
+    m = 1;
+    while (L != NIL) {
+        ADV(L, &a, &L);
+        m *= a;
+    }
+
+    return m;
 }
 
 // list of all partials, sufficient for smooth stratification
 Word PARTIALS(Word r, Word L)
 {
-    return STRAT(r, L, NIL, NIL);
+    Word D, P, P1, k, j;
+
+    k = LENGTH(L);
+    Word** Fs = (Word**) malloc(k * sizeof(Word*));
+
+    j = 0;
+    while (L != NIL) {
+        ADV(L, &P, &L);
+
+        // polynomials
+        // each F_1 is of the form (..., P, deg(P), )
+        D = DEG(r, P);
+        P1 = LIST2(P, D);
+        Fs[j] = (Word*) malloc(LPROD(D) * sizeof(Word));
+        Fs[j][0] = P1;
+
+        ++j;
+    }
+
+    STRAT(k, r, Fs);
+
+    // free 2d Fs
+    for (j = 0; j < k; j++) free(Fs[j]);
+    free(Fs);
+
+    return NIL;
 }
 
 void QepcadCls::QUASIAFFINE(Word A, Word r, Word *A_)

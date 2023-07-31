@@ -116,13 +116,15 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs)
     // end of recursion
     Word i0 = FIRST(Is); // number of variables already differentiated
     if (i0 == r || np == 0) {
-        printf("end of recursion.\n");
+        printf("base of recorsion\n");
 
         return NIL;
     }
 
     SWRITE("STRAT: Is = "); LWRITE(Is); SWRITE("\n");
     SWRITE("       Hs = "); LWRITE(Hs); SWRITE("\n");
+
+    Word Gs1 = NIL; // the list of all derivatives constructed.
 
     // derivatives are stored is Gs
     Word g_len = np * 2;
@@ -218,16 +220,17 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs)
             if (Q != 0) {
                 printf("recurse.\n");
                 // v = i1, P = h1
-                STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs));
+                Word Gs2 = STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs));
+                Gs1 = CONC(Gs1, Gs2);
 
                 // add derivative Q to Gs
                 if (g_count >= g_len) { // enlarge list
-                    printf("need te resize list.\n");
+                    printf("realloc() %d\n", g_len);
                     g_len += np;
                     Gs = (Word**) realloc(Gs, g_len * sizeof(Word*));
                 }
 
-                printf("add derivative to Gs");
+                printf("add derivative to Gs %d\n", g_count);
                 Gs[g_count] = Allocate(Q, Qdeg);
                 ++g_count;
             }
@@ -254,13 +257,20 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs)
     }
     printf("finished loop\n");
 
+    // construct list Gs1 of all functions in Gs
+    Word i = g_count;
+    while (i > 0) { // comp backwards
+        --i;
+        Gs1 = COMP(FIRST(Gs[i][0]), Gs1);
+    }
+
     // free Gs
     for (int i = 0; i < g_count; ++i) {
         free(Gs[i]);
     }
     free(Gs);
 
-    return NIL;
+    return Gs1;
 }
 
 // list of all partials, sufficient for smooth stratification

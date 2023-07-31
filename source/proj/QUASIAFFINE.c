@@ -87,53 +87,6 @@ Word* Allocate(Word P, Word D)
     return F1s;
 }
 
-// don't forget to free the memory on your way out
-Word PrepFs(Word k, Word count, Word **Fs, Word ***Gs_)
-{
-    // we computed "count" polynomials for each 0 <= i <= k
-    Word size = k * count;
-
-    // no polynomials
-    if (size == 0) {
-        return 0;
-    }
-
-    Word** Gs = (Word**) malloc(size * sizeof(Word));
-    if (Gs == NULL) {
-        FAIL("QUASIAFFINE", "malloc Gs failed.");
-    }
-
-    Word p_index = 0;
-    Word g_index = 0;
-
-    while (p_index < k) {
-        Word* F1s = Fs[p_index];
-
-        Word pi_index = 0;
-        while (pi_index < count && F1s[pi_index] != NIL) {
-            Word P, D;
-            FIRST2(F1s[pi_index], &P, &D);
-
-            // skip zero polynomials
-            if (P == 0) {
-                ++pi_index;
-
-                continue;
-            }
-
-            Gs[g_index] = Allocate(P, D);
-
-            ++pi_index;
-            ++g_index;
-        }
-
-        ++p_index;
-    }
-
-    *Gs_ = Gs;
-    return g_index;
-}
-
 // list sum
 inline Word LSUM(Word L)
 {
@@ -171,7 +124,11 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs)
     SWRITE("STRAT: Is = "); LWRITE(Is); SWRITE("\n");
     SWRITE("       Hs = "); LWRITE(Hs); SWRITE("\n");
 
-    Word** Fs1 = (Word**) malloc(np * sizeof(Word*)); // Fs to pass down - first element is (0,1,0,...,0)
+    // derivatives are stored is Gs
+    Word g_len = np * 2;
+    Word g_count = 0;
+    Word** Gs = (Word**) malloc(g_len * sizeof(Word*));
+
     Word* Ps[np]; // array of pointers to elements of Fs, first element is equal to h1
     Word Degrees[np]; // degrees of input polynomials, gives the max index
     Word Ms[np]; // how many steps until we update v
@@ -188,7 +145,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs)
         Word D = REDI(SECOND(F1s[0]), i0);
 
         // initialise "chaser" lists, allows quickly finding function h1 such that s1 = partial_i h1
-        Fs1[p_index] = F1s + 1; // increment memory address of first element
         Ps[p_index] = F1s;
 
         // Degree of initial polynomial, gives max index
@@ -259,19 +215,21 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs)
             LWRITE(INDEX(count, D)); SWRITE(" "); Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
 
             // TODO recursion
-            printf("recurse.\n");
-            // v = i1, P = h1
-            Word **Gs;
-            Word np1 = PrepFs(np, count - 1, Fs1, &Gs);
-            STRAT(np1, r, Gs, COMP(v, Is), COMP(P, Hs));
+            if (Q != 0) {
+                printf("recurse.\n");
+                // v = i1, P = h1
+                STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs));
 
-            // free Gs
-            if (np1 > 0) {
-                for (int i = 0; i < np1; ++i) {
-                    printf("free %d, %p\n", i, Gs[i]);
-                    //free(Gs[i]);
+                // add derivative Q to Gs
+                if (g_count >= g_len) { // enlarge list
+                    printf("need te resize list.\n");
+                    g_len += np;
+                    Gs = (Word**) realloc(Gs, g_len * sizeof(Word*));
                 }
-                free(Gs);
+
+                printf("add derivative to Gs");
+                Gs[g_count] = Allocate(Q, Qdeg);
+                ++g_count;
             }
         }
 
@@ -296,7 +254,11 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs)
     }
     printf("finished loop\n");
 
-    free(Fs1);
+    // free Gs
+    for (int i = 0; i < g_count; ++i) {
+        free(Gs[i]);
+    }
+    free(Gs);
 
     return NIL;
 }

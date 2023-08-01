@@ -190,43 +190,37 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         Word D = Degrees[p_index];
         Word P = FIRST(*Ps[p_index]);
 
-        // TODO proper differential operator still needed
-        Word Q = 0;
-        Word Qdeg = D;
+        // TODO partial differential operator with h1,...,hk
+        // throw out constant polynomials
+        Word Q = IPDER(r, P, v);
+        Word Qdeg = DEG(r,Q);
 
-        if (P != 0) { // otherwise we have to take derivatives
-            // TODO partial differential operator with h1,...,hk
-            // throw out constant polynomials
-            Q = IPDER(r, P, v);
-            Qdeg = DEG(r,Q);
+        if (LSUM(Qdeg) == 0) { // s_k is constant, may as well be zero
+            Q = 0;
+        }
 
-            if (LSUM(Qdeg) == 0) { // s_k is constant, may as well be zero
-                Q = 0;
+        // TODO debugging
+        IWRITE(count); SWRITE(": compute derivative, variable "); IWRITE(v); SWRITE(" polynomial "); IWRITE(p_index);
+        SWRITE(", degree "); LWRITE(Degrees[p_index]); SWRITE("\n  ");
+        LWRITE(INDEX(ch_index, D)); SWRITE(" ");
+        P == 0 ? SWRITE("0") : LWRITE(P); SWRITE("\n  ");
+        LWRITE(INDEX(count, D)); SWRITE(" "); Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
+
+        if (Q != 0) {
+            printf("recurse...\n");
+            Word Gs2 = STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs), Minor);
+            Gs1 = CONC(Gs1, Gs2);
+
+            // append new derivative to working list Gs and return list
+            printf("add derivative to Gs %d\n", g_count);
+            if (g_count >= g_len) { // enlarge list
+                printf("realloc() %d\n", g_len);
+                g_len += np;
+                Gs = (Word**) realloc(Gs, g_len * sizeof(Word*));
             }
 
-            // TODO debugging
-            IWRITE(count); SWRITE(": compute derivative, variable "); IWRITE(v); SWRITE(" polynomial "); IWRITE(p_index);
-            SWRITE(", degree "); LWRITE(Degrees[p_index]); SWRITE("\n  ");
-            LWRITE(INDEX(ch_index, D)); SWRITE(" ");
-            P == 0 ? SWRITE("0") : LWRITE(P); SWRITE("\n  ");
-            LWRITE(INDEX(count, D)); SWRITE(" "); Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
-
-            if (Q != 0) {
-                printf("recurse...\n");
-                Word Gs2 = STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs), Minor);
-                Gs1 = CONC(Gs1, Gs2);
-
-                // append new derivative to working list Gs and return list
-                printf("add derivative to Gs %d\n", g_count);
-                if (g_count >= g_len) { // enlarge list
-                    printf("realloc() %d\n", g_len);
-                    g_len += np;
-                    Gs = (Word**) realloc(Gs, g_len * sizeof(Word*));
-                }
-
-                Gs[g_count] = Allocate(Q, Qdeg);
-                ++g_count;
-            }
+            Gs[g_count] = Allocate(Q, Qdeg);
+            ++g_count;
         }
 
         // append derivative to Fs, preserving zeroes

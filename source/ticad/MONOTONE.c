@@ -286,21 +286,22 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
 
 void QepcadCls::MONOTONE(Word A, Word D, Word r, Word* A_)
 {
-    Word AA, Ds, TrueCells, junk, C, I, I1, Ij, Ij1, nv, Ik, C0, S0, CT, CB, Gs, FT, FB, Fs, P, P1;
-
     // consider each true cell in D
+    Word TrueCells, junk;
     LISTOFCWTV(D, &TrueCells, &junk);
-    Ds = LELTI(D, CHILD); // cells of D, for searching cells
-    AA = INV(LCOPY(A)); // in reverse order, to match SIGNPF. for later.
+    Word Ds = LELTI(D, CHILD); // cells of D, for searching cells
+    Word AA = INV(LCOPY(A)); // in reverse order, to match SIGNPF. for later.
 
     while (TrueCells != NIL) {
+        Word C;
         ADV(TrueCells, &C, &TrueCells);
-        I = LELTI(C, INDX);
+        Word I = LELTI(C, INDX);
 
         // C has dimension two, then IJ < Ik are the positions in I where the composent is equal to 1. otherwise skip
+        Word Ij, Ik;
         if (!TwoDimIndex(I, &Ij, &Ik)) continue;
-        Ij1 = Ij - 1;
-        nv = r - Ij1;
+        Word Ij1 = Ij - 1;
+        Word nv = r - Ij1;
 
         // TODO debugging
         SWRITE("----------\n");
@@ -308,23 +309,22 @@ void QepcadCls::MONOTONE(Word A, Word D, Word r, Word* A_)
         printf(" 2d indx: (%d, %d)\n", Ij, Ik);
 
         // C0 := proj_{j-1}(C) is a 0-dimensional cell (c_1,...,c_{j-1})
+        Word C0 = D;
         if (Ij > 1) {
             C0 = FindByIndex(Ds, I, Ij1, 1);
-        } else {
-            C0 = D;
         }
 
         // sample point (c_1,...,c_{j-1}) of C0.
-        S0 = LELTI(C0, SAMPLE);
+        Word S0 = LELTI(C0, SAMPLE);
 
         // top and bottom of proj_k(C) are one-dimensional sections by definition.
-        I1 = LCOPY(I);
+        Word I1 = LCOPY(I);
         // top: (i_1,...,i_k + 1)
         SLELTI(I1, Ik, LELTI(I, Ik) + 1);
-        CT = FindByIndex(Ds, I1, Ik, 1);
+        Word CT = FindByIndex(Ds, I1, Ik, 1);
         // bottom: (i_1,...,i_k - 1)
         SLELTI(I1, Ik, LELTI(I, Ik) - 1);
-        CB = FindByIndex(Ds, I1, Ik, 1);
+        Word CB = FindByIndex(Ds, I1, Ik, 1);
 
         // TODO debugging
         printf("sub-cad level "); IWRITE(LELTI(C, LEVEL)); SWRITE(", ");
@@ -339,7 +339,7 @@ void QepcadCls::MONOTONE(Word A, Word D, Word r, Word* A_)
         //   what other things could i cache? can i use the existing db faciility?
         // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
-        Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv);
+        Word Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv);
         Word LL = Gs, P, Q; // TODO debug
         SWRITE("Gs:\n");
         while (LL != NIL) {
@@ -348,6 +348,7 @@ void QepcadCls::MONOTONE(Word A, Word D, Word r, Word* A_)
         }
 
         // Fk (f_{k,T}, f_{k,B}) are 0 on CT and CB respectively.
+        Word FT, FB;
         if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1, nv));
         if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1, nv));
 
@@ -355,7 +356,7 @@ void QepcadCls::MONOTONE(Word A, Word D, Word r, Word* A_)
         if (CB != NIL) { SWRITE("f_bottom := "); IPDWRITE(nv, FB, GVVL); SWRITE("\n"); }
 
         // Fs = (f_{K+1},...,f_n) is a map from proj_{k}(C) to R^{n-k}, of which C is the graph.
-        Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1, nv);
+        Word Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1, nv);
         SWRITE("Fs:\n");
         LL = Fs;
         while (LL != NIL) {

@@ -1,18 +1,19 @@
 /*======================================================================
-  A -< QUASIAFFINE(A, J, r; P, J)
+  A -< QUASIAFFINE(A, r; P)
 
-  Adding first derivatives of projections onto coordinate axes, to result in 2d cells which are either increasing,
-  decreasing or constant along coordinate axes.
+Add partial differentials of (factorised) input polynomials to ensure cells are quasi-affine. Projection factors are
+sufficient for smoothness and such that each cell will either be increasing, decreasing or constant along each
+coordinate axis.
 
-  \Input
-  \parm{AA} set of input polynomials (I_1,...,i_r), each A_i is a list of polynomials in Z[x_1,...,x_i]
+Input
+  \parm{A} projection factor set
   \parm{r} number of variables
 
-  Output
-  \parm{A}: modified projection factors
+Output
+  \parm{A*}: projection factor set with added derivatives
 
-  SideEffect
-  \parm{AA} is modified.
+SideEffect
+  \parm{A} is modified.
 
   ======================================================================*/
 #include "qepcad.h"

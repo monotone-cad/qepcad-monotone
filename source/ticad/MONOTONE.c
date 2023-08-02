@@ -5,10 +5,15 @@ Adds extra polynomials to projection factor set to ensure monotone cells will be
 A refinement of the kind { x_i < c }, { x_i = c }, { x_i > c } will be required.
 
 \Input
-  \parm{A} is a list a_1, ..., a_r where a_i is a list of i-level projection factors
-  \parm{AA} is a list a_1, ..., a_r where a_ is a list of i-level input polynomials
-  \parm{D} is a CAD
+  \parm{A} proj factor set
   \parm{r} is the space in which D lives
+  \parm{D} is a CAD
+
+Output
+  \parm{A*} modified projection factor set with new polynomials.
+
+Side Effect
+  A is modified.
 
 ======================================================================*/
 #include "qepcad.h"
@@ -142,6 +147,81 @@ Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word
     return L; // note: L is in ascending level order.
 }
 
+// use proj McCallum without leading coeffs, removes constants, see PROJMCx
+// resultants and discriminants of input polynomials
+// it is assumed that no polynomial in the list is equal to 0. otherwise the function will crash
+Word ProjMcx(Word r, Word A)
+{
+    Word A1,Ap,Ap1,Ap2,App,D,L,Lh,P,R,W,i,t;
+
+    // set of polynomials to project on this round
+    A1 = NIL;
+
+    // set of projected polynomials
+    P = NIL;
+
+    // construct the list of polynomials to project now and the list to project later
+    while (A != NIL) {
+        ADV(A, &Ap1, &A);
+
+        // Ap1 = x_r^e Aq1
+        Word e, Aq1;
+        FIRST2(Ap1, &e, &Aq1);
+
+        // if nonzero degree in x_r
+        if (e > 0) {
+            // project on this round
+            A1 = COMP(Ap1, A1);
+        } else {
+            // defer to  next round
+            P = COMP(Aq1, P);
+        }
+    }
+
+    // discriminants
+    Ap = A1;
+    while (Ap != NIL) {
+        ADV(Ap,&Ap1,&Ap);
+
+        if (PDEG(Ap1) < 2) continue;
+
+        D = IPDSCRQE(r,Ap1);
+        if (!IPCONST(r-1, D)) {
+            P = COMP(D,P);
+        }
+    }
+
+    // resultants
+    Ap = A1;
+    while (Ap != NIL) {
+        ADV(Ap,&Ap1,&Ap);
+
+        App = Ap;
+        while (App != NIL) {
+            ADV(App,&Ap2,&App);
+
+            R = IPRESQE(r,Ap1,Ap2);
+            if (!IPCONST(r-1, P)) {
+                P = COMP(R,P);
+            }
+        }
+    }
+
+    return P;
+}
+
+// use CAD projection to find x-values of a set (not system) of equations
+Word ProjSolve(Word r, Word A)
+{
+    Word J = A;
+    while (r > 1) {
+        J = ProjMcx(r, J);
+        --r;
+    }
+
+    return J;
+}
+
 // find the local maxima and minima of function f in Q[x_1,...,x_r] subject to constraints
 // Gs in Q[k_1,...,x_i], 2 <= i < r using the method of Lagrange Multipliers.
 // return a list of polynomials, each h in Q[x_1]
@@ -150,10 +230,17 @@ Word LagrangeRefinement(Word r, Word f, Word i, Word Gs, Word Is)
 {
     Word Q = JACOBI(r, f, i, Gs, Is);
 
-    SWRITE("\njacobi det ");
-    if (Q == 0) IWRITE(0); else LWRITE(Q); SWRITE("\n");
+    // check for zero polynomial. no solutions
+    if (Q == 0) return NIL;
 
-    return 0;
+    SWRITE("\njacobi det ");
+    LWRITE(Q); SWRITE("\n");
+
+    // find solution in x by projecton
+    Word J = ProjSolve(r, COMP(Q, Gs));
+    SWRITE("proj solve "); LWRITE(J); SWRITE("\n");
+
+    return J;
 }
 
 // iterative application of lagrange multipliers then projection to x1.
@@ -164,8 +251,7 @@ Word LagrangeRefinement(Word r, Word f, Word i, Word Gs, Word Is)
 // lagrange is done on P and each element of Fs, adding more constraints each time.
 Word Refinement(Word r, Word Gs, Word P, Word Fs)
 {
-    // TODO collect, project and return!
-    Word Q, i, k, Is;
+    Word Rs, Q, i, k, Is;
     // generate sequence Is = (1,...,k-1)
     i = 1;
     k = LENGTH(Gs) + 1;
@@ -175,9 +261,14 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
         ++i;
     }
 
-    if (Gs != NIL)
-        LagrangeRefinement(r, P, k, Gs, Is);
+    Rs = NIL; // refinement polynomials
 
+    // semi-monotone: crptical points of P subject to Gs
+    if (Gs != NIL) {
+        Rs = COMP(LagrangeRefinement(r, P, k, Gs, Is), Rs);
+    }
+
+    // monotone
     while (Fs != NIL) {
         ADV(Fs, &Q, &Fs);
         Gs = COMP(P, Gs);
@@ -185,31 +276,33 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
         P = Q;
         ++k;
 
-        LagrangeRefinement(r, Q, k, Gs, Is);
+        // monotone, index k: critical points of Q subject to Gs
+        Rs = COMP(LagrangeRefinement(r, Q, k, Gs, Is), Rs);
     }
 
-    return NIL;
+    // solve for x1
+    return Rs;
 }
 
-void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
+void QepcadCls::MONOTONE(Word A, Word D, Word r, Word* A_)
 {
     Word AA, Ds, TrueCells, junk, C, I, I1, Ij, Ij1, nv, Ik, C0, S0, CT, CB, Gs, FT, FB, Fs, P, P1;
 
-    // consider true cells
+    // consider each true cell in D
     LISTOFCWTV(D, &TrueCells, &junk);
     Ds = LELTI(D, CHILD); // cells of D, for searching cells
-    AA = INV(A); // in reverse order, to match SIGNPF. for later.
+    AA = INV(LCOPY(A)); // in reverse order, to match SIGNPF. for later.
 
     while (TrueCells != NIL) {
         ADV(TrueCells, &C, &TrueCells);
         I = LELTI(C, INDX);
 
-        // only consider two-dimensional cells
+        // C has dimension two, then IJ < Ik are the positions in I where the composent is equal to 1. otherwise skip
         if (!TwoDimIndex(I, &Ij, &Ik)) continue;
         Ij1 = Ij - 1;
         nv = r - Ij1;
 
-        // TODO
+        // TODO debugging
         SWRITE("----------\n");
         LWRITE(I);
         printf(" 2d indx: (%d, %d)\n", Ij, Ik);
@@ -233,7 +326,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
         SLELTI(I1, Ik, LELTI(I, Ik) - 1);
         CB = FindByIndex(Ds, I1, Ik, 1);
 
-        // TODO
+        // TODO debugging
         printf("sub-cad level "); IWRITE(LELTI(C, LEVEL)); SWRITE(", ");
         printf("sub-cad index "); LWRITE(LELTI(C0, INDX)); SWRITE("\n");
         if (CT != NIL) { printf("top C index "); LWRITE(LELTI(CT, INDX)); SWRITE("\n"); }
@@ -247,7 +340,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
         // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
         Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv);
-        Word LL = Gs, P, Q; // TODO
+        Word LL = Gs, P, Q; // TODO debug
         SWRITE("Gs:\n");
         while (LL != NIL) {
             ADV(LL, &P, &LL);
@@ -257,6 +350,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
         // Fk (f_{k,T}, f_{k,B}) are 0 on CT and CB respectively.
         if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1, nv));
         if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1, nv));
+
         if (CT != NIL) { SWRITE("f_top := "); IPDWRITE(nv, FT, GVVL); SWRITE("\n"); }
         if (CB != NIL) { SWRITE("f_bottom := "); IPDWRITE(nv, FB, GVVL); SWRITE("\n"); }
 
@@ -269,8 +363,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
             IPDWRITE(nv, P, GVVL); SWRITE("\n");
         }
 
-        // semi-monotone -- critical points of top and bottom of sector below, if they exist
-        // monotone
+        // perform refinement
         if (CT != NIL) {
             SWRITE("top\n");
             Refinement(nv, Gs, FT, Fs);
@@ -281,5 +374,7 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
             Refinement(nv, Gs, FB, Fs);
         }
     }
+
+    // TODO add to A and update pointer A_
 }
 

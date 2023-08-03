@@ -102,10 +102,9 @@ Word* Allocate(Word P, Word D)
     // polynomials
     // each F_1 is of the form (..., P, deg(P), )
     Word P1 = LIST2(P, D);
-    LWRITE(D);
+
     // calculate max number of derivatives possible in list
     Word len = LPROD(D) + 2; // includes P itself and a null at the end
-    printf(" %d by Allocate\n", len);
     Word* F1s = (Word*) calloc(len, sizeof(Word));
     if (F1s == NULL) {
         FAIL("QUASIAFFINE", "calloc F1s failed.");
@@ -141,7 +140,6 @@ Word JacobiFromMinor(Word r, Word P, Word j, Word Hs, Word Is, Word Minor)
         ++k;
 
         // compute \H / \x_j
-        printf("IPDER(%d, H, %d)\n", r, j);
         Word H1 = IPDER(r, H, j);
 
         // append H1 to row
@@ -159,7 +157,6 @@ Word JacobiFromMinor(Word r, Word P, Word j, Word Hs, Word Is, Word Minor)
         --k;
 
         // compute \P / \x_i and append
-        printf("IPDER(%d, P, %d)\n", r, i);
         Word P1 = IPDER(r, P, i);
         Row = COMP(P1, Row);
     }
@@ -168,7 +165,6 @@ Word JacobiFromMinor(Word r, Word P, Word j, Word Hs, Word Is, Word Minor)
     Row = INV(Row);
 
     // compute \P / \x_j and append
-    printf("IPDER(%d, H, %d)\n", r, j);
     Word P1 = IPDER(r, P, j);
     Row = COMP(P1, Row);
 
@@ -186,12 +182,9 @@ Word JacobiFromMinor(Word r, Word P, Word j, Word Hs, Word Is, Word Minor)
 // return list of all differentials computed by alrogithm
 Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
 {
-    printf("Round %d\n", LENGTH(Is)); // TODO debugging
-
     // end of recursion
     Word i0 = FIRST(Is); // number of variables considered so far
     if (np == 0 || i0 == r) {
-        printf("...return. no recursion\n");
         return NIL;
     }
 
@@ -209,7 +202,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
     if (Gs == NULL) {
         FAIL("QUASIAFFINE", "calloc Gs failed.");
     }
-    printf("malloc Gs%d %d\n", LENGTH(Is), Gs);
 
     // metadata
     Word* Ps[np]; // "chase list", first element is h1
@@ -247,7 +239,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
             n_finished = 0;
 
             ++count;
-            printf("increment count %d. cycle polynomial list\n", count);
         }
 
         Word v = Dvs[p_index]; // differentiation variable
@@ -255,18 +246,15 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
 
         // update variable v and chaser list
         if (count < m) { // same variable, higher order -- get next element in "chase" list
-            printf("++count, count = %d\n", count);
             Ps[p_index] = Ps[p_index] + 1;
 
             Chase_index[p_index] = Chase_index[p_index] + 1; // TODO debugging
         } else if (v == r) { // rollover, but we're finished
-            printf("polynomial %d is done\n", p_index);
             ++n_finished; // this polynomial is done.
             ++p_index; // next polynomial
 
             continue; // skip it
         } else { // rollover - increment differentiation variable
-            printf("next variable p_index = %d, v = %d\n", p_index, v);
             ++v; // next variable ...
             Dvs[p_index] = v; // ... and store
             Ps[p_index] = Fs[p_index]; // back to beginning of chase list
@@ -279,7 +267,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         }
 
         // compute s_k = partial_{(h_1,...,h_{k-1}),(i_1,...,i_{k-1}),v} h_k
-        printf("v = %d, round = %d\n", v, LENGTH(Is));
         Word ch_index = Chase_index[p_index]; // TODO debugging
 
         // get h_k and its degree
@@ -298,8 +285,8 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         }
 
         // TODO debugging
-        IWRITE(count); SWRITE(": compute derivative, variable "); IWRITE(v); SWRITE(" polynomial "); IWRITE(p_index);
-        SWRITE(", degree "); LWRITE(Degrees[p_index]); SWRITE("\n  ");
+        IWRITE(count); SWRITE(", variable: "); IWRITE(v); SWRITE(" polynomial: "); IWRITE(p_index);
+        SWRITE(", degree: "); LWRITE(Degrees[p_index]); SWRITE("\n  ");
         LWRITE(INDEX(ch_index, D)); SWRITE(" ");
         P == 0 ? SWRITE("0") : LWRITE(P); SWRITE("\n  ");
         LWRITE(INDEX(count, D)); SWRITE(" "); Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
@@ -310,9 +297,7 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
             Gs1 = CONC(Gs1, Gs2);
 
             // append new derivative to working list Gs and return list
-            printf("add derivative to Gs %d %d\n", g_count, g_len);
             if (g_count >= g_len) { // enlarge list
-                printf("realloc() %d\n", g_len);
                 g_len += np;
                 Gs = (Word**) reallocarray(Gs, g_len, sizeof(Word*));
             }
@@ -322,7 +307,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         }
 
         // append derivative to Fs, preserving zeroes
-        LWRITE(D); printf(" %d, try to write in strat\n", count);
         Fs[p_index][count] = LIST2(Q, Qdeg);
 
         // next polynomial please.
@@ -343,9 +327,7 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         free(Gs[i]);
     }
 
-    printf("free Gs%d %d\n", LENGTH(Is), Gs);
     free(Gs);
-    printf("...return\n");
 
     // returns list of derivatives
     return Gs1;

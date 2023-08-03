@@ -208,7 +208,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
     Word Degrees[np]; // degree of Fs[0][0], gives max index
     Word Ms[np]; // number of steps before maximum differentiation variable (i1) should be incremented
     Word Dvs[np]; // list of current differentiation variable (i1)
-    Word Chase_index[np]; // chase indices TODO debugging
 
     Word p_index = 0; // initial polynomial index, ranges over 0 <= p_index < np
 
@@ -221,8 +220,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         Degrees[p_index] = D;
         Dvs[p_index] = i0;
         Ms[p_index] = COMP(1, D);
-
-        Chase_index[p_index] = 0; // TODO debugging
 
         // increment index
         ++p_index;
@@ -247,8 +244,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         // update variable v and chaser list
         if (count < m) { // same variable, higher order -- get next element in "chase" list
             Ps[p_index] = Ps[p_index] + 1;
-
-            Chase_index[p_index] = Chase_index[p_index] + 1; // TODO debugging
         } else if (v == r) { // rollover, but we're finished
             ++n_finished; // this polynomial is done.
             ++p_index; // next polynomial
@@ -262,13 +257,9 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
             // calculate next m
             Word M1 = RED(Ms[p_index]);
             Ms[p_index] = COMP(m * FIRST(M1), RED(M1)); // how many derivatives until we need to roll over again
-
-            Chase_index[p_index] = 0; // TODO debugging
         }
 
         // compute s_k = partial_{(h_1,...,h_{k-1}),(i_1,...,i_{k-1}),v} h_k
-        Word ch_index = Chase_index[p_index]; // TODO debugging
-
         // get h_k and its degree
         Word D = Degrees[p_index];
         Word P = FIRST(*Ps[p_index]);
@@ -286,10 +277,10 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
 
         // TODO debugging
         IWRITE(count); SWRITE(", variable: "); IWRITE(v); SWRITE(" polynomial: "); IWRITE(p_index);
-        SWRITE(", degree: "); LWRITE(Degrees[p_index]); SWRITE("\n  ");
-        LWRITE(INDEX(ch_index, D)); SWRITE(" ");
+        SWRITE(", degree: "); LWRITE(Degrees[p_index]); SWRITE("\n");
+        LWRITE(COMP(p_index, INDEX(count, D))); SWRITE("\n  ");
         P == 0 ? SWRITE("0") : LWRITE(P); SWRITE("\n  ");
-        LWRITE(INDEX(count, D)); SWRITE(" "); Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
+        Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
 
         if (Q != 0) {
             // Gs2 contains derivatives computed during recursion

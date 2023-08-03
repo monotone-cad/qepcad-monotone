@@ -19,10 +19,53 @@ SideEffect
 #include "qepcad.h"
 
 // convenience function for multi-degree of polynomial, returns (d_r,...,d_1) where d_i is degree of P in variable i
+// returns degree + 1
 inline Word DEG(Word r, Word P)
 {
-    return INV(PDEGV(r, P));
+    Word D = PDEGV(r, P);
+    Word d, D1 = NIL;
+
+    while (D != NIL) {
+        ADV(D, &d, &D);
+
+        D1 = COMP(d+1, D1);
+    }
+
+    return D1;
 }
+
+// list sum
+inline Word LSUM(Word L)
+{
+    Word sum, a;
+
+    sum = 0;
+    while (L != NIL) {
+        ADV(L, &a, &L);
+
+        sum += a;
+    }
+
+    return sum;
+}
+
+// list product
+inline Word LPROD(Word L)
+{
+    Word m = 1, a = 0;
+    while (L != NIL) {
+        ADV(L, &a, &L);
+
+        // multiply by zero short-circuits
+        if (a == 0) return 0;
+
+        // otherwise perform the multiplication
+        m *= a;
+    }
+
+    return m;
+}
+
 
 // recover index from count
 // TODO this is only for debugging, can be deleted when done.
@@ -34,7 +77,7 @@ Word IndexHelper(Word m, Word I, Word* count_)
 
     Word J = NIL;
     if (I1 != NIL) {
-        J = IndexHelper(a + 1 * m, I1, count_);
+        J = IndexHelper(a  * m, I1, count_);
     }
 
     Word count = *count_;
@@ -59,19 +102,13 @@ Word* Allocate(Word P, Word D)
     // polynomials
     // each F_1 is of the form (..., P, deg(P), )
     Word P1 = LIST2(P, D);
-
+    LWRITE(D);
     // calculate max number of derivatives possible in list
-    Word len = 1, d = 0;
-    while (D != NIL) {
-        ADV(D, &d, &D);
-        len = len * (d + 1);
-    }
-
-    len += 2; // includes P itself and a null at the end
-
-    Word* F1s = (Word*) malloc(len * sizeof(Word));
+    Word len = LPROD(D) + 2; // includes P itself and a null at the end
+    printf(" %d by Allocate\n", len);
+    Word* F1s = (Word*) calloc(len, sizeof(Word));
     if (F1s == NULL) {
-        FAIL("QUASIAFFINE", "malloc F1s failed.");
+        FAIL("QUASIAFFINE", "calloc F1s failed.");
     }
 
     // first element is P1, rest are NIL (empty lists)
@@ -88,20 +125,6 @@ Word* Allocate(Word P, Word D)
     return F1s;
 }
 
-// list sum
-inline Word LSUM(Word L)
-{
-    Word sum, a;
-
-    sum = 0;
-    while (L != NIL) {
-        ADV(L, &a, &L);
-
-        sum += a;
-    }
-
-    return sum;
-}
 
 // construct a jacobi (k + 1) * (k + 1)-matrix from a minor (k*k-matrix) by appending one column
 // (\H_k / \x_j,...,\H_1) and one row (\P / \x_j, \P / \x_ik,..., \P / \x_i1)
@@ -182,7 +205,11 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
     // set up working array
     Word g_len = np * 2; // length of memory allocated for Gs
     Word g_count = 0; // how many differentials computed so far, index in Gs
-    Word** Gs = (Word**) malloc(g_len * sizeof(Word*)); // list of all differentials computed in this round, working set
+    Word** Gs = (Word**) calloc(g_len, sizeof(Word*)); // list of all differentials computed in this round, working set
+    if (Gs == NULL) {
+        FAIL("QUASIAFFINE", "calloc Gs failed.");
+    }
+    printf("malloc Gs%d %d\n", LENGTH(Is), Gs);
 
     // metadata
     Word* Ps[np]; // "chase list", first element is h1
@@ -191,7 +218,6 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
     Word Dvs[np]; // list of current differentiation variable (i1)
     Word Chase_index[np]; // chase indices TODO debugging
 
-    Word init_v = i0 + 1; // initial differentiation variable (i1)
     Word p_index = 0; // initial polynomial index, ranges over 0 <= p_index < np
 
     // initialise metadata for each input polynomial
@@ -201,12 +227,12 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
 
         Ps[p_index] = F1s;
         Degrees[p_index] = D;
-        Dvs[p_index] = init_v;
-        Ms[p_index] = FIRST(D);
+        Dvs[p_index] = i0;
+        Ms[p_index] = COMP(1, D);
 
         Chase_index[p_index] = 0; // TODO debugging
 
-        // increment
+        // increment index
         ++p_index;
     }
 
@@ -224,28 +250,44 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
             printf("increment count %d. cycle polynomial list\n", count);
         }
 
-        // compute s_k = partial_{(h_1,...,h_{k-1}),(i_1,...,i_{k-1}),v} h_k
         Word v = Dvs[p_index]; // differentiation variable
+        Word m = FIRST(Ms[p_index]);
+
+        // update variable v and chaser list
+        if (count < m) { // same variable, higher order -- get next element in "chase" list
+            printf("++count, count = %d\n", count);
+            Ps[p_index] = Ps[p_index] + 1;
+
+            Chase_index[p_index] = Chase_index[p_index] + 1; // TODO debugging
+        } else if (v == r) { // rollover, but we're finished
+            printf("polynomial %d is done\n", p_index);
+            ++n_finished; // this polynomial is done.
+            ++p_index; // next polynomial
+
+            continue; // skip it
+        } else { // rollover - increment differentiation variable
+            printf("next variable p_index = %d, v = %d\n", p_index, v);
+            ++v; // next variable ...
+            Dvs[p_index] = v; // ... and store
+            Ps[p_index] = Fs[p_index]; // back to beginning of chase list
+
+            // calculate next m
+            Word M1 = RED(Ms[p_index]);
+            Ms[p_index] = COMP(m * FIRST(M1), RED(M1)); // how many derivatives until we need to roll over again
+
+            Chase_index[p_index] = 0; // TODO debugging
+        }
+
+        // compute s_k = partial_{(h_1,...,h_{k-1}),(i_1,...,i_{k-1}),v} h_k
         printf("v = %d, round = %d\n", v, LENGTH(Is));
         Word ch_index = Chase_index[p_index]; // TODO debugging
-
-        // maxed out index, no more differentials possible -- skip
-        if (v > r) {
-            printf("skipping %d\n", p_index);
-            ++n_finished;
-            ++p_index;
-
-            continue;
-        }
 
         // get h_k and its degree
         Word D = Degrees[p_index];
         Word P = FIRST(*Ps[p_index]);
 
         // construct jacobi matrix using h1 = P and i1 = v
-        SWRITE("before jacobi "); LWRITE(Is); SWRITE("\n");
         Word Jacobi = JacobiFromMinor(r, P, v, Hs, Is, Minor);
-        SWRITE("after jacobi "); LWRITE(Is); SWRITE("\n");
 
         // compute partial differential, determinant of jacobi matrix
         Word Q = MAIPDE(r, Jacobi); // next derivative is the jacobi determinant
@@ -264,17 +306,15 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
 
         if (Q != 0) {
             // Gs2 contains derivatives computed during recursion
-            SWRITE("before recursion "); LWRITE(Is); SWRITE("\n");
             Word Gs2 = STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs), Jacobi);
             Gs1 = CONC(Gs1, Gs2);
-            SWRITE("after recursion "); LWRITE(Is); SWRITE("\n");
 
             // append new derivative to working list Gs and return list
-            printf("add derivative to Gs %d\n", g_count);
+            printf("add derivative to Gs %d %d\n", g_count, g_len);
             if (g_count >= g_len) { // enlarge list
                 printf("realloc() %d\n", g_len);
                 g_len += np;
-                Gs = (Word**) realloc(Gs, g_len * sizeof(Word*));
+                Gs = (Word**) reallocarray(Gs, g_len, sizeof(Word*));
             }
 
             Gs[g_count] = Allocate(Q, Qdeg);
@@ -282,21 +322,10 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         }
 
         // append derivative to Fs, preserving zeroes
+        LWRITE(D); printf(" %d, try to write in strat\n", count);
         Fs[p_index][count] = LIST2(Q, Qdeg);
 
-        // update variable v and chaser list
-        if (count < Ms[p_index]) { // same variable, higher order -- get next element in "chase" list
-            Ps[p_index] = Ps[p_index] + 1;
-            Chase_index[p_index] = Chase_index[p_index] + 1; // TODO debugging
-        } else { // rollover - increment differentiation variable
-            Dvs[p_index] = v + 1; // next variable
-            Ps[p_index] = Fs[p_index]; // back to beginning of chase list
-            Ms[p_index] = Ms[p_index] * LELTI(Degrees[p_index], v - i0); // how many derivatives until we need to roll over again
-
-            Chase_index[p_index] = 0; // TODO debugging
-        }
-
-        // consider next polynomial
+        // next polynomial please.
         ++p_index;
     }
 
@@ -314,6 +343,7 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         free(Gs[i]);
     }
 
+    printf("free Gs%d %d\n", LENGTH(Is), Gs);
     free(Gs);
     printf("...return\n");
 
@@ -327,9 +357,9 @@ Word PARTIALS(Word r, Word L)
     Word D, P, P1, k, j;
 
     k = LENGTH(L);
-    Word** Fs = (Word**) malloc(k * sizeof(Word*));
+    Word** Fs = (Word**) calloc(k, sizeof(Word*));
     if (Fs == NULL) {
-        FAIL("QUASIAFFINE", "malloc Fs failed.");
+        FAIL("QUASIAFFINE", "calloc Fs failed.");
     }
 
     j = 0;

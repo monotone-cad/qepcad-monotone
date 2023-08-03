@@ -6,14 +6,12 @@ A refinement of the kind { x_i < c }, { x_i = c }, { x_i > c } will be required.
 
 \Input
   \parm{A} proj factor set
+  \parm{J} proj polynomial set
   \parm{r} is the space in which D lives
   \parm{D} is a CAD
 
-Output
-  \parm{A*} modified projection factor set with new polynomials.
-
 Side Effect
-  A is modified.
+  A and J are modified by adding new polynomials
 
 ======================================================================*/
 #include "qepcad.h"
@@ -76,6 +74,44 @@ Word FindByIndex(Word L, Word I, Word j, Word k)
     return NIL;
 }
 
+// if polynomial deos not depend on variables x1,..,xk, then return a polynomial in x(k+1),...,xr
+Word PNotDependVs(Word r, Word P, Word k)
+{
+    // base case r == 0, P is an integer
+    if (r == 0) {
+        return P;
+    }
+
+    Word P1, e, Q, Q1;
+
+    // k < r: check for dependent variable
+    if (r < k) {
+        FIRST2(P, &e, &Q);
+
+        if (e > 0) { // depends on x_i
+            return NIL;
+        } else {
+            return PNotDependVs(r - 1, Q, k);
+        }
+    }
+
+    // k >= r, reconstruct polynomial
+    P1 = NIL;
+    while (P != NIL) {
+        ADV2(P, &e, &Q, &P);
+
+        Q1 = PNotDependVs(r - 1, Q, k);
+
+        // error case
+        if (Q1 == NIL) return NIL;
+
+        // otherwise construct the polynomial
+        P1 = COMP2(Q1, e, P1);
+    }
+
+    return INV(P1);
+}
+
 // evaluate r-variate integer polynomial P at sample point S = (c_1,...,c_k)
 // return Q in Z[x_{k+1},...,k_r] = P(c_1,...,c_k,x_{k+1},...,k_r)
 // r : positive integer
@@ -84,19 +120,31 @@ Word FindByIndex(Word L, Word I, Word j, Word k)
 // return : substituted polynomial in Z[x_{k+1},...,x_r]
 Word Substitute(Word r, Word P, Word S)
 {
-    Word LL, P1, Q, J, c;
-
     // determine if S is rational or algebraic
+    Word Q, J, c;
     FIRST3(S, &Q, &J, &c);
 
     // sample subset R^0, nothing to do
     if (c == NIL) return P;
 
-    if (PDEG(Q) == 1) {
-        P1 = IPFRP(r - LENGTH(c), IPRNME(r, P, RCFAFC(c)));
+    // number of coordinates in sample point
+    Word k = LENGTH(c);
+
+    // if P does not depend on all x1,...,kk, then no substitution needed
+    Word P1 = PNotDependVs(r, P, k+1);
+
+    if (P1 != NIL) return P1;
+
+    // otherwise perform substitution
+    if (PDEG(Q) == 1) { // rational sample
+        P1 = IPRNME(r, P, RCFAFC(c));
+    } else { // algebraic sample
+        P1 = IPAFME(r, Q, P, c);
+        printf("algebraic evaluation "); LWRITE(P1); SWRITE(", in Z: ");
+        LWRITE(IPFRP(r - LENGTH(c), P1)); SWRITE("\n");
     }
 
-    return P1;
+    return IPFRP(r - LENGTH(c), P1);
 }
 
 // return a list (f_j,...,f_k), where f_i is a level j polynomial which is 0 on C with sample point S substituted in.
@@ -265,7 +313,7 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
 
     // semi-monotone: crptical points of P subject to Gs
     if (Gs != NIL) {
-        Rs = COMP(LagrangeRefinement(r, P, k, Gs, Is), Rs);
+        Rs = CONC(LagrangeRefinement(r, P, k, Gs, Is), Rs);
     }
 
     // monotone
@@ -277,14 +325,42 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
         ++k;
 
         // monotone, index k: critical points of Q subject to Gs
-        Rs = COMP(LagrangeRefinement(r, Q, k, Gs, Is), Rs);
+        Rs = CONC(LagrangeRefinement(r, Q, k, Gs, Is), Rs);
     }
 
     // solve for x1
     return Rs;
 }
 
-void QepcadCls::MONOTONE(Word A, Word D, Word r, Word* A_)
+Word PrepHelper(Word k, Word P)
+{
+    // base case: polynomial in one variable
+    if (k == 1) return LIST2(0, P);
+
+    // recursive case
+    return COMP(0, PrepHelper(k - 1, P));
+}
+
+// polynomial prepend variables
+// k: number of variables to prepend
+// P: in I[x_1,...,x_r]
+// return: P written in I[y_1,...,y_k,x_1,...,x_r]
+Word PPREPVS(Word k, Word P)
+{
+    if (k == 0) return P;
+
+    Word P1 = NIL;
+    Word e, Q;
+    while (P != NIL) {
+        ADV2(P, &e, &Q, &P);
+
+        P1 = COMP2(PrepHelper(k, Q), e, P1);
+    }
+
+    return INV(P1);
+}
+
+void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
 {
     // consider each true cell in D
     Word TrueCells, junk;
@@ -364,18 +440,32 @@ void QepcadCls::MONOTONE(Word A, Word D, Word r, Word* A_)
             IPDWRITE(nv, P, GVVL); SWRITE("\n");
         }
 
+        Word Rs = NIL; // list of refinement polynomials, in I[x_Ij]
         // perform refinement
         if (CT != NIL) {
             SWRITE("top\n");
-            Refinement(nv, Gs, FT, Fs);
+            Rs = CONC(Refinement(nv, Gs, FT, Fs), Rs);
         }
 
         if (CB != NIL) {
             SWRITE("bottom\n");
-            Refinement(nv, Gs, FB, Fs);
+            Rs = CONC(Refinement(nv, Gs, FB, Fs), Rs);
         }
-    }
 
-    // TODO add to A and update pointer A_
+        // add refinement polynomials
+        Word Rs1 = NIL;
+        while (Rs != NIL) {
+            Word P;
+            ADV(Rs, &P, &Rs);
+
+            // write in Q[x_1,...,x_Ij]
+            Rs1 = COMP(MPOLY(PPREPVS(Ij1, P), NIL, NIL, PO_POLY, PO_KEEP), Rs1);
+        }
+
+        // add refinement polynomials to J and their factors to A.
+        Rs = IPLFAC(Ij, Rs1);
+        ADDPOLS(Rs1, Ij, LFS("K"), &J);
+        ADDPOLS(Rs, Ij, LFS("M"), &A);
+    }
 }
 

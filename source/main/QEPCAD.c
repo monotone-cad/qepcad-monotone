@@ -69,7 +69,7 @@ Step3: /* Truth-invariant CAD. */
     D = TICAD(Q,F,f,P,A);
     // add extra polynomials for [semi]-monotone cells and recompute the cad if needed
     if (PCMCT == 'y') {
-        MONOTONE(P, D, r, &P);
+        MONOTONE(P, J, D, r);
         // D = RECOMPUTE(D, Q, F, f, P, A); // TODO reinstate
     }
 

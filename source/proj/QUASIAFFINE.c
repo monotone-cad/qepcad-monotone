@@ -70,21 +70,30 @@ inline Word LPROD(Word L)
 // recover index from count
 // TODO this is only for debugging, can be deleted when done.
 // count = (c1 + c2 * m1 + ... + cn * m(n-1))
-Word IndexHelper(Word m, Word I, Word* count_)
+Word IndexHelper(Word m, Word M, Word* count_)
 {
-    Word a, I1;
-    ADV(I, &a, &I1);
+    Word count = *count_;
+    Word a, M1;
+    ADV(M, &a, &M1);
 
-    Word J = NIL;
-    if (I1 != NIL) {
-        J = IndexHelper(a  * m, I1, count_);
+    if (M1 == NIL) {
+        *count_ = count % m;
+
+        return LIST1(count / m);
     }
 
-    Word count = *count_;
+    // skip round
+    if (a == 1) {
+        return COMP(0, IndexHelper(m, M1, count_));
+    }
+
+    Word I1 = IndexHelper(m * a, M1, count_);
+    count = *count_;
+
     Word j = count / m;
     *count_ = count % m;
 
-    return COMP(j, J);
+    return COMP(j, I1);
 }
 
 inline Word INDEX(Word count, Word M)
@@ -180,7 +189,7 @@ Word JacobiFromMinor(Word r, Word P, Word j, Word Hs, Word Is, Word Minor)
 // Hs: list of polynomials h_i1,...,h_ik
 // Minor: (LENGTH(I1) - 1) * (LENGTH(I1) - 1) - matrix |a_ij| = partial h_i / partial x_j for h in Hs and i in Is
 // return list of all differentials computed by alrogithm
-Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
+Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
 {
     // end of recursion
     Word i0 = FIRST(Is); // number of variables considered so far
@@ -191,6 +200,9 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
     // TODO debugging
     SWRITE("STRAT: Is = "); LWRITE(Is); SWRITE("\n");
     SWRITE("       Hs = "); LWRITE(Hs); SWRITE("\n");
+
+    // Dereference Fs_
+    Word **Fs = *Fs_;
 
     // set up return value
     Word Gs1 = NIL; // list of all differentials computed in this round, to return
@@ -208,6 +220,7 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
     Word Degrees[np]; // degree of Fs[0][0], gives max index
     Word Ms[np]; // number of steps before maximum differentiation variable (i1) should be incremented
     Word Dvs[np]; // list of current differentiation variable (i1)
+    Word Chase[np]; // TODO debugging
 
     Word p_index = 0; // initial polynomial index, ranges over 0 <= p_index < np
 
@@ -218,8 +231,9 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
 
         Ps[p_index] = F1s;
         Degrees[p_index] = D;
+        Ms[p_index] = COMP(1, LCOPY(D)); // neet do copy as we modify later
         Dvs[p_index] = i0;
-        Ms[p_index] = COMP(1, D);
+        Chase[p_index] = 0;
 
         // increment index
         ++p_index;
@@ -242,22 +256,27 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         Word m = FIRST(Ms[p_index]);
 
         // update variable v and chaser list
-        if (count < m) { // same variable, higher order -- get next element in "chase" list
-            Ps[p_index] = Ps[p_index] + 1;
-        } else if (v == r) { // rollover, but we're finished
+        if (count >= m && v == r) { // rollover, but we're finished
             ++n_finished; // this polynomial is done.
             ++p_index; // next polynomial
 
             continue; // skip it
-        } else { // rollover - increment differentiation variable
+        } else if (count >= m) { // rollover - increment differentiation variable
             ++v; // next variable ...
             Dvs[p_index] = v; // ... and store
             Ps[p_index] = Fs[p_index]; // back to beginning of chase list
+            Chase[p_index] = 0;
 
             // calculate next m
             Word M1 = RED(Ms[p_index]);
-            Ms[p_index] = COMP(m * FIRST(M1), RED(M1)); // how many derivatives until we need to roll over again
+            Word d = FIRST(M1);
+            SFIRST(M1, d * m);
+            Ms[p_index] = M1;
+
+            // degree zero - no derivatives taken for this variable. next iteration will increment the variable.
+            if (d == 1) continue;
         }
+        printf("p_index %d, variable %d, count = %d, chase_index = %d\n", p_index, v, count, Chase[p_index]);
 
         // compute s_k = partial_{(h_1,...,h_{k-1}),(i_1,...,i_{k-1}),v} h_k
         // get h_k and its degree
@@ -271,20 +290,21 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         Word Q = MAIPDE(r, Jacobi); // next derivative is the jacobi determinant
         Word Qdeg = DEG(r,Q);
 
-        if (LSUM(Qdeg) == 0) { // s_k is constant, may as well be zero
+        if (LSUM(Qdeg) == r) { // s_k is constant, may as well be zero
             Q = 0;
         }
 
         // TODO debugging
         IWRITE(count); SWRITE(", variable: "); IWRITE(v); SWRITE(" polynomial: "); IWRITE(p_index);
-        SWRITE(", degree: "); LWRITE(Degrees[p_index]); SWRITE("\n");
-        LWRITE(COMP(p_index, INDEX(count, D))); SWRITE("\n  ");
+        SWRITE(", degree: "); LWRITE(Degrees[p_index]); SWRITE("\n  ");
+        LWRITE(INDEX(count, D)); SWRITE(" ");
         P == 0 ? SWRITE("0") : LWRITE(P); SWRITE("\n  ");
+        LWRITE(INDEX(Chase[p_index], D)); SWRITE(" ");
         Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
 
         if (Q != 0) {
             // Gs2 contains derivatives computed during recursion
-            Word Gs2 = STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs), Jacobi);
+            Word Gs2 = STRAT(g_count, r, &Gs, COMP(v, Is), COMP(P, Hs), Jacobi);
             Gs1 = CONC(Gs1, Gs2);
 
             // append new derivative to working list Gs and return list
@@ -301,6 +321,8 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
         Fs[p_index][count] = LIST2(Q, Qdeg);
 
         // next polynomial please.
+        Ps[p_index] = Ps[p_index] + 1;
+        Chase[p_index] = Chase[p_index] + 1;
         ++p_index;
     }
 
@@ -321,6 +343,7 @@ Word STRAT(Word np, Word r, Word** Fs, Word Is, Word Hs, Word Minor)
     free(Gs);
 
     // returns list of derivatives
+    *Fs_ = Fs;
     return Gs1;
 }
 
@@ -346,7 +369,7 @@ Word PARTIALS(Word r, Word L)
     }
 
     // initial i0 = FIRST(I1) = 0. h0 = FIRST(Hs) = 0, Minor is the empty matrix
-    Word Gs = STRAT(k, r, Fs, LIST1(0), LIST1(0), NIL);
+    Word Gs = STRAT(k, r, &Fs, LIST1(0), LIST1(0), NIL);
 
     // free 2d Fs
     for (j = 0; j < k; j++) free(Fs[j]);

@@ -128,23 +128,25 @@ Word Substitute(Word r, Word P, Word S)
     if (c == NIL) return P;
 
     // number of coordinates in sample point
-    Word k = LENGTH(c);
+    Word i0 = LENGTH(c);
 
     // if P does not depend on all x1,...,kk, then no substitution needed
-    Word P1 = PNotDependVs(r, P, k+1);
-
+    Word P1 = PNotDependVs(r, P, i0 + 1);
     if (P1 != NIL) return P1;
 
     // otherwise perform substitution
+    Word k = r - i0;
     if (PDEG(Q) == 1) { // rational sample
         P1 = IPRNME(r, P, RCFAFC(c));
     } else { // algebraic sample
         P1 = IPAFME(r, Q, P, c);
+        P1 = AFPICR(k, P1);
         printf("algebraic evaluation "); LWRITE(P1); SWRITE(", in Z: ");
-        LWRITE(IPFRP(r - LENGTH(c), P1)); SWRITE("\n");
+        LWRITE(IPFRP(k, P1)); SWRITE("\n");
     }
 
-    return IPFRP(r - LENGTH(c), P1);
+    // convert to a polynomial with integer coefficients
+    return IPFRP(k, P1);
 }
 
 // return a list (f_j,...,f_k), where f_i is a level j polynomial which is 0 on C with sample point S substituted in.
@@ -338,7 +340,7 @@ Word PrepHelper(Word k, Word P)
     if (k == 1) return LIST2(0, P);
 
     // recursive case
-    return COMP(0, PrepHelper(k - 1, P));
+    return LIST2(0, PrepHelper(k - 1, P));
 }
 
 // polynomial prepend variables
@@ -375,7 +377,11 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
 
         // C has dimension two, then IJ < Ik are the positions in I where the composent is equal to 1. otherwise skip
         Word Ij, Ik;
-        if (!TwoDimIndex(I, &Ij, &Ik)) continue;
+        if (!TwoDimIndex(I, &Ij, &Ik)) {
+            printf("skip cell\n");
+            continue;
+        }
+
         Word Ij1 = Ij - 1;
         Word nv = r - Ij1;
 
@@ -457,9 +463,12 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
         while (Rs != NIL) {
             Word P;
             ADV(Rs, &P, &Rs);
+            LWRITE(P); SWRITE("\n");
 
             // write in Q[x_1,...,x_Ij]
             Rs1 = COMP(MPOLY(PPREPVS(Ij1, P), NIL, NIL, PO_POLY, PO_KEEP), Rs1);
+
+            LWRITE(PPREPVS(Ij1, P)); SWRITE("\n");
         }
 
         // add refinement polynomials to J and their factors to A.

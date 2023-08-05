@@ -119,16 +119,8 @@ Word* Allocate(Word P, Word D)
         FAIL("QUASIAFFINE", "calloc F1s failed.");
     }
 
-    // first element is P1, rest are NIL (empty lists)
+    // first element is P1, rest are 0 (by calloc)
     F1s[0] = P1;
-
-    // rest are null
-    Word j = 1;
-    while (j < len) {
-        F1s[j] = NIL;
-
-        ++j;
-    }
 
     return F1s;
 }

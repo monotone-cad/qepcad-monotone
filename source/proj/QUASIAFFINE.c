@@ -106,7 +106,7 @@ inline Word INDEX(Word count, Word M)
 }
 
 // allocates room for, and sets up, a list of derivatives
-Word* Allocate(Word P, Word D)
+Word Allocate(Word P, Word D)
 {
     // polynomials
     // each F_1 is of the form (..., P, deg(P), )
@@ -114,13 +114,11 @@ Word* Allocate(Word P, Word D)
 
     // calculate max number of derivatives possible in list
     Word len = LPROD(D) + 2; // includes P itself and a null at the end
-    Word* F1s = (Word*) calloc(len, sizeof(Word));
-    if (F1s == NULL) {
-        FAIL("QUASIAFFINE", "calloc F1s failed.");
-    }
+    printf("len %d\n", len);
+    Word F1s = GCAMALLOC(len, GC_CHECK);
 
     // first element is P1, rest are 0 (by calloc)
-    F1s[0] = P1;
+    GCASET(F1s, 0, P1);
 
     return F1s;
 }
@@ -181,7 +179,7 @@ Word JacobiFromMinor(Word r, Word P, Word j, Word Hs, Word Is, Word Minor)
 // Hs: list of polynomials h_i1,...,h_ik
 // Minor: (LENGTH(I1) - 1) * (LENGTH(I1) - 1) - matrix |a_ij| = partial h_i / partial x_j for h in Hs and i in Is
 // return list of all differentials computed by alrogithm
-Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
+Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
 {
     // end of recursion
     Word i0 = FIRST(Is); // number of variables considered so far
@@ -190,11 +188,8 @@ Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
     }
 
     // TODO debugging
-    SWRITE("STRAT: Is = "); LWRITE(Is); SWRITE("\n");
-    SWRITE("       Hs = "); LWRITE(Hs); SWRITE("\n");
-
-    // Dereference Fs_
-    Word **Fs = *Fs_;
+    // SWRITE("STRAT: Is = "); LWRITE(Is); SWRITE("\n");
+    // SWRITE("       Hs = "); LWRITE(Hs); SWRITE("\n");
 
     // set up return value
     Word Gs1 = NIL; // list of all differentials computed in this round, to return
@@ -202,26 +197,24 @@ Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
     // set up working array
     Word g_len = np * 2; // length of memory allocated for Gs
     Word g_count = 0; // how many differentials computed so far, index in Gs
-    Word** Gs = (Word**) calloc(g_len, sizeof(Word*)); // list of all differentials computed in this round, working set
-    if (Gs == NULL) {
-        FAIL("QUASIAFFINE", "calloc Gs failed.");
-    }
+    Word Gs = NIL; // list of all differentials computed in this round, working set
 
     // metadata
-    Word* Ps[np]; // "chase list", first element is h1
     Word Degrees[np]; // degree of Fs[0][0], gives max index
     Word Ms[np]; // number of steps before maximum differentiation variable (i1) should be incremented
     Word Dvs[np]; // list of current differentiation variable (i1)
-    Word Chase[np]; // TODO debugging
+    Word Chase[np]; // chase index: index of h1
 
     Word p_index = 0; // initial polynomial index, ranges over 0 <= p_index < np
 
     // initialise metadata for each input polynomial
+    Word Fs1 = Fs;
     while (p_index < np) {
-        Word* F1s = Fs[p_index];
-        Word D = REDI(SECOND(F1s[0]), i0);
+        Word F1;
+        ADV(Fs1, &F1, &Fs1);
 
-        Ps[p_index] = F1s;
+        Word D = REDI(SECOND(GCAGET(F1, 0)), i0);
+
         Degrees[p_index] = D;
         Ms[p_index] = COMP(1, LCOPY(D)); // neet do copy as we modify later
         Dvs[p_index] = i0;
@@ -238,6 +231,7 @@ Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
     while (n_finished < np) { // stop once differential index for every polynomial is maxed
         // reached the end of polynomial list, cycle back to beginning and consider next differential index I
         if (p_index == np) {
+            Fs1 = Fs;
             p_index = 0;
             n_finished = 0;
 
@@ -247,16 +241,17 @@ Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
         Word v = Dvs[p_index]; // differentiation variable
         Word m = FIRST(Ms[p_index]);
 
+
         // update variable v and chaser list
         if (count >= m && v == r) { // rollover, but we're finished
             ++n_finished; // this polynomial is done.
             ++p_index; // next polynomial
+            Fs1 = RED(Fs1); // skip
 
             continue; // skip it
         } else if (count >= m) { // rollover - increment differentiation variable
             ++v; // next variable ...
             Dvs[p_index] = v; // ... and store
-            Ps[p_index] = Fs[p_index]; // back to beginning of chase list
             Chase[p_index] = 0;
 
             // calculate next m
@@ -268,12 +263,17 @@ Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
             // degree zero - no derivatives taken for this variable. next iteration will increment the variable.
             if (d == 1) continue;
         }
-        printf("p_index %d, variable %d, count = %d, chase_index = %d\n", p_index, v, count, Chase[p_index]);
+        printf("p_index %d, variable %d, count = %d, chase_index = %d, length(Fs) = %d\n", p_index, v, count,
+        Chase[p_index], LENGTH(Fs1));
+
+        // next polynomial
+        Word F1;
+        ADV(Fs1, &F1, &Fs1);
 
         // compute s_k = partial_{(h_1,...,h_{k-1}),(i_1,...,i_{k-1}),v} h_k
         // get h_k and its degree
         Word D = Degrees[p_index];
-        Word P = FIRST(*Ps[p_index]);
+        Word P = FIRST(GCAGET(F1, Chase[p_index]));
 
         // construct jacobi matrix using h1 = P and i1 = v
         Word Jacobi = JacobiFromMinor(r, P, v, Hs, Is, Minor);
@@ -283,6 +283,7 @@ Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
         Word Qdeg = DEG(r,Q);
 
         if (LSUM(Qdeg) == r) { // s_k is constant, may as well be zero
+            Qdeg = 0;
             Q = 0;
         }
 
@@ -296,76 +297,53 @@ Word STRAT(Word np, Word r, Word*** Fs_, Word Is, Word Hs, Word Minor)
 
         if (Q != 0) {
             // Gs2 contains derivatives computed during recursion
-            Word Gs2 = STRAT(g_count, r, &Gs, COMP(v, Is), COMP(P, Hs), Jacobi);
+            Word Gs2 = STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs), Jacobi);
             Gs1 = CONC(Gs1, Gs2);
 
-            // append new derivative to working list Gs and return list
-            if (g_count >= g_len) { // enlarge list
-                g_len += np;
-                Gs = (Word**) reallocarray(Gs, g_len, sizeof(Word*));
-            }
-
-            Gs[g_count] = Allocate(Q, Qdeg);
+            Gs = COMP(Allocate(Q, Qdeg), Gs);
             ++g_count;
         }
 
         // append derivative to Fs, preserving zeroes
-        Fs[p_index][count] = LIST2(Q, Qdeg);
+        Word Q1 = LIST2(Q, Qdeg);
+        printf("GCASET(F1, %d, Q1)\n", count);
+        GCASET(F1, count, Q1);
 
         // next polynomial please.
-        Ps[p_index] = Ps[p_index] + 1;
         Chase[p_index] = Chase[p_index] + 1;
         ++p_index;
     }
 
     // construct list Gs1 of all functions in Gs
-    Word i = g_count;
-    while (i > 0) { // comp backwards
-        --i;
+    while (Gs != NIL) {
+        Word G1;
+        ADV(Gs, &G1, &Gs);
+
         // future functions expect QEPCAD polynomials
-        Word P1 = MPOLY(FIRST(Gs[i][0]), NIL, NIL, PO_POLY, PO_KEEP);
+        Word P1 = MPOLY(FIRST(GCAGET(G1, 0)), NIL, NIL, PO_POLY, PO_KEEP);
+
         Gs1 = COMP(P1, Gs1);
     }
 
-    // free Gs
-    for (int i = 0; i < g_count; ++i) {
-        free(Gs[i]);
-    }
-
-    free(Gs);
-
-    // returns list of derivatives
-    *Fs_ = Fs;
     return Gs1;
 }
 
 // list of all partials, sufficient for smooth stratification
 Word PARTIALS(Word r, Word L)
 {
-    Word D, P, P1, k, j;
+    Word D, P, P1;
 
-    k = LENGTH(L);
-    Word** Fs = (Word**) calloc(k, sizeof(Word*));
-    if (Fs == NULL) {
-        FAIL("QUASIAFFINE", "calloc Fs failed.");
-    }
-
-    j = 0;
+    Word Fs = NIL, k = 0;
     while (L != NIL) {
         ADV(L, &P, &L);
+        ++k;
 
         D = DEG(r, P);
-        Fs[j] = Allocate(P, D);
-
-        ++j;
+        Fs = COMP(Allocate(P, D), Fs);
     }
 
     // initial i0 = FIRST(I1) = 0. h0 = FIRST(Hs) = 0, Minor is the empty matrix
-    Word Gs = STRAT(k, r, &Fs, LIST1(0), LIST1(0), NIL);
-
-    // free 2d Fs
-    for (j = 0; j < k; j++) free(Fs[j]);
-    free(Fs);
+    Word Gs = STRAT(k, r, Fs, LIST1(0), LIST1(0), NIL);
 
     return Gs;
 }

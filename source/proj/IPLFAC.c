@@ -6,7 +6,7 @@ Integral Polynomial List Factorization.
 \Input
   \parm{k} is a positive $\beta$--integer.
   \parm{J} is a list of $k$--variate integral polynomials.
-  
+
 \Output
   \parm{R} is a list of all distinct positive
            irreducible factors of positive degree in at least one

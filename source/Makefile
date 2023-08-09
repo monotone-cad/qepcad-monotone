@@ -323,7 +323,7 @@ $(LIB)(ticad/SUBSTR.o) \
 $(LIB)(ticad/TCHILD.o) \
 $(LIB)(ticad/TICAD.o) \
 $(LIB)(ticad/MONOTONE.o) \
-$(LIB)(ticad/RECOMPUTE.o) \
+$(LIB)(ticad/REFINE.o) \
 $(LIB)(ticad/FRONTIER.o) \
 $(LIB)(proj/QUASIAFFINE.o) \
 $(LIB)(proj/PermuteAndProject.o) \
@@ -688,7 +688,7 @@ $(LIBD)(ticad/SUBSTR.o) \
 $(LIBD)(ticad/TCHILD.o) \
 $(LIBD)(ticad/TICAD.o) \
 $(LIBD)(ticad/MONOTONE.o) \
-$(LIBD)(ticad/RECOMPUTE.o) \
+$(LIBD)(ticad/REFINE.o) \
 $(LIBD)(ticad/FRONTIER.o) \
 $(LIBD)(proj/QUASIAFFINE.o) \
 $(LIBD)(proj/PermuteAndProject.o) \

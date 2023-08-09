@@ -23,7 +23,7 @@ void ADDPOLS(Word Ps, BDigit k, Word Z, Word *A_)
         ADV(Ps, &P, &Ps);
         PSIMREP(k, LELTI(P, PO_POLY), &k1, &P1);
 
-        ADDPOL(P1, LELTI(P, PO_PARENT), k1, Z, A_, &Label);
+        ADDPOL(P1, LELTI(P, PO_PARENT), NIL, k1, Z, A_, &Label);
 
         Label = COMP(Z, Label);
         SLELTI(P, PO_LABEL, Label);

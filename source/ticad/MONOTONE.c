@@ -362,8 +362,40 @@ Word PPREPVS(Word k, Word P)
     return INV(P1);
 }
 
-void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
+void ADDREFPOLS(Word pv, Word Ps, Word PM, Word* A_, Word* J_)
 {
+    const Word pv1 = pv + 1;
+    const Word Z1 = LFS("K");
+
+    while (Ps != NIL) {
+        Word P, Q, Label;
+        ADV(Ps, &P, &Ps);
+
+        // add to Js (unfactorised)
+        Q = PPREPVS(pv, P);
+        ADDPOL(Q, NIL, PM, pv1, Z1, J_, &Label);
+        Label = COMP(Z1, Label);
+        Word W = MPOLY(Q, Label, NIL, NIL, PO_KEEP);
+
+        // factorise and add to A
+        if (IPCONST(1, Q)) continue;
+
+        Word s, c, L;
+        IPFACDB(1,Q,&s,&c,&L);
+        while (L != NIL) {
+            Word Q1, e, Q2;
+            ADV(L,&Q1,&L);
+            FIRST2(Q1,&e,&Q2);
+
+            Word junk;
+            ADDPOL(PPREPVS(pv, Q2), LIST1(LIST3(PO_FAC,e,W)), PM, pv1, LFS("M"), A_, &junk);
+        }
+    }
+}
+
+void QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
+{
+    Word A = *A_, J = *J_;
     // consider each true cell in D
     Word TrueCells, junk;
     LISTOFCWTV(D, &TrueCells, &junk);
@@ -459,22 +491,9 @@ void QepcadCls::MONOTONE(Word A, Word J, Word D, Word r)
         }
 
         // add refinement polynomials
-        Word Rs1 = NIL;
-        while (Rs != NIL) {
-            Word P;
-            ADV(Rs, &P, &Rs);
-            LWRITE(P); SWRITE("\n");
-
-            // write in Q[x_1,...,x_Ij]
-            Rs1 = COMP(MPOLY(PPREPVS(Ij1, P), NIL, NIL, PO_POLY, PO_KEEP), Rs1);
-
-            LWRITE(PPREPVS(Ij1, P)); SWRITE("\n");
-        }
-
-        // add refinement polynomials to J and their factors to A.
-        Rs = IPLFAC(Ij, Rs1);
-        ADDPOLS(Rs1, Ij, LFS("K"), &J);
-        ADDPOLS(Rs, Ij, LFS("M"), &A);
+        ADDREFPOLS(Ij1, Rs, LELTI(C0, INDX), &A, &J);
     }
+
+    *A_ = A, *J_ = J;
 }
 

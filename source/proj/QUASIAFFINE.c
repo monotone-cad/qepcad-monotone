@@ -105,25 +105,6 @@ inline Word INDEX(Word count, Word M)
     return J;
 }
 
-// allocates room for, and sets up, a list of derivatives
-Word Allocate(Word P, Word D)
-{
-    // polynomials
-    // each F_1 is of the form (..., P, deg(P), )
-    Word P1 = LIST2(P, D);
-
-    // calculate max number of derivatives possible in list
-    Word len = LPROD(D) + 2; // includes P itself and a null at the end
-    printf("len %d\n", len);
-    Word F1s = GCAMALLOC(len, GC_CHECK);
-
-    // first element is P1, rest are 0 (by calloc)
-    GCASET(F1s, 0, P1);
-
-    return F1s;
-}
-
-
 // construct a jacobi (k + 1) * (k + 1)-matrix from a minor (k*k-matrix) by appending one column
 // (\H_k / \x_j,...,\H_1) and one row (\P / \x_j, \P / \x_ik,..., \P / \x_i1)
 Word JacobiFromMinor(Word r, Word P, Word j, Word Hs, Word Is, Word Minor)
@@ -195,7 +176,6 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
     Word Gs1 = NIL; // list of all differentials computed in this round, to return
 
     // set up working array
-    Word g_len = np * 2; // length of memory allocated for Gs
     Word g_count = 0; // how many differentials computed so far, index in Gs
     Word Gs = NIL; // list of all differentials computed in this round, working set
 
@@ -203,22 +183,27 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
     Word Degrees[np]; // degree of Fs[0][0], gives max index
     Word Ms[np]; // number of steps before maximum differentiation variable (i1) should be incremented
     Word Dvs[np]; // list of current differentiation variable (i1)
-    Word Chase[np]; // chase index: index of h1
+    Word ChaseDebug[np]; // chase array index of polynomial h1
+    Word Backup[np]; // first polynomial in the list
+    Word Chase[np]; // first element is h1
+    Word Append[np]; // pointer to last but one element in list, for quick appending.
 
     Word p_index = 0; // initial polynomial index, ranges over 0 <= p_index < np
 
     // initialise metadata for each input polynomial
-    Word Fs1 = Fs;
     while (p_index < np) {
         Word F1;
-        ADV(Fs1, &F1, &Fs1);
+        ADV(Fs, &F1, &Fs);
 
-        Word D = REDI(SECOND(GCAGET(F1, 0)), i0);
+        Word D = REDI(SECOND(F1), i0);
 
         Degrees[p_index] = D;
         Ms[p_index] = COMP(1, LCOPY(D)); // neet do copy as we modify later
         Dvs[p_index] = i0;
-        Chase[p_index] = 0;
+        ChaseDebug[p_index] = 0;
+        Backup[p_index] = F1;
+        Chase[p_index] = F1;
+        Append[p_index] = RED(F1);
 
         // increment index
         ++p_index;
@@ -231,7 +216,6 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
     while (n_finished < np) { // stop once differential index for every polynomial is maxed
         // reached the end of polynomial list, cycle back to beginning and consider next differential index I
         if (p_index == np) {
-            Fs1 = Fs;
             p_index = 0;
             n_finished = 0;
 
@@ -241,18 +225,17 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
         Word v = Dvs[p_index]; // differentiation variable
         Word m = FIRST(Ms[p_index]);
 
-
         // update variable v and chaser list
         if (count >= m && v == r) { // rollover, but we're finished
             ++n_finished; // this polynomial is done.
             ++p_index; // next polynomial
-            Fs1 = RED(Fs1); // skip
 
             continue; // skip it
         } else if (count >= m) { // rollover - increment differentiation variable
             ++v; // next variable ...
             Dvs[p_index] = v; // ... and store
-            Chase[p_index] = 0;
+            ChaseDebug[p_index] = 0;
+            Chase[p_index] = Backup[p_index];
 
             // calculate next m
             Word M1 = RED(Ms[p_index]);
@@ -263,17 +246,18 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
             // degree zero - no derivatives taken for this variable. next iteration will increment the variable.
             if (d == 1) continue;
         }
-        printf("p_index %d, variable %d, count = %d, chase_index = %d, length(Fs) = %d\n", p_index, v, count,
-        Chase[p_index], LENGTH(Fs1));
+                // next polynomial
+        Word F1 = Append[p_index];
 
-        // next polynomial
-        Word F1;
-        ADV(Fs1, &F1, &Fs1);
+        printf("p_index %d, variable %d, count = %d, chase_index = %d, len = %d\n", p_index, v, count,
+        ChaseDebug[p_index], LENGTH(Backup[p_index]));
 
         // compute s_k = partial_{(h_1,...,h_{k-1}),(i_1,...,i_{k-1}),v} h_k
         // get h_k and its degree
         Word D = Degrees[p_index];
-        Word P = FIRST(GCAGET(F1, Chase[p_index]));
+        Word P;
+        LWRITE(Chase[p_index]), SWRITE("\n");
+        ADV(Chase[p_index], &P, &Chase[p_index]);
 
         // construct jacobi matrix using h1 = P and i1 = v
         Word Jacobi = JacobiFromMinor(r, P, v, Hs, Is, Minor);
@@ -292,7 +276,7 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
         SWRITE(", degree: "); LWRITE(Degrees[p_index]); SWRITE("\n  ");
         LWRITE(INDEX(count, D)); SWRITE(" ");
         P == 0 ? SWRITE("0") : LWRITE(P); SWRITE("\n  ");
-        LWRITE(INDEX(Chase[p_index], D)); SWRITE(" ");
+        LWRITE(INDEX(ChaseDebug[p_index], D)); SWRITE(" ");
         Q == 0 ? SWRITE("0") : LWRITE(Q); SWRITE("\n\n");
 
         if (Q != 0) {
@@ -300,17 +284,19 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
             Word Gs2 = STRAT(g_count, r, Gs, COMP(v, Is), COMP(P, Hs), Jacobi);
             Gs1 = CONC(Gs1, Gs2);
 
-            Gs = COMP(Allocate(Q, Qdeg), Gs);
+            // TODO
+            Gs = COMP(LIST2(Q, Qdeg), Gs);
             ++g_count;
         }
 
         // append derivative to Fs, preserving zeroes
         Word Q1 = LIST2(Q, Qdeg);
-        printf("GCASET(F1, %d, Q1)\n", count);
-        GCASET(F1, count, Q1);
+        SRED(F1, Q1);
+        Append[p_index] = RED2(F1);
 
         // next polynomial please.
-        Chase[p_index] = Chase[p_index] + 1;
+        ChaseDebug[p_index] = ChaseDebug[p_index] + 1;
+        Chase[p_index] = RED(Chase[p_index]);
         ++p_index;
     }
 
@@ -320,7 +306,7 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
         ADV(Gs, &G1, &Gs);
 
         // future functions expect QEPCAD polynomials
-        Word P1 = MPOLY(FIRST(GCAGET(G1, 0)), NIL, NIL, PO_POLY, PO_KEEP);
+        Word P1 = MPOLY(FIRST(G1), NIL, NIL, PO_POLY, PO_KEEP);
 
         Gs1 = COMP(P1, Gs1);
     }
@@ -339,7 +325,7 @@ Word PARTIALS(Word r, Word L)
         ++k;
 
         D = DEG(r, P);
-        Fs = COMP(Allocate(P, D), Fs);
+        Fs = COMP(LIST2(P, D), Fs);
     }
 
     // initial i0 = FIRST(I1) = 0. h0 = FIRST(Hs) = 0, Minor is the empty matrix

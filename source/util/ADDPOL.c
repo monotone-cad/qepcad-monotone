@@ -6,7 +6,7 @@ Add (unfactored) polynomial to "A" with given label prefix Z
 \Input
   P : a k-variate saclib polynomial
  PP : parent of P (or null if input)
- PM : polynomial metadata. if metadata is not NIL, P is of type PO_MONOTONE and metadata contains index of base 0-cell
+ PM : polynomial metadata. if metadata is not NIL, P is of type PO_REFINEMENT and metadata contains index of base 0-cell
   k : the level of P (as well as its "variate-ness")
   A : the list of polynomials extracted from the input formula thus far
   Z : Label prefix
@@ -40,9 +40,9 @@ Step2: /* Search A for P */
 
 Step3: /* P not found in A */
     L = LIST2(k,n + 1);
-    if (PM != NIL) { // special case for "PO_MONOTONE" refinement polynomial
-        Q = MPOLY(P,LIST3(Z,k,n+1),PP,PO_MONOTONE,PO_KEEP);
-        SLELTI(Q, PO_MONOTONE, PM);
+    if (PM != NIL) { // special case for "PO_REFINEMENT" refinement polynomial
+        Q = MPOLY(P,LIST3(Z,k,n+1),PP,PO_REFINEMENT,PO_KEEP);
+        SLELTI(Q, PO_REFINEMENT, PM);
     } else {
         Q = MPOLY(P,LIST3(Z,k,n+1),PP,PO_OTHER,PO_KEEP);
     }

@@ -415,7 +415,7 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 #define PO_PARENT     3
 #define PO_TYPE       4
 #define PO_STATUS     5
-#define PO_MONOTONE   6     /* doesn't appear in MPOLY, must be set separately. */
+#define PO_REFINEMENT 6     /* doesn't appear in MPOLY, must be set separately. */
 
 #define PO_RES        10
 #define PO_DIS        11

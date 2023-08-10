@@ -32,6 +32,11 @@ Step1: /* Write. */
                 SWRITE("  *** Removed ***  ");
             if (LELTI(A11,PO_TYPE) == PO_ECON)
                 SWRITE("  *** Equational Constraint ***  ");
+            if (LELTI(A11,PO_TYPE) == PO_MONOTONE) {
+                SWRITE("  *** Refinement of CAD above cell ");
+                LWRITE(LELTI(A11,PO_MONOTONE));
+                SWRITE(" ***  ");
+            }
             P = LELTI(A11,PO_POLY);
             SWRITE("\n");
             TAB(7);

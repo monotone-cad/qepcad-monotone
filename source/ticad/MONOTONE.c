@@ -393,9 +393,13 @@ void ADDREFPOLS(Word pv, Word Ps, Word PM, Word* A_, Word* J_)
     }
 }
 
-void QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
+Word QepcadCls::MONOTONE(Word A, Word* J_, Word D, Word r)
 {
-    Word A = *A_, J = *J_;
+    // initialise refinement polynomials set
+    Word RPs = NIL;
+    for (int i = 0; i < r; ++i) RPs = COMP(NIL, RPs);
+
+    Word J = *J_;
     // consider each true cell in D
     Word TrueCells, junk;
     LISTOFCWTV(D, &TrueCells, &junk);
@@ -491,9 +495,10 @@ void QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         }
 
         // add refinement polynomials
-        ADDREFPOLS(Ij1, Rs, LELTI(C0, INDX), &A, &J);
+        ADDREFPOLS(Ij1, Rs, LELTI(C0, INDX), &RPs, &J);
     }
 
-    *A_ = A, *J_ = J;
+    *J_ = J;
+    return RPs;
 }
 

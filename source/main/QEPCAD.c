@@ -37,6 +37,7 @@ Step1: /* Normalize. */
     /*Int*/ TMNORMQFF = Ths;
     /*Int*/ GVNQFF = F;
     //       if (TYPEQFF(F) != UNDET) { t = EQU; F_e = F; goto Return; }
+    /*Int*/ GVREFL = NIL;
 
 Step2: /* Projection. */
     if (GVUA != NIL) F = LIST3(ANDOP,GVNA,F);
@@ -69,7 +70,8 @@ Step3: /* Truth-invariant CAD. */
     D = TICAD(Q,F,f,P,A);
     // add extra polynomials for [semi]-monotone cells and recompute the cad if needed
     if (PCMCT == 'y') {
-        MONOTONE(&P, &J, D, r);
+        Word RPs = MONOTONE(P, &J, D, r);
+        GVREFL = RPs;
         D = REFINE(D, P);
     }
 

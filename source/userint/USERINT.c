@@ -80,6 +80,7 @@ Step2: /* Process the command. */
        case 45: PRIPFZT(); break;
        case 150: PRMCT(); break;
        case 151: PRFRT(); break;
+       case 152: if (PCMCT == 'y') IPLLDWR(GVVL, GVREFL); else SWRITE("Error GETCID: monotone CAD not enabled.\n"); break;
        case 46: PRAPPROX(); break;
        case 47: PRSIMPLIFIER(); break;
        case 48: PRDCS(); break;

@@ -35,6 +35,7 @@ public:
   GCWord GVUA;         /* Unnormalized formula for assumptions. */
   GCWord GVNA;         /* Normalized formula for assumptions. */
   GCWord GVWL;         /* List of "witnesses", i.e. cells true by trial eval in a SAT problem. */
+  GCWord GVREFL;       /* Lst of refinement polynomials, for constructing monotone CAD. */
 
   /* ------------------------------------------------------------------------*/
   /*                      Program control                                    */
@@ -85,7 +86,7 @@ Word   TMAPPEND[MNV1];     /* Time for Appending, APPEND */
 
 /* Statistics on Truth Invariant CAD Construction Phase */
 Word TMTICAD[MNV1];     /* Time for Truth invariant CAD Construnction Phase, TICAD */
-void MONOTONE(Word* A_, Word* J_, Word D, Word r);
+Word MONOTONE(Word A_, Word* J_, Word D, Word r);
 Word REFINE(Word D, Word A);
 Word FRONTIER(Word C, Word Q, Word F, Word f, Word P, Word A);
 Word   TMCHOOSE[MNV1];    /* Time for Choosing a cell, CHOOSE */

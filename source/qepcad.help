@@ -395,6 +395,14 @@ Displays the projection polynomials.
 @
 
 
+d-refinement-polynomials 152 e d
+@
+d-refinement-polynomials
+
+Displays the refinement polynomials used in computing monotone CAD.
+@
+
+
 d-pscad 49 de d
 @
 d-pscad C

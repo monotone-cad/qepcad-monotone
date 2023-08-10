@@ -373,7 +373,7 @@ void ADDREFPOLS(Word pv, Word Ps, Word PM, Word* A_, Word* J_)
 
         // add to Js (unfactorised)
         Q = PPREPVS(pv, P);
-        ADDPOL(Q, NIL, PM, pv1, Z1, J_, &Label);
+        ADDPOL(Q, NIL, pv1, Z1, J_, &Label);
         Label = COMP(Z1, Label);
         Word W = MPOLY(Q, Label, NIL, NIL, PO_KEEP);
 
@@ -388,7 +388,7 @@ void ADDREFPOLS(Word pv, Word Ps, Word PM, Word* A_, Word* J_)
             FIRST2(Q1,&e,&Q2);
 
             Word junk;
-            ADDPOL(PPREPVS(pv, Q2), LIST1(LIST3(PO_FAC,e,W)), PM, pv1, LFS("M"), A_, &junk);
+            ADDPOL(PPREPVS(pv, Q2), LIST1(LIST3(PO_FAC,e,W)), pv1, LFS("M"), A_, &junk);
         }
     }
 }

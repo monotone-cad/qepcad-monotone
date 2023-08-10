@@ -1,12 +1,11 @@
 /*======================================================================
-                      ADDPOL(P,PP,PM,k, Z;A,L)
+                      ADDPOL(P,PP,k, Z;A,L)
 
 Add (unfactored) polynomial to "A" with given label prefix Z
 
 \Input
   P : a k-variate saclib polynomial
  PP : parent of P (or null if input)
- PM : polynomial metadata. if metadata is not NIL, P is of type PO_REFINEMENT and metadata contains index of base 0-cell
   k : the level of P (as well as its "variate-ness")
   A : the list of polynomials extracted from the input formula thus far
   Z : Label prefix
@@ -17,7 +16,7 @@ Add (unfactored) polynomial to "A" with given label prefix Z
 ======================================================================*/
 #include "qepcad.h"
 
-void ADDPOL(Word P, Word PP, Word PM, BDigit k, Word Z, Word *A_, Word *L_)
+void ADDPOL(Word P, Word PP, BDigit k, Word Z, Word *A_, Word *L_)
 {
     Word A,A_k,As_k,n,i,As_k_i,Ap,L,Q,Ap_k;
 
@@ -40,12 +39,7 @@ Step2: /* Search A for P */
 
 Step3: /* P not found in A */
     L = LIST2(k,n + 1);
-    if (PM != NIL) { // special case for "PO_REFINEMENT" refinement polynomial
-        Q = MPOLY(P,LIST3(Z,k,n+1),PP,PO_REFINEMENT,PO_KEEP);
-        SLELTI(Q, PO_REFINEMENT, PM);
-    } else {
-        Q = MPOLY(P,LIST3(Z,k,n+1),PP,PO_OTHER,PO_KEEP);
-    }
+    Q = MPOLY(P,LIST3(Z,k,n+1),PP,PO_OTHER,PO_KEEP);
     Ap_k = SUFFIX(A_k,Q);
     SLELTI(A,k,Ap_k);
     Ap = A;

@@ -42,7 +42,7 @@ Step1: /* Write. */
             TAB(7);
             SWRITE("= ");
 
-            if (LELTI(A11,PO_TYPE) == PO_POINT) {
+            if (LELTI(A11,PO_TYPE) == PO_POINT || LELTI(A11,PO_TYPE) == PO_REFINEMENT) {
                 SAMPLEWR(i,FIRST(P),4);
             }
             else {

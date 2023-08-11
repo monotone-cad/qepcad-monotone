@@ -362,49 +362,111 @@ Word PPREPVS(Word k, Word P)
     return INV(P1);
 }
 
-void ADDREFPOLS(Word pv, Word Ps, Word PM, Word* A_, Word* J_)
+Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
 {
-    const Word pv1 = pv + 1;
     const Word Z1 = LFS("K");
+    const Word Z2 = LFS("M");
 
-    while (Ps != NIL) {
-        Word P, Q, Label;
-        ADV(Ps, &P, &Ps);
-
-        // add to Js (unfactorised)
-        Q = PPREPVS(pv, P);
-        ADDPOL(Q, NIL, pv1, Z1, J_, &Label);
-        Label = COMP(Z1, Label);
-        Word W = MPOLY(Q, Label, NIL, NIL, PO_KEEP);
-
-        // factorise and add to A
-        if (IPCONST(1, Q)) continue;
-
-        Word s, c, L;
-        IPFACDB(1,Q,&s,&c,&L);
-        while (L != NIL) {
-            Word Q1, e, Q2;
-            ADV(L,&Q1,&L);
-            FIRST2(Q1,&e,&Q2);
-
-            Word junk;
-            ADDPOL(PPREPVS(pv, Q2), LIST1(LIST3(PO_FAC,e,W)), pv1, LFS("M"), A_, &junk);
-        }
-    }
-}
-
-Word QepcadCls::MONOTONE(Word A, Word* J_, Word D, Word r)
-{
     // initialise refinement polynomials set
     Word RPs = NIL;
     for (int i = 0; i < r; ++i) RPs = COMP(NIL, RPs);
 
-    Word J = *J_;
+    while (Rs != NIL) {
+        Word k, k1, Label, I, SM, SI, Sb, S, R1s;
+        ADV3(Rs, &I, &S, &R1s, &Rs);
+        LWRITE(I); SWRITE("\n");
+        k = LENGTH(I); // level of base cell
+        k1 = k + 1; // level of current polynomials
+
+        // factorise the list of polynomials, add to J and store as rationals for root finding
+        Word Ps = NIL;
+        while (R1s != NIL) {
+            Word P, s, c, L;
+            ADV(R1s, &P, &R1s);
+
+            ADDPOL(PPREPVS(k, P), NIL, k, Z1, J_, &Label);
+            Label = COMP(Z1, Label);
+            Word W = MPOLY(P, Label, NIL, PO_POLY, PO_KEEP);
+
+            IPFACDB(1,P,&s,&c,&L);
+            while (L != NIL) {
+                Word P1, e, Q;
+                ADV(L,&P1,&L);
+                FIRST2(P1,&e,&Q);
+
+                ADDPOL(PPREPVS(k, Q), LIST1(LIST3(PO_FAC,e,W)), k1, Z2, A_, &Label);
+                Ps = COMP(RPFIP(1, Q), Ps);
+            }
+        }
+
+        // compute the list of roots of the polynomials
+        Word s, T, B, E;
+        IPLSRP(Ps, &s, &T); // construct list of similar rational polynomials
+        IPFSBM(1, T, &B, &E); // compute basis B
+        B = IPLRRI(B);
+
+        // now construct level k+1 sample points from the basis
+        FIRST3(S, &SM, &SI, &Sb);
+        while (B != NIL) {
+            Word M, J, a, bp, S1;
+            ADV2(B, &J, &M, &B);
+            Word b = LCOPY(Sb);
+
+            // TODO when S is algebraic.
+            // construct sample point using minimal polynomial M and isolating interval J
+            if (PDEG(M) == 1) { // M is linear, easy!
+                a = AFFRN(IUPRLP(M));
+                bp = CONC(b,LIST1(a));
+                LWRITE(SM); LWRITE(SI); LWRITE(bp); SWRITE("\n");
+                S1 = LIST3(SM,SI,bp);
+            } else { // nonlinear, construct as an algebraic
+                a = AFGEN();
+                bp = CCONC(b,LIST1(a));
+                S1 = LIST3(M,J,bp);
+            }
+
+            // add the sample points to set RPs
+            Word RP1 = LELTI(RPs, k1);
+            Word W = MPOLY(LIST1(S1), LIST3(Z2,k1,LENGTH(RP1)), NIL, PO_REFINEMENT, PO_KEEP);
+            SLELTI(W, PO_REFINEMENT, I);
+            SLELTI(RPs, k1, COMP(W, RP1));
+        }
+    }
+
+    return RPs;
+}
+
+// Store refinement polynomials Rs with base index I
+void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word* A_)
+{
+    // find cell if exists
+    Word A = *A_, Rs1 = NIL;
+    while (A != NIL) {
+        Word I1, S1, Ps;
+        ADV3(A, &I1, &S1, &Ps, &A);
+
+        // found
+        if (I1 == I) {
+            Ps = CONC(Ps, Rs);
+
+            return;
+        }
+    }
+
+    // not found
+    *A_ = COMP3(I, S, Rs, *A_);
+}
+
+Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
+{
+    // to store unfactorised refinement polynomials, in the form (Index, Sample, Ps)
+    Word Rs = NIL;
+
     // consider each true cell in D
     Word TrueCells, junk;
     LISTOFCWTV(D, &TrueCells, &junk);
     Word Ds = LELTI(D, CHILD); // cells of D, for searching cells
-    Word AA = INV(LCOPY(A)); // in reverse order, to match SIGNPF. for later.
+    Word AA = INV(LCOPY(*A_)); // in reverse order, to match SIGNPF. for later.
 
     while (TrueCells != NIL) {
         Word C;
@@ -434,6 +496,7 @@ Word QepcadCls::MONOTONE(Word A, Word* J_, Word D, Word r)
 
         // sample point (c_1,...,c_{j-1}) of C0.
         Word S0 = LELTI(C0, SAMPLE);
+        Word I0 = LELTI(C0, INDX);
 
         // top and bottom of proj_k(C) are one-dimensional sections by definition.
         Word I1 = LCOPY(I);
@@ -482,23 +545,21 @@ Word QepcadCls::MONOTONE(Word A, Word* J_, Word D, Word r)
             IPDWRITE(nv, P, GVVL); SWRITE("\n");
         }
 
-        Word Rs = NIL; // list of refinement polynomials, in I[x_Ij]
         // perform refinement
         if (CT != NIL) {
             SWRITE("top\n");
-            Rs = CONC(Refinement(nv, Gs, FT, Fs), Rs);
+            STOREPOLYNOMIALS(Refinement(nv, Gs, FT, Fs), I0, S0, &Rs);
         }
 
         if (CB != NIL) {
             SWRITE("bottom\n");
-            Rs = CONC(Refinement(nv, Gs, FB, Fs), Rs);
+            STOREPOLYNOMIALS(Refinement(nv, Gs, FB, Fs), I0, S0, &Rs);
         }
 
         // add refinement polynomials
-        ADDREFPOLS(Ij1, Rs, LELTI(C0, INDX), &RPs, &J);
     }
 
-    *J_ = J;
-    return RPs;
+
+    return REFINEMENTPOINTS(r, Rs, A_, J_);
 }
 

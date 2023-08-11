@@ -70,9 +70,9 @@ Step3: /* Truth-invariant CAD. */
     D = TICAD(Q,F,f,P,A);
     // add extra polynomials for [semi]-monotone cells and recompute the cad if needed
     if (PCMCT == 'y') {
-        Word RPs = MONOTONE(P, &J, D, r);
+        Word RPs = MONOTONE(&P, &J, D, r);
         GVREFL = RPs;
-        D = REFINE(D, P);
+        D = REFINE(D, RPs);
     }
 
     // TODO reinstate after monotone rewrite

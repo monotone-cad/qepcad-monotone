@@ -334,34 +334,8 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
     return Rs;
 }
 
-Word PrepHelper(Word k, Word P)
-{
-    // base case: polynomial in one variable
-    if (k == 1) return LIST2(0, P);
-
-    // recursive case
-    return LIST2(0, PrepHelper(k - 1, P));
-}
-
-// polynomial prepend variables
-// k: number of variables to prepend
-// P: in I[x_1,...,x_r]
-// return: P written in I[y_1,...,y_k,x_1,...,x_r]
-Word PPREPVS(Word k, Word P)
-{
-    if (k == 0) return P;
-
-    Word P1 = NIL;
-    Word e, Q;
-    while (P != NIL) {
-        ADV2(P, &e, &Q, &P);
-
-        P1 = COMP2(PrepHelper(k, Q), e, P1);
-    }
-
-    return INV(P1);
-}
-
+// adds roots of refinement polynomials, as sample points, to a new set. These will be sample points of new 0-cells.
+// TODO at the momont we add all roots, but we may only need roots inside specific cells. Fix this.
 Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
 {
     const Word Z1 = LFS("K");
@@ -384,7 +358,7 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
             Word P, s, c, L;
             ADV(R1s, &P, &R1s);
 
-            ADDPOL(PPREPVS(k, P), NIL, k, Z1, J_, &Label);
+            ADDPOL(PPREPVS(P, k), NIL, k, Z1, J_, &Label);
             Label = COMP(Z1, Label);
             Word W = MPOLY(P, Label, NIL, PO_POLY, PO_KEEP);
 
@@ -394,7 +368,7 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
                 ADV(L,&P1,&L);
                 FIRST2(P1,&e,&Q);
 
-                ADDPOL(PPREPVS(k, Q), LIST1(LIST3(PO_FAC,e,W)), k1, Z2, A_, &Label);
+                ADDPOL(PPREPVS(Q, k), LIST1(LIST3(PO_FAC,e,W)), k1, Z2, A_, &Label);
                 Ps = COMP(RPFIP(1, Q), Ps);
             }
         }
@@ -437,6 +411,7 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
 }
 
 // Store refinement polynomials Rs with base index I
+// TODO also save max/min root of polynomial so we only add the relevant ponts rather than roots not outside the cell
 void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word* A_)
 {
     // find cell if exists
@@ -555,10 +530,7 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
             SWRITE("bottom\n");
             STOREPOLYNOMIALS(Refinement(nv, Gs, FB, Fs), I0, S0, &Rs);
         }
-
-        // add refinement polynomials
     }
-
 
     return REFINEMENTPOINTS(r, Rs, A_, J_);
 }

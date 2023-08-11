@@ -196,6 +196,7 @@ $(LIB)(proj/APPEND.o) \
 $(LIB)(util/ADDPOLS.o) \
 $(LIB)(util/LEVELIDX.o) \
 $(LIB)(util/PADDVS.o) \
+$(LIB)(util/PPREPVS.o) \
 $(LIB)(util/JACOBI.o) \
 $(LIB)(proj/APPENDEC.o) \
 $(LIB)(proj/ECLEVEL.o) \
@@ -561,6 +562,7 @@ $(LIBD)(util/ADDPOL.o) \
 $(LIBD)(util/ADDPOLS.o) \
 $(LIBD)(util/LEVELIDX.o) \
 $(LIBD)(util/PADDVS.o) \
+$(LIBD)(util/PPREPVS.o) \
 $(LIBD)(util/JACOBI.o) \
 $(LIBD)(proj/APPENDEC.o) \
 $(LIBD)(proj/ECLEVEL.o) \

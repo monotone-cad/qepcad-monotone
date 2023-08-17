@@ -141,8 +141,6 @@ Word Substitute(Word r, Word P, Word S)
     } else { // algebraic sample
         P1 = IPAFME(r, Q, P, c);
         P1 = AFPICR(k, P1);
-        printf("algebraic evaluation "); LWRITE(P1); SWRITE(", in Z: ");
-        LWRITE(IPFRP(k, P1)); SWRITE("\n");
     }
 
     // convert to a polynomial with integer coefficients
@@ -283,12 +281,8 @@ Word LagrangeRefinement(Word r, Word f, Word i, Word Gs, Word Is)
     // check for zero polynomial. no solutions
     if (Q == 0) return NIL;
 
-    SWRITE("\njacobi det ");
-    LWRITE(Q); SWRITE("\n");
-
     // find solution in x by projecton
     Word J = ProjSolve(r, COMP(Q, Gs));
-    SWRITE("proj solve "); LWRITE(J); SWRITE("\n");
 
     return J;
 }
@@ -348,7 +342,6 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
     while (Rs != NIL) {
         Word k, k1, Label, I, SM, SI, Sb, S, R1s;
         ADV3(Rs, &I, &S, &R1s, &Rs);
-        LWRITE(I); SWRITE("\n");
         k = LENGTH(I); // level of base cell
         k1 = k + 1; // level of current polynomials
 
@@ -391,7 +384,6 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
             if (PDEG(M) == 1) { // M is linear, easy!
                 a = AFFRN(IUPRLP(M));
                 bp = CONC(b,LIST1(a));
-                LWRITE(SM); LWRITE(SI); LWRITE(bp); SWRITE("\n");
                 S1 = LIST3(SM,SI,bp);
             } else { // nonlinear, construct as an algebraic
                 a = AFGEN();
@@ -401,7 +393,7 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
 
             // add the sample points to set RPs
             Word RP1 = LELTI(RPs, k1);
-            Word W = MPOLY(LIST1(S1), LIST3(Z2,k1,LENGTH(RP1)), NIL, PO_REFINEMENT, PO_KEEP);
+            Word W = MPOLY(LIST2(S1, J), LIST3(Z2,k1,LENGTH(RP1)), NIL, PO_REFINEMENT, PO_KEEP);
             SLELTI(W, PO_REFINEMENT, I);
             SLELTI(RPs, k1, COMP(W, RP1));
         }
@@ -451,27 +443,23 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         // C has dimension two, then IJ < Ik are the positions in I where the composent is equal to 1. otherwise skip
         Word Ij, Ik;
         if (!TwoDimIndex(I, &Ij, &Ik)) {
-            printf("skip cell\n");
             continue;
         }
 
         Word Ij1 = Ij - 1;
         Word nv = r - Ij1;
 
-        // TODO debugging
-        SWRITE("----------\n");
-        LWRITE(I);
-        printf(" 2d indx: (%d, %d)\n", Ij, Ik);
-
         // C0 := proj_{j-1}(C) is a 0-dimensional cell (c_1,...,c_{j-1})
-        Word C0 = D;
-        if (Ij > 1) {
+        Word C0, S0, I0;
+        if (Ij == 1) { // base CAD is D
+            C0 = D;
+            S0 = LIST3(PMON(1,1), LIST2(0,0), NIL);
+            I0 = NIL;
+        } else { // sub-cad on top of some 0-cell
             C0 = FindByIndex(Ds, I, Ij1, 1);
+            S0 = LELTI(C0, SAMPLE);
+            I0 = LELTI(C0, INDX);
         }
-
-        // sample point (c_1,...,c_{j-1}) of C0.
-        Word S0 = LELTI(C0, SAMPLE);
-        Word I0 = LELTI(C0, INDX);
 
         // top and bottom of proj_k(C) are one-dimensional sections by definition.
         Word I1 = LCOPY(I);
@@ -482,12 +470,6 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         SLELTI(I1, Ik, LELTI(I, Ik) - 1);
         Word CB = FindByIndex(Ds, I1, Ik, 1);
 
-        // TODO debugging
-        printf("sub-cad level "); IWRITE(LELTI(C, LEVEL)); SWRITE(", ");
-        printf("sub-cad index "); LWRITE(LELTI(C0, INDX)); SWRITE("\n");
-        if (CT != NIL) { printf("top C index "); LWRITE(LELTI(CT, INDX)); SWRITE("\n"); }
-        if (CB != NIL) { printf("bottom C index "); LWRITE(LELTI(CB, INDX)); SWRITE("\n"); }
-
         // find polynomials in sub-cad
         // TODO
         //   it takes a lot of work to find these polynomials, and work is often repeated.
@@ -496,38 +478,21 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
         Word Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv);
-        Word LL = Gs, P, Q; // TODO debug
-        SWRITE("Gs:\n");
-        while (LL != NIL) {
-            ADV(LL, &P, &LL);
-            IPDWRITE(nv, P, GVVL); SWRITE("\n");
-        }
 
         // Fk (f_{k,T}, f_{k,B}) are 0 on CT and CB respectively.
         Word FT, FB;
         if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1, nv));
         if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1, nv));
 
-        if (CT != NIL) { SWRITE("f_top := "); IPDWRITE(nv, FT, GVVL); SWRITE("\n"); }
-        if (CB != NIL) { SWRITE("f_bottom := "); IPDWRITE(nv, FB, GVVL); SWRITE("\n"); }
-
         // Fs = (f_{K+1},...,f_n) is a map from proj_{k}(C) to R^{n-k}, of which C is the graph.
         Word Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1, nv);
-        SWRITE("Fs:\n");
-        LL = Fs;
-        while (LL != NIL) {
-            ADV(LL, &P, &LL);
-            IPDWRITE(nv, P, GVVL); SWRITE("\n");
-        }
 
         // perform refinement
         if (CT != NIL) {
-            SWRITE("top\n");
             STOREPOLYNOMIALS(Refinement(nv, Gs, FT, Fs), I0, S0, &Rs);
         }
 
         if (CB != NIL) {
-            SWRITE("bottom\n");
             STOREPOLYNOMIALS(Refinement(nv, Gs, FB, Fs), I0, S0, &Rs);
         }
     }

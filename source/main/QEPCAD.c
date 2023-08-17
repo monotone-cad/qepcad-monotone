@@ -72,7 +72,7 @@ Step3: /* Truth-invariant CAD. */
     if (PCMCT == 'y') {
         Word RPs = MONOTONE(&P, &J, D, r);
         GVREFL = RPs;
-        D = REFINE(D, RPs);
+        D = REFINE(1, D, RPs);
     }
 
     // TODO reinstate after monotone rewrite

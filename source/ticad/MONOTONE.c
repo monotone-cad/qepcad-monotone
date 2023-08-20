@@ -118,7 +118,7 @@ Word PNotDependVs(Word r, Word P, Word k)
 // P : integer polynomial in Z[x_1,...,x_r]
 // S : sample point (Q, I, (c_1,...,c_k)), in primitive form
 // return : substituted polynomial in Z[x_{k+1},...,x_r]
-Word Substitute(Word r, Word P, Word S)
+Word Substitute(Word r, Word P, Word S, Word is_alg)
 {
     // determine if S is rational or algebraic
     Word Q, J, c;
@@ -129,21 +129,25 @@ Word Substitute(Word r, Word P, Word S)
 
     // number of coordinates in sample point
     Word i0 = LENGTH(c);
+    Word k = r - i0;
 
     // if P does not depend on all x1,...,kk, then no substitution needed
     Word P1 = PNotDependVs(r, P, i0 + 1);
-    if (P1 != NIL) return P1;
-
-    // otherwise perform substitution
-    Word k = r - i0;
-    if (PDEG(Q) == 1) { // rational sample
-        P1 = IPRNME(r, P, RCFAFC(c));
-    } else { // algebraic sample
-        P1 = IPAFME(r, Q, P, c);
-        P1 = AFPICR(k, P1);
+    if (P1 != NIL) {
+        return P1;
     }
 
-    // convert to a polynomial with integer coefficients
+    // otherwise perform substitution
+    if (is_alg) { // algebraic sample
+        P1 = IPAFME(r, Q, P, c);
+
+        P1 = AFPNORM(k, Q, P1);
+        SWRITE("norm alg sub: "); LWRITE(P1); SWRITE("\n");
+        return P1;
+    }
+
+    // rational sample
+    P1 = IPRNME(r, P, RCFAFC(c));
     return IPFRP(k, P1);
 }
 
@@ -154,7 +158,7 @@ Word Substitute(Word r, Word P, Word S)
 // i1 <= i1 : min and max indices to search
 // S : sample point of level l < i1 to substitute. give the empty sample point of D to do no substitution.
 // return : (f_{i_1}, ..., f_{i2}) in Q[x_{l+1},...,k_n]
-Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word n)
+Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word n, Word is_alg)
 {
     Word k, L, A1, P, Q, S, S1, s;
     k = LELTI(C, LEVEL);
@@ -179,7 +183,7 @@ Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word
                 // write substituted polynomial Q in Q[x_l+1,...,x_n]
                 // P in Q[x_1,...,i_2]
                 // Q in Q[x_l+1,...,i_2]
-                Q = PADDVS(Substitute(i2, LELTI(P, PO_POLY), S0), l + n - i2);
+                Q = PADDVS(Substitute(i2, LELTI(P, PO_POLY), S0, is_alg), l + n - i2);
 
                 break;
             }
@@ -298,7 +302,7 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
     Word Rs, Q, i, k, Is;
     // generate sequence Is = (1,...,k-1)
     i = 1;
-    k = LENGTH(Gs) + 1;
+    k = LENGTH(Gs) + i;
     Is = NIL;
     while (i < k) {
         Is = COMP(i, Is);
@@ -328,13 +332,88 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
     return Rs;
 }
 
-// adds roots of refinement polynomials, as sample points, to a new set. These will be sample points of new 0-cells.
-// TODO at the momont we add all roots, but we may only need roots inside specific cells. Fix this.
-Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
+// refinement points, rational sample.
+void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
 {
     const Word Z1 = LFS("K");
     const Word Z2 = LFS("M");
 
+    Word k = LENGTH(I); // level of base cell
+    Word k1 = k + 1; // level of current polynomials
+
+    // factorise the list of polynomials, add to J and store as rationals for root finding
+    Word Ps = NIL;
+    while (R1s != NIL) {
+        Word P, s, c, L, Label;
+        ADV(R1s, &P, &R1s);
+        if (P == 0) continue;
+
+        ADDPOL(PPREPVS(P, k), NIL, k, Z1, J_, &Label);
+        Label = COMP(Z1, Label);
+        Word W = MPOLY(P, Label, NIL, PO_POLY, PO_KEEP);
+
+        IPFACDB(1,P,&s,&c,&L);
+        while (L != NIL) {
+            Word P1, e, Q;
+            ADV(L,&P1,&L);
+            FIRST2(P1,&e,&Q);
+
+            ADDPOL(PPREPVS(Q, k), LIST1(LIST3(PO_FAC,e,W)), k1, Z2, A_, &Label);
+            Ps = COMP(RPFIP(1, Q), Ps);
+        }
+    }
+
+    // compute the list of roots of the polynomials
+    Word s, T, B, E;
+    IPLSRP(Ps, &s, &T); // construct list of similar rational polynomials
+    IPFSBM(1, T, &B, &E); // compute basis B
+    B = IPLRRI(B);
+
+    // now construct level k+1 sample points from the basis
+    Word SM, SI, Sb;
+    FIRST3(S, &SM, &SI, &Sb);
+    while (B != NIL) {
+        Word M, J, a, bp, S1;
+        ADV2(B, &J, &M, &B);
+        Word b = LCOPY(Sb);
+
+        // TODO when S is algebraic.
+        // construct sample point using minimal polynomial M and isolating interval J
+        if (PDEG(M) == 1) { // M is linear, easy!
+            a = AFFRN(IUPRLP(M));
+            bp = CONC(b,LIST1(a));
+            S1 = LIST3(SM,SI,bp);
+        } else { // nonlinear, construct as an algebraic
+            a = AFGEN();
+            bp = CCONC(b,LIST1(a));
+            S1 = LIST3(M,J,bp);
+        }
+
+        SWRITE("S1 "); LWRITE(S1); SWRITE("\n");
+        // add the sample points to set RPs
+        Word RP1 = LELTI(RPs, k1);
+        Word W = MPOLY(LIST2(S1, J), LIST3(Z2,k1,LENGTH(RP1)), NIL, PO_REFINEMENT, PO_KEEP);
+        SLELTI(W, PO_REFINEMENT, I);
+        SLELTI(RPs, k1, COMP(W, RP1));
+    }
+}
+
+// refinemenent points, algebraic sample.
+void REFINEMENTPOINTSALG(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
+{
+    LWRITE(I); SWRITE(" algebraic refinements.\n");
+
+    while (R1s != NIL) {
+        Word P;
+        ADV(R1s, &P, &R1s);
+        LWRITE(P); SWRITE("\n");
+    }
+}
+
+// adds roots of refinement polynomials, as sample points, to a new set. These will be sample points of new 0-cells.
+// TODO at the momont we add all roots, but we may only need roots inside specific cells. Fix this.
+Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
+{
     // initialise refinement polynomials set
     Word RPs = NIL;
     for (int i = 0; i < r; ++i) RPs = COMP(NIL, RPs);
@@ -342,61 +421,8 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
     while (Rs != NIL) {
         Word k, k1, Label, I, SM, SI, Sb, S, R1s;
         ADV3(Rs, &I, &S, &R1s, &Rs);
-        k = LENGTH(I); // level of base cell
-        k1 = k + 1; // level of current polynomials
 
-        // factorise the list of polynomials, add to J and store as rationals for root finding
-        Word Ps = NIL;
-        while (R1s != NIL) {
-            Word P, s, c, L;
-            ADV(R1s, &P, &R1s);
-
-            ADDPOL(PPREPVS(P, k), NIL, k, Z1, J_, &Label);
-            Label = COMP(Z1, Label);
-            Word W = MPOLY(P, Label, NIL, PO_POLY, PO_KEEP);
-
-            IPFACDB(1,P,&s,&c,&L);
-            while (L != NIL) {
-                Word P1, e, Q;
-                ADV(L,&P1,&L);
-                FIRST2(P1,&e,&Q);
-
-                ADDPOL(PPREPVS(Q, k), LIST1(LIST3(PO_FAC,e,W)), k1, Z2, A_, &Label);
-                Ps = COMP(RPFIP(1, Q), Ps);
-            }
-        }
-
-        // compute the list of roots of the polynomials
-        Word s, T, B, E;
-        IPLSRP(Ps, &s, &T); // construct list of similar rational polynomials
-        IPFSBM(1, T, &B, &E); // compute basis B
-        B = IPLRRI(B);
-
-        // now construct level k+1 sample points from the basis
-        FIRST3(S, &SM, &SI, &Sb);
-        while (B != NIL) {
-            Word M, J, a, bp, S1;
-            ADV2(B, &J, &M, &B);
-            Word b = LCOPY(Sb);
-
-            // TODO when S is algebraic.
-            // construct sample point using minimal polynomial M and isolating interval J
-            if (PDEG(M) == 1) { // M is linear, easy!
-                a = AFFRN(IUPRLP(M));
-                bp = CONC(b,LIST1(a));
-                S1 = LIST3(SM,SI,bp);
-            } else { // nonlinear, construct as an algebraic
-                a = AFGEN();
-                bp = CCONC(b,LIST1(a));
-                S1 = LIST3(M,J,bp);
-            }
-
-            // add the sample points to set RPs
-            Word RP1 = LELTI(RPs, k1);
-            Word W = MPOLY(LIST2(S1, J), LIST3(Z2,k1,LENGTH(RP1)), NIL, PO_REFINEMENT, PO_KEEP);
-            SLELTI(W, PO_REFINEMENT, I);
-            SLELTI(RPs, k1, COMP(W, RP1));
-        }
+        REFINEMENTPOINTSRAT(I, S, R1s, A_, J_, RPs);
     }
 
     return RPs;
@@ -461,6 +487,9 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
             I0 = LELTI(C0, INDX);
         }
 
+        // S0 has algebraic coordinates.
+        bool is_alg = PDEG(FIRST(S0)) > 1;
+
         // top and bottom of proj_k(C) are one-dimensional sections by definition.
         Word I1 = LCOPY(I);
         // top: (i_1,...,i_k + 1)
@@ -477,15 +506,16 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         //   what other things could i cache? can i use the existing db faciility?
         // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
-        Word Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv);
+        // TODO returns algebraic coordinates.
+        Word Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv, is_alg);
 
         // Fk (f_{k,T}, f_{k,B}) are 0 on CT and CB respectively.
         Word FT, FB;
-        if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1, nv));
-        if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1, nv));
+        if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1, nv, is_alg));
+        if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1, nv, is_alg));
 
         // Fs = (f_{K+1},...,f_n) is a map from proj_{k}(C) to R^{n-k}, of which C is the graph.
-        Word Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1, nv);
+        Word Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1, nv, is_alg);
 
         // perform refinement
         if (CT != NIL) {
@@ -497,6 +527,8 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         }
     }
 
+    // TODO modify for alg and rat, i.e., check on the sample point, that will determine n or n+1 variables real root
+    // isolation, etc.
     return REFINEMENTPOINTS(r, Rs, A_, J_);
 }
 

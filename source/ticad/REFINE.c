@@ -22,24 +22,24 @@ Output
 // compare two coordinates of sample points.
 Word COMPARE(Word Ma, Word Ia, Word Ba, Word Mb, Word Ib, Word Bb)
 {
-    bool a_alg = PDEG(Ma) == 1;
-    bool b_alg = PDEG(Mb) == 1;
+    bool a_rat = !(ISLIST(Ba) && PDEG(SECOND(Ba)) > 0);
+    bool b_rat = !(ISLIST(Ba) && PDEG(SECOND(Ba)) > 0);
 
     // rational vs rational
-    if (a_alg && b_alg) {
+    if (a_rat && b_rat) {
         Word a = ISLIST(Ba) ? FIRST(Ba) : 0;
         Word b = ISLIST(Bb) ? FIRST(Bb) : 0;
 
         return RNCOMP(a, b);
     }
 
-    if (a_alg) {
-        // b is rational
+    if (b_rat) {
+        // a is algebraic while b is rational
         return AFCOMP(Ma, Ia, Ba, Bb);
     }
 
-    if (b_alg) {
-        // a is rational
+    if (a_rat) {
+        // b is algebraic while b is rational
         return AFCOMP(Mb, Ib, Ba, Bb);
     }
 
@@ -84,15 +84,45 @@ void SETINDEXK(Word C, Word k, Word a)
 void SETSAMPLEK(Word C, Word k, Word M, Word I, Word b)
 {
     // recursive update children.
-    Word Ch = LELTI(C, CHILD), C1;
+    Word Ch = LELTI(C, CHILD);
     while (Ch != NIL) {
+        Word C1;
         ADV(Ch, &C1, &Ch);
 
         SETSAMPLEK(C1, k, M, I, b);
     }
 
+    Word Q1, J1, M1, I1, b1;
     Word S = LELTI(C, SAMPLE);
-    Word M1, I1, b1;
+
+    if (LENGTH(S) == 5) {
+        // extended representation, set level k
+        FIRST5(S, &Q1, &J1, &M1, &I1, &b1);
+
+        // set some coordinate in the primitive part.
+        if (LELTI(C, LEVEL) < k) {
+            SLELTI(C, SAMPLE, LIST5(M, I, M1, I1, b1));
+            SLELTI(b1, k, b);
+            if (M == NIL) M = M1;
+            if (I == NIL) I = I1;
+
+            SLELTI(C, SAMPLE, LIST5(Q1, J1, M, I, b1));
+            return;
+        }
+
+        if (M == NIL || EQUAL(M, M1)) {
+            // extended form not needed anymore, because initial polynomial is sufficient.
+            SLELTI(b1, k, b);
+            SLELTI(C, SAMPLE, LIST3(M, I, b1));
+        } else {
+            // otherwise, polynomials M and I are used to define coordinate k, while the other coordinates stay the same
+            SLELTI(C, SAMPLE, LIST5(M, I, M1, I1, b1));
+        }
+
+        return;
+    }
+
+    // otherwise, sample is in primitive form
     FIRST3(S, &M1, &I1, &b1);
 
     // k-th coordinate
@@ -104,7 +134,6 @@ void SETSAMPLEK(Word C, Word k, Word M, Word I, Word b)
 
     SLELTI(C, SAMPLE, LIST3(M, I, b1));
 }
-
 
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
 // (0,...,0,0)-cell
@@ -129,7 +158,7 @@ Word RefineCell(Word k, Word Cs, Word M, Word I, Word b, Word c)
     // C1 updates to the left-most end of the isolating interval J (same as in CAD construction)
     SETSAMPLEK(C1, k, NIL, NIL, c);
     // C2 is set to the new sample provided.
-    SETSAMPLEK(C2, k, M, I, b);
+    SETSAMPLEK(C2, k, NIL, NIL, b);
     // C3 is updated later
 
     // update indices of remaining cells.

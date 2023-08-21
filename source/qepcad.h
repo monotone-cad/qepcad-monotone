@@ -98,6 +98,7 @@ Word LEVELIDX(Word C);
 Word PADDVS(Word P, Word k);
 Word PPREPVS(Word P, Word k);
 Word JACOBI(Word r, Word f, Word i, Word Hs, Word Is);
+Word SUBSTITUTE(Word r, Word P, Word S);
 void FGWRITE(Word A, Word n);
 void FILINE();
 void FILLIN(Word n, Word vs, Word S_r, Word S_s, Word R_c, Word R_s, Word *v_);

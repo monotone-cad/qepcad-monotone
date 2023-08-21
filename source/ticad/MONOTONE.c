@@ -74,83 +74,6 @@ Word FindByIndex(Word L, Word I, Word j, Word k)
     return NIL;
 }
 
-// if polynomial deos not depend on variables x1,..,xk, then return a polynomial in x(k+1),...,xr
-Word PNotDependVs(Word r, Word P, Word k)
-{
-    // base case r == 0, P is an integer
-    if (r == 0) {
-        return P;
-    }
-
-    Word P1, e, Q, Q1;
-
-    // k < r: check for dependent variable
-    if (r < k) {
-        FIRST2(P, &e, &Q);
-
-        if (e > 0) { // depends on x_i
-            return NIL;
-        } else {
-            return PNotDependVs(r - 1, Q, k);
-        }
-    }
-
-    // k >= r, reconstruct polynomial
-    P1 = NIL;
-    while (P != NIL) {
-        ADV2(P, &e, &Q, &P);
-
-        Q1 = PNotDependVs(r - 1, Q, k);
-
-        // error case
-        if (Q1 == NIL) return NIL;
-
-        // otherwise construct the polynomial
-        P1 = COMP2(Q1, e, P1);
-    }
-
-    return INV(P1);
-}
-
-// evaluate r-variate integer polynomial P at sample point S = (c_1,...,c_k)
-// return Q in Z[x_{k+1},...,k_r] = P(c_1,...,c_k,x_{k+1},...,k_r)
-// r : positive integer
-// P : integer polynomial in Z[x_1,...,x_r]
-// S : sample point (Q, I, (c_1,...,c_k)), in primitive form
-// return : substituted polynomial in Z[x_{k+1},...,x_r]
-Word Substitute(Word r, Word P, Word S, Word is_alg)
-{
-    // determine if S is rational or algebraic
-    Word Q, J, c;
-    FIRST3(S, &Q, &J, &c);
-
-    // sample subset R^0, nothing to do
-    if (c == NIL) return P;
-
-    // number of coordinates in sample point
-    Word i0 = LENGTH(c);
-    Word k = r - i0;
-
-    // if P does not depend on all x1,...,kk, then no substitution needed
-    Word P1 = PNotDependVs(r, P, i0 + 1);
-    if (P1 != NIL) {
-        return P1;
-    }
-
-    // otherwise perform substitution
-    if (is_alg) { // algebraic sample
-        P1 = IPAFME(r, Q, P, c);
-
-        P1 = AFPNORM(k, Q, P1);
-        SWRITE("norm alg sub: "); LWRITE(P1); SWRITE("\n");
-        return P1;
-    }
-
-    // rational sample
-    P1 = IPRNME(r, P, RCFAFC(c));
-    return IPFRP(k, P1);
-}
-
 // return a list (f_j,...,f_k), where f_i is a level j polynomial which is 0 on C with sample point S substituted in.
 // A : reversed list of projection factors
 // r : ambient dimension of CAD
@@ -158,7 +81,7 @@ Word Substitute(Word r, Word P, Word S, Word is_alg)
 // i1 <= i1 : min and max indices to search
 // S : sample point of level l < i1 to substitute. give the empty sample point of D to do no substitution.
 // return : (f_{i_1}, ..., f_{i2}) in Q[x_{l+1},...,k_n]
-Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word n, Word is_alg)
+Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word n)
 {
     Word k, L, A1, P, Q, S, S1, s;
     k = LELTI(C, LEVEL);
@@ -183,7 +106,7 @@ Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word
                 // write substituted polynomial Q in Q[x_l+1,...,x_n]
                 // P in Q[x_1,...,i_2]
                 // Q in Q[x_l+1,...,i_2]
-                Q = PADDVS(Substitute(i2, LELTI(P, PO_POLY), S0, is_alg), l + n - i2);
+                Q = PADDVS(SUBSTITUTE(i2, LELTI(P, PO_POLY), S0), l + n - i2);
 
                 break;
             }
@@ -487,9 +410,6 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
             I0 = LELTI(C0, INDX);
         }
 
-        // S0 has algebraic coordinates.
-        bool is_alg = PDEG(FIRST(S0)) > 1;
-
         // top and bottom of proj_k(C) are one-dimensional sections by definition.
         Word I1 = LCOPY(I);
         // top: (i_1,...,i_k + 1)
@@ -506,16 +426,15 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         //   what other things could i cache? can i use the existing db faciility?
         // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
-        // TODO returns algebraic coordinates.
-        Word Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv, is_alg);
+        Word Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv);
 
         // Fk (f_{k,T}, f_{k,B}) are 0 on CT and CB respectively.
         Word FT, FB;
-        if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1, nv, is_alg));
-        if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1, nv, is_alg));
+        if (CT != NIL) FT = FIRST(ZeroPolsSub(AA, r, CT, Ik, Ik, S0, Ij1, nv));
+        if (CB != NIL) FB = FIRST(ZeroPolsSub(AA, r, CB, Ik, Ik, S0, Ij1, nv));
 
         // Fs = (f_{K+1},...,f_n) is a map from proj_{k}(C) to R^{n-k}, of which C is the graph.
-        Word Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1, nv, is_alg);
+        Word Fs = ZeroPolsSub(AA, r, C, Ik + 1, r, S0, Ij1, nv);
 
         // perform refinement
         if (CT != NIL) {

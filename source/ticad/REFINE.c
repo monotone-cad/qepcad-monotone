@@ -78,61 +78,122 @@ void SETINDEXK(Word C, Word k, Word a)
     SLELTI(I, k, a);
 }
 
-// set cell C sample point, element k to value a
-// it overrides the base polynomial and isolating interval with new ones, it is assumed that these are sufficient to
-// define the cell.
-void SETSAMPLEK(Word C, Word k, Word M, Word I, Word b)
+void SETSAMPLERAT(Word C, Word M, Word I, Word b)
 {
-    // recursive update children.
+    SLELTI(C, SAMPLE, LIST3(M, I, b));
+
     Word Ch = LELTI(C, CHILD);
     while (Ch != NIL) {
         Word C1;
         ADV(Ch, &C1, &Ch);
 
-        SETSAMPLEK(C1, k, M, I, b);
+        Word b1 = CONC(LCOPY(b), LIST1(AFFINT(42)));
+        SETSAMPLERAT(C1, M, I, b1);
+    }
+}
+
+void SETSAMPLEALG(Word C, Word Q, Word J, Word M, Word I, Word b)
+{
+    Word S;
+    if (Q == NIL) {
+        S = LIST3(M, I, b);
+    } else {
+        S = LIST5(Q, J, M, I, b);
     }
 
-    Word Q1, J1, M1, I1, b1;
+    SLELTI(C, SAMPLE, S);
+}
+
+inline bool IsAF(Word b)
+{
+    return b != 0 && PDEG(SECOND(b)) > 0;
+}
+
+// are the first n-1 coordinates of S rational
+bool IsRat(Word SQ, Word SJ, Word SM, Word SI, Word Sb)
+{
+    // base polynomial is rational
+    if (PDEG(SM) == 1) {
+        return true;
+    }
+
+    // otherwise, SM represents an algebraic extension.
+    if (SQ != NIL) {
+        // at least one of (c_1,...,c_{k-1}) has to be algebraic
+        return false;
+    }
+
+    // otherwise, the point is in primitive form. we must check whether all c_1,...,c_{k-1} are all rational.
+    Word k = LENGTH(Sb) - 1;
+    while (Sb != NIL && k > 0) {
+        Word b;
+        ADV(Sb, &b, &Sb);
+
+        // algebraic? (non-zero and nonconstant polynomial for alpha)
+        if (IsAF(b)) {
+            return false;
+        }
+    }
+
+    // otherwise first k-1 coordinates are ratinoal
+    return true;
+}
+
+// let C be a level k cell. set sample, level k to (M,I,b), updating children as appropriate.
+void SETSAMPLE(Word C, Word M, Word I, Word b)
+{
+    Word k = LELTI(C, LEVEL);
     Word S = LELTI(C, SAMPLE);
 
-    if (LENGTH(S) == 5) {
-        // extended representation, set level k
-        FIRST5(S, &Q1, &J1, &M1, &I1, &b1);
+    // extended or primitive representation?
+    Word SQ, SJ, SM, SI, Sb;
+    if (LENGTH(S) == 5) { // extended (we don't care about the last coordinate)
+        FIRST5(S, &SQ, &SJ, &SM, &SI, &Sb);
 
-        // set some coordinate in the primitive part.
-        if (LELTI(C, LEVEL) < k) {
-            SLELTI(C, SAMPLE, LIST5(M, I, M1, I1, b1));
-            SLELTI(b1, k, b);
-            if (M == NIL) M = M1;
-            if (I == NIL) I = I1;
+        Sb = CONC(Sb, LIST1(b));
+    } else { // primitive
+        SQ = NIL, SJ = NIL;
+        FIRST3(S, &SM, &SI, &Sb);
 
-            SLELTI(C, SAMPLE, LIST5(Q1, J1, M, I, b1));
+        SLELTI(Sb, k, b);
+    }
+
+    bool is_rat = IsRat(SQ, SJ, SM, SI, Sb);
+    bool b_is_af = IsAF(b);
+
+    // completely algebraic
+    if (!b_is_af) {
+        if (is_rat) { // rational base
+            printf("rat rat\n");
+            SETSAMPLERAT(C, PMON(1,1), LIST2(0,0), Sb);
+
             return;
         }
 
-        if (M == NIL || EQUAL(M, M1)) {
-            // extended form not needed anymore, because initial polynomial is sufficient.
-            SLELTI(b1, k, b);
-            SLELTI(C, SAMPLE, LIST3(M, I, b1));
-        } else {
-            // otherwise, polynomials M and I are used to define coordinate k, while the other coordinates stay the same
-            SLELTI(C, SAMPLE, LIST5(M, I, M1, I1, b1));
-        }
+        // algebaric base
+        printf("base alg, b rat\n");
+        SETSAMPLEALG(C, NIL, NIL, SM, SI, Sb);
 
         return;
     }
 
-    // otherwise, sample is in primitive form
-    FIRST3(S, &M1, &I1, &b1);
+    // otherwise, b is algebraic
+    if (is_rat || (EQUAL(SM, M) && EQUAL(SI, I))) {
+        // rational base, or extensions are equal, just use M and I
+        printf("base rat or same, b alg\n");
+        SETSAMPLEALG(C, NIL, NIL, SM, SI, Sb);
 
-    // k-th coordinate
-    SLELTI(b1, k, b);
+        return;
+    }
 
-    // set sample with new minimal polynomial and isolating interval, if reqired.
-    if (M == NIL) M = M1;
-    if (I == NIL) I = I1;
+    // otherwise, S and b are both algebraic, and they both have different extensions.
+    // write new sample in extended form
+    if (SQ != NIL) { // if it was in primitive form, remove the last coordinate.
+        SLELTI(Sb, k, NIL);
+    }
 
-    SLELTI(C, SAMPLE, LIST3(M, I, b1));
+    printf("base alg, b alg\n");
+    SETSAMPLEALG(C, M, I, SM, SI, Sb);
 }
 
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
@@ -155,11 +216,25 @@ Word RefineCell(Word k, Word Cs, Word M, Word I, Word b, Word c)
     SETINDEXK(C3, k, ++j);
 
     // update sample
-    // C1 updates to the left-most end of the isolating interval J (same as in CAD construction)
-    SETSAMPLEK(C1, k, NIL, NIL, c);
-    // C2 is set to the new sample provided.
-    SETSAMPLEK(C2, k, NIL, NIL, b);
-    // C3 is updated later
+    // existing sample point of C1 will be valid for one of the cells. check.
+    Word SM, SI, Sb;
+    FIRST3(LELTI(C1, SAMPLE), &SM, &SI, &Sb);
+    Sb = LAST(Sb);
+
+    Word sign = COMPARE(SM, SI, Sb, M, I, b);
+    // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
+
+    if (sign != -1) { // need to update C1 ...
+        // ... to the left-hand end of the isolating interval
+        printf("update C1 ");
+        SETSAMPLE(C1, M, I, c);
+    }
+
+    if (sign != 0) { // need to update C2 ...
+        // to the new "refinement point" given
+        printf("update C2 ");
+        SETSAMPLE(C2, M, I, b);
+    }
 
     // update indices of remaining cells.
     Word Cs1 = Cs;
@@ -231,10 +306,11 @@ Word RefineSubcad(Word k, Word Ch, Word Ps)
 
     if (LENGTH(Ch) == 1) { // updating last cell
         Word C1 = FIRST(Ch);
-        Word Sb1 = THIRD(LELTI(C1, SAMPLE));
+        Word M1, I1, Sb1;
+        FIRST3(LELTI(C1, SAMPLE), &M1, &I1, &Sb1);
         Word b = AFFINT(RNCEIL(Jr) + 1);
 
-        SETSAMPLEK(C1, k, NIL, NIL, b);
+        SETSAMPLE(C1, M1, I1, b);
         return Ch2;
     }
 
@@ -249,7 +325,7 @@ Word RefineSubcad(Word k, Word Ch, Word Ps)
         Word a = FIRST(LAST(Sb)); // rational part of coordinate k
         Word b = AFFRN(RNQ(RNSUM(Jr, a), RNINT(2)));
 
-        SETSAMPLEK(C1, k, NIL, NIL, b);
+        SETSAMPLE(C1, SM, SI, b);
     } else {
         // otherwise, C2->SAMPLE is algebraic.
         perror("algebraic refinement last cell. what should the sample be?!\n");

@@ -106,7 +106,7 @@ Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word
                 // write substituted polynomial Q in Q[x_l+1,...,x_n]
                 // P in Q[x_1,...,i_2]
                 // Q in Q[x_l+1,...,i_2]
-                Q = PADDVS(SUBSTITUTE(i2, LELTI(P, PO_POLY), S0), l + n - i2);
+                Q = PADDVS(SUBSTITUTE(i2, LELTI(P, PO_POLY), S0, false), l + n - i2); // with integer coefficients
 
                 break;
             }
@@ -287,10 +287,7 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
     }
 
     // compute the list of roots of the polynomials
-    Word s, T, B, E;
-    IPLSRP(Ps, &s, &T); // construct list of similar rational polynomials
-    IPFSBM(1, T, &B, &E); // compute basis B
-    B = IPLRRI(B);
+    Word B = ROOTS(Ps);
 
     // now construct level k+1 sample points from the basis
     Word SM, SI, Sb;

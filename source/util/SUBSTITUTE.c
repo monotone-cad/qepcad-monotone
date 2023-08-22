@@ -7,8 +7,9 @@
  *     r  : positive integer
  *     P  : polynomial in Z[x_1,...,x_r]
  *     S  : sample point
+ *     rc : true to return the polynomial with rational coefficients. false returns integer coefficients
  * Output:
- *     Q  : polynomial in Z[x_{k+1},...,k_r] such that Q = P(s_1,...,s_k,x_{k+1},...,x_r)
+ *     Q  : polynomial in Q[x_{k+1},...,k_r] such that Q = P(s_1,...,s_k,x_{k+1},...,x_r)
  *
  *====================================================================*/
 #include "qepcad.h"
@@ -52,33 +53,54 @@ Word PNotDependVs(Word r, Word P, Word k)
 }
 
 
-Word SUBSTITUTE(Word r, Word P, Word S)
+Word SUBSTITUTE(Word r, Word P, Word S, bool rc)
 {
     Word Q, J, c;
     FIRST3(S, &Q, &J, &c);
 
+    Word i0 = LENGTH(c);
+
     // sample subset R^0, nothing to do
-    if (c == NIL) return P;
+    if (i0 == 0) {
+        if (rc) {
+            return RPFIP(r, P);
+        }
+
+        return P;
+    }
 
     // number of coordinates in sample point
-    Word i0 = LENGTH(c);
     Word k = r - i0;
 
     // if P does not depend on all x1,...,kk, then no substitution needed
     Word P1 = PNotDependVs(r, P, i0 + 1);
     if (P1 != NIL) {
+        if (rc) {
+            return RPFIP(k, P1);
+        }
+
         return P1;
     }
 
     // otherwise perform substitution
     if (PDEG(Q) > 1) { // algebraic sample
         P1 = IPAFME(r, Q, P, c);
+        P1 = AFPNORM(k, Q, P1);
 
-        return AFPNORM(k, Q, P1);
+        if (rc) {
+            return RPFIP(k, P1);
+        }
+
+        return P1;
     }
 
     // rational sample
     P1 = IPRNME(r, P, RCFAFC(c));
+    if (rc) {
+        return P1;
+    }
+
+    // TODO special convert rational coefficients to integer coefficients.
     return IPFRP(k, P1);
 }
 

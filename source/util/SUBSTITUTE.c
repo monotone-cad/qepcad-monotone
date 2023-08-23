@@ -100,7 +100,6 @@ Word SUBSTITUTE(Word r, Word P, Word S, bool rc)
         return P1;
     }
 
-    // TODO special convert rational coefficients to integer coefficients.
-    return IPFRP(k, P1);
+    return IPFRPmod(k, P1);
 }
 

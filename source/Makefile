@@ -198,6 +198,7 @@ $(LIB)(util/LEVELIDX.o) \
 $(LIB)(util/PADDVS.o) \
 $(LIB)(util/PPREPVS.o) \
 $(LIB)(util/JACOBI.o) \
+$(LIB)(util/IPFRPmod.o) \
 $(LIB)(util/SUBSTITUTE.o) \
 $(LIB)(util/ROOTS.o) \
 $(LIB)(proj/APPENDEC.o) \
@@ -566,6 +567,7 @@ $(LIBD)(util/LEVELIDX.o) \
 $(LIBD)(util/PADDVS.o) \
 $(LIBD)(util/PPREPVS.o) \
 $(LIBD)(util/JACOBI.o) \
+$(LIBD)(util/IPFRPmod.o) \
 $(LIBD)(util/SUBSTITUTE.o) \
 $(LIBD)(util/ROOTS.o) \
 $(LIBD)(proj/APPENDEC.o) \

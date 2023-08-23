@@ -98,6 +98,7 @@ Word LEVELIDX(Word C);
 Word PADDVS(Word P, Word k);
 Word PPREPVS(Word P, Word k);
 Word JACOBI(Word r, Word f, Word i, Word Hs, Word Is);
+Word IPFRPmod(Word r, Word P);
 Word SUBSTITUTE(Word r, Word P, Word S, bool rc);
 Word ROOTS(Word Ps);
 void FGWRITE(Word A, Word n);

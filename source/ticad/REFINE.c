@@ -48,27 +48,6 @@ Word COMPARE(Word Ma, Word Ia, Word Ba, Word Mb, Word Ib, Word Bb)
     return 0;
 }
 
-// list deep copy
-// like LCOPY but it recursively copies all the sublists.
-Word LDCOPY(Word L)
-{
-    // base: empty
-    if (L == NIL) return NIL;
-
-    // base: non-list
-    if (!ISLIST(L)) return L;
-
-    // recursive: list
-    Word LL = NIL, A;
-    while (L != NIL) {
-        ADV(L, &A, &L);
-
-        LL = COMP(LDCOPY(A), LL);
-    }
-
-    return INV(LL);
-}
-
 // set cell C index, element k to value a
 // child recursive update not needed.
 void SETINDEXK(Word C, Word k, Word a)

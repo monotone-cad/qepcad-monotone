@@ -201,6 +201,7 @@ $(LIB)(util/JACOBI.o) \
 $(LIB)(util/IPFRPmod.o) \
 $(LIB)(util/SUBSTITUTE.o) \
 $(LIB)(util/ROOTS.o) \
+$(LIB)(util/LDCOPY.o) \
 $(LIB)(proj/APPENDEC.o) \
 $(LIB)(proj/ECLEVEL.o) \
 $(LIB)(proj/EXTRACT.o) \
@@ -570,6 +571,7 @@ $(LIBD)(util/JACOBI.o) \
 $(LIBD)(util/IPFRPmod.o) \
 $(LIBD)(util/SUBSTITUTE.o) \
 $(LIBD)(util/ROOTS.o) \
+$(LIBD)(util/LDCOPY.o) \
 $(LIBD)(proj/APPENDEC.o) \
 $(LIBD)(proj/ECLEVEL.o) \
 $(LIBD)(proj/EXTRACT.o) \

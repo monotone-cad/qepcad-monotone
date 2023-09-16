@@ -101,6 +101,7 @@ Word JACOBI(Word r, Word f, Word i, Word Hs, Word Is);
 Word IPFRPmod(Word r, Word P);
 Word SUBSTITUTE(Word r, Word P, Word S, bool rc);
 Word ROOTS(Word Ps);
+Word LDCOPY(Word L1);
 void FGWRITE(Word A, Word n);
 void FILINE();
 void FILLIN(Word n, Word vs, Word S_r, Word S_s, Word R_c, Word R_s, Word *v_);

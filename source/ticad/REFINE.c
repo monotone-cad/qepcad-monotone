@@ -18,16 +18,21 @@ Output
 // need a new property of cells, SIGNRP, like SIGNPF. this wiss contain signs of refinement polynomials, level k, above
 // the sub-cad as indicated in the polynomial. add in cell write.
 
+inline bool IsAF(Word b)
+{
+    return b != 0 && PDEG(SECOND(b)) > 0;
+}
+
 // compare two coordinates of sample points.
 Word COMPARE(Word Ma, Word Ia, Word Ba, Word Mb, Word Ib, Word Bb)
 {
-    bool a_rat = !(ISLIST(Ba) && PDEG(SECOND(Ba)) > 0);
-    bool b_rat = !(ISLIST(Ba) && PDEG(SECOND(Ba)) > 0);
+    bool a_rat = !IsAF(Ba);
+    bool b_rat = !IsAF(Bb);
 
     // rational vs rational
     if (a_rat && b_rat) {
-        Word a = ISLIST(Ba) ? FIRST(Ba) : 0;
-        Word b = ISLIST(Bb) ? FIRST(Bb) : 0;
+        Word a = Ba == 0 ? 0 : FIRST(Ba);
+        Word b = Bb == 0 ? 0 : FIRST(Bb);
 
         return RNCOMP(a, b);
     }
@@ -70,9 +75,8 @@ void SETSAMPLEALG(Word C, Word Q, Word J, Word M, Word I, Word b, Word PFs)
 
 void SETSAMPLERAT(Word C, Word M, Word I, Word b, Word PFs)
 {
-    LWRITE(LELTI(C, INDX)); SWRITE("\n");
     Word S = LIST3(M, I, b);
-    SLELTI(C, SAMPLE, LIST3(M, I, b));
+    SLELTI(C, SAMPLE, S);
 
     Word Ch = LELTI(C, CHILD);
     if (Ch == NIL) return;
@@ -83,7 +87,6 @@ void SETSAMPLERAT(Word C, Word M, Word I, Word b, Word PFs)
 
     // one child, just set it to zero.
     if (LENGTH(Ch) == 1) {
-        printf("one chld, sample = 0\n");
         Word b1 = CONC(LCOPY(b), LIST1(AFFINT(0)));
         SETSAMPLERAT(FIRST(Ch), M, I, b1, PFs);
 
@@ -91,7 +94,6 @@ void SETSAMPLERAT(Word C, Word M, Word I, Word b, Word PFs)
     }
 
     // otherwise, we have roots to find and sample poits to update.
-    SWRITE("sample "); LWRITE(b); SWRITE("\n");
     Word SP = NIL;
     Word r = LELTI(C, LEVEL) + 1;
     while (PF != NIL) {
@@ -104,22 +106,18 @@ void SETSAMPLERAT(Word C, Word M, Word I, Word b, Word PFs)
 
     // root finding.
     Word B = ROOTS(SP);
-    SWRITE("SP = "); LWRITE(SP); SWRITE("\n");
-    SWRITE("B = "); LWRITE(B); SWRITE("\n");
 
     Word C1, C2, JR, MR;
     while (Ch != NIL && B != NIL) {
         ADV2(Ch, &C1, &C2, &Ch);
         ADV2(B, &JR, &MR, &B);
 
-        SWRITE("sector cell: "); RNWRITE(FIRST(JR)); SWRITE("\n");
         // sector cell C1 takes on left hand end of isolating interval
         Word b1 = CONC(LCOPY(b), LIST1(AFFRN(FIRST(JR))));
         SETSAMPLERAT(C1, M, I, b1, PFs);
 
         // for the sector cell C2, set sample point to the root.
         if (PDEG(MR) == 1) { // rational root
-            SWRITE("rational root of "); LWRITE(MR); RNWRITE(IUPRLP(MR)); SWRITE("\n");
             Word c = AFFRN(IUPRLP(MR));
 
             Word b2 = CONC(LCOPY(b), LIST1(c));
@@ -135,11 +133,6 @@ void SETSAMPLERAT(Word C, Word M, Word I, Word b, Word PFs)
     // last cell, integer number, ceiling of right endpoint of last isolating interval + 1
     Word b1 = CONC(LCOPY(b), LIST1(AFFINT(RNCEIL(SECOND(JR)) + 1)));
     SETSAMPLERAT(FIRST(Ch), M, I, b1, PFs);
-}
-
-inline bool IsAF(Word b)
-{
-    return b != 0 && PDEG(SECOND(b)) > 0;
 }
 
 // are the first n-1 coordinates of S rational
@@ -194,17 +187,14 @@ void SETSAMPLE(Word C, Word M, Word I, Word b, Word PFs)
     bool is_rat = IsRat(SQ, SJ, SM, SI, Sb);
     bool b_is_af = IsAF(b);
 
-    // completely algebraic
     if (!b_is_af) {
-        if (is_rat) { // rational base
-            printf("rat rat\n");
+        if (is_rat) { // rational base, rational coordinate
             SETSAMPLERAT(C, PMON(1,1), LIST2(0,0), Sb, PFs);
 
             return;
         }
 
-        // algebaric base
-        printf("base alg, b rat\n");
+        // algebaric base, rational coordinate
         SETSAMPLEALG(C, NIL, NIL, SM, SI, Sb, PFs);
 
         return;
@@ -213,7 +203,6 @@ void SETSAMPLE(Word C, Word M, Word I, Word b, Word PFs)
     // otherwise, b is algebraic
     if (is_rat || (EQUAL(SM, M) && EQUAL(SI, I))) {
         // rational base, or extensions are equal, just use M and I
-        printf("base rat or same, b alg\n");
         SETSAMPLEALG(C, NIL, NIL, SM, SI, Sb, PFs);
 
         return;
@@ -225,7 +214,6 @@ void SETSAMPLE(Word C, Word M, Word I, Word b, Word PFs)
         SLELTI(Sb, k, NIL);
     }
 
-    printf("base alg, b alg\n");
     SETSAMPLEALG(C, M, I, SM, SI, Sb, PFs);
 }
 
@@ -290,6 +278,31 @@ void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* Pb_, Word* J_, Word* Ps
     *J_ = SECOND(P);
 }
 
+// find some rational point between the last coordinates of P1 = (M1, I1, b1) and P2 = (M2, I2, b2)
+void MIDPOINT(Word M1, Word I1, Word b1, Word M2, Word I2, Word b2, Word* M_, Word* I_, Word* b_)
+{
+    Word k = LENGTH(b2);
+    Word af2 = LAST(b2);
+
+    // both rational
+    if (!IsAF(b1) && !IsAF(af2)) {
+        Word a1 = b1 == 0 ? 0 : FIRST(b1);
+        Word a2 = af2 == 0 ? 0 : FIRST(af2);
+        Word c = RNQ(RNSUM(a1, a2), RNINT(2));
+
+        *M_ = LCOPY(M1);
+        *I_ = LCOPY(I1);
+
+        Word b = LCOPY(b2);
+        SLELTI(b, k, AFFRN(c));
+        *b_ = b;
+
+        return;
+    }
+
+    // TODO what if one or both are algebraic?
+}
+
 // Refine subcad D to be compatible with level 1 polynomials Ps
 Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 {
@@ -331,36 +344,39 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
     }
 
     // final step: update sample point of last refined cell.
-    //Ch = RED2(Ch);
-    //Word Jl, Jr;
-    //FIRST2(J, &Jl, &Jr);
+    Ch1 = RED2(Ch1);
 
-    //if (LENGTH(Ch) == 1) { // updating last cell
-    //    Word C1 = FIRST(Ch);
-    //    Word M1, I1, Sb1;
-    //    FIRST3(LELTI(C1, SAMPLE), &M1, &I1, &Sb1);
-    //    Word b = AFFINT(RNCEIL(Jr) + 1);
+    Word Jl, Jr;
+    FIRST2(J, &Jl, &Jr);
+    Word C1 = FIRST(Ch1);
+    Word M1, I1, Sb1;
+    FIRST3(LELTI(C1, SAMPLE), &M1, &I1, &Sb1);
 
-    //    SETSAMPLE(C1, M1, I1, b);
-    //    return Ch2;
-    //}
+    // then it's the last sector
+    if (LENGTH(Ch1) == 1) {
+        Word b = AFFINT(RNCEIL(Jr) + 1);
+        SETSAMPLE(C1, M1, I1, b, PFs);
 
-    // update some intermediate cell C1, bounded from the right by C2
-    //Word C1, C2, SM, SI, Sb;
-    //FIRST2(Ch, &C1, &C2);
-    //Word S = LELTI(C2, SAMPLE);
-    //FIRST3(S, &SM, &SI, &Sb);
+        return Ch2;
+    }
 
-    //if (PDEG(SM) == 1 && PDEG(PM) == 1) { // rational sample.
-    //    // find the midpoint between P and C2.
-    //    Word a = FIRST(LAST(Sb)); // rational part of coordinate k
-    //    Word b = AFFRN(RNQ(RNSUM(Jr, a), RNINT(2)));
+    // maybe we will get lucky and the sample point of the original cell is already correct.
+    if (COMPARE(PM, PI, Pb, M1, I1, LAST(Sb1)) < 0) {
+        printf("we got lucky, sample point is already correct.\n");
 
-    //    SETSAMPLE(C1, SM, SI, b);
-    //} else {
-    //    // otherwise, C2->SAMPLE is algebraic.
-    //    perror("algebraic refinement last cell. what should the sample be?!\n");
-    //}
+        return  Ch2;
+    }
+
+    // otherwise, the sample point needs updating. it's bounded from the right by a cell C2.
+    Word C2, SM, SI, Sb;
+    C2 = SECOND(Ch1);
+    Word S = LELTI(C2, SAMPLE);
+    FIRST3(S, &SM, &SI, &Sb);
+
+    Word M, I, b;
+    MIDPOINT(PM, PI, Pb, SM, SI, Sb, &M, &I, &b);
+    LWRITE(LELTI(C1, INDX)); SWRITE(" "); LWRITE(b); SWRITE("\n");
+    SETSAMPLERAT(C1, M, I, b, PFs);
 
     return Ch2;
 }

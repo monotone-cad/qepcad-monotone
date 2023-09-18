@@ -284,12 +284,33 @@ void MIDPOINT(Word M1, Word I1, Word b1, Word M2, Word I2, Word b2, Word* M_, Wo
     Word k = LENGTH(b2);
     Word af2 = LAST(b2);
 
-    // both rational
-    if (!IsAF(b1) && !IsAF(af2)) {
+    // if a is rational...
+    if (!IsAF(b1)) {
+        // extract rational value
         Word a1 = b1 == 0 ? 0 : FIRST(b1);
-        Word a2 = af2 == 0 ? 0 : FIRST(af2);
-        Word c = RNQ(RNSUM(a1, a2), RNINT(2));
+        Word a2;
+        Word c;
 
+        // ... and b2 is also rational
+        if (!IsAF(af2)) {
+            // simply extract the rational value and calculate the midpoint between a1 and a2
+            a2 = af2 == 0 ? 0 : FIRST(af2);
+
+            c = RNQ(RNSUM(a1, a2), RNINT(2));
+        } else { // .. otherwise, b2 is algebraic
+            // extract left-hand endpoint of isolating interval.
+            a2 = FIRST(I2);
+
+            // if a1 < a2, a2 can be used
+            if (RNCOMP(a1, a2) < 0) {
+                c = a2;
+            } else {
+                perror("a1 > a2. need to calculate a new \"midpoint\".\n");
+                c = 0;
+            }
+        }
+
+        // return M, I, (a1 + a2) / 2
         *M_ = LCOPY(M1);
         *I_ = LCOPY(I1);
 
@@ -300,7 +321,8 @@ void MIDPOINT(Word M1, Word I1, Word b1, Word M2, Word I2, Word b2, Word* M_, Wo
         return;
     }
 
-    // TODO what if one or both are algebraic?
+    // otherwise a1 is algebraic
+    // TODO
 }
 
 // Refine subcad D to be compatible with level 1 polynomials Ps

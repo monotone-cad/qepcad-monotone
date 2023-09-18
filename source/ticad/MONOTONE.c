@@ -303,13 +303,15 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
             a = AFFRN(IUPRLP(M));
             bp = CONC(b,LIST1(a));
             S1 = LIST3(SM,SI,bp);
-        } else { // nonlinear, construct as an algebraic
+        } else if (EQUAL(M, SM)) { // nonlinear, construct as an algebraic -- same M and I as in S
             a = AFGEN();
-            bp = CCONC(b,LIST1(a));
-            S1 = LIST3(M,J,bp);
+            bp = CONC(b,LIST1(a));
+
+            S1 = LIST3(SM,SI,bp);
+        } else { // algebraic, but with a new M and I. write in extended form
+            S1 = LIST5(M, J, SM, SI, bp);
         }
 
-        SWRITE("S1 "); LWRITE(S1); SWRITE("\n");
         // add the sample points to set RPs
         Word RP1 = LELTI(RPs, k1);
         Word W = MPOLY(LIST2(S1, J), LIST3(Z2,k1,LENGTH(RP1)), NIL, PO_REFINEMENT, PO_KEEP);
@@ -318,7 +320,7 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
     }
 }
 
-// refinemenent points, algebraic sample.
+// refinement points, algebraic sample.
 void REFINEMENTPOINTSALG(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
 {
     LWRITE(I); SWRITE(" algebraic refinements.\n");

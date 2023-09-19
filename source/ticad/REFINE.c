@@ -18,22 +18,30 @@ Output
 // need a new property of cells, SIGNRP, like SIGNPF. this wiss contain signs of refinement polynomials, level k, above
 // the sub-cad as indicated in the polynomial. add in cell write.
 
-inline bool IsAF(Word b)
+inline bool AfIsRat(Word b, Word* r_)
 {
-    return b != 0 && PDEG(SECOND(b)) > 0;
+    if (b == 0) {
+        *r_ = 0;
+
+        return true;
+    }
+
+    Word p, Q;
+    FIRST2(b, &p, &Q);
+    *r_ = p;
+
+    return PDEG(Q) == 0;
 }
 
 // compare two coordinates of sample points.
 Word COMPARE(Word Ma, Word Ia, Word Ba, Word Mb, Word Ib, Word Bb)
 {
-    bool a_rat = !IsAF(Ba);
-    bool b_rat = !IsAF(Bb);
+    Word a, b;
+    bool a_rat = AfIsRat(Ba, &a);
+    bool b_rat = AfIsRat(Bb, &b);
 
     // rational vs rational
     if (a_rat && b_rat) {
-        Word a = Ba == 0 ? 0 : FIRST(Ba);
-        Word b = Bb == 0 ? 0 : FIRST(Bb);
-
         return RNCOMP(a, b);
     }
 
@@ -47,10 +55,14 @@ Word COMPARE(Word Ma, Word Ia, Word Ba, Word Mb, Word Ib, Word Bb)
         return AFCOMP(Mb, Ib, Ba, Bb);
     }
 
-    // otherwise both are algebraic and they might have different generators
-    perror("TODO alg vs alg. need to get the same generator.\n");
+    // otherwise both are algebraic
+    if (EQUAL(Ma, Mb)) {
+        // both have the same extension.
+        return AFCOMP(Mb, Ib, Ba, Bb);
+    }
 
-    return 0;
+    // this is the tricky bit. a and b lie in two different extensions.
+    return AFCOMP(G, K, Ba, bs1);
 }
 
 // set cell C index, element k to value a
@@ -156,7 +168,8 @@ bool IsRat(Word SQ, Word SJ, Word SM, Word SI, Word Sb)
         ADV(Sb, &b, &Sb);
 
         // algebraic? (non-zero and nonconstant polynomial for alpha)
-        if (IsAF(b)) {
+        Word junk;
+        if (!AfIsRat(b, &junk)) {
             return false;
         }
     }
@@ -184,10 +197,11 @@ void SETSAMPLE(Word C, Word M, Word I, Word b, Word PFs)
         SLELTI(Sb, k, b);
     }
 
+    Word junk;
     bool is_rat = IsRat(SQ, SJ, SM, SI, Sb);
-    bool b_is_af = IsAF(b);
+    bool b_is_rat = AfIsRat(b, &junk);
 
-    if (!b_is_af) {
+    if (b_is_rat) {
         if (is_rat) { // rational base, rational coordinate
             SETSAMPLERAT(C, PMON(1,1), LIST2(0,0), Sb, PFs);
 
@@ -237,11 +251,12 @@ Word RefineCell(Word k, Word Cs, Word M, Word I, Word b, Word c, Word PFs)
     SETINDEXK(C3, k, ++j);
 
     // update sample
-    // existing sample point of C1 will be valid for one of the cells. check.
+    // existing sample point of C1 will be correct for one of the cells. check.
     Word SM, SI, Sb;
     FIRST3(LELTI(C1, SAMPLE), &SM, &SI, &Sb);
     Sb = LAST(Sb);
 
+    printf("in refine cell.\n");
     Word sign = COMPARE(SM, SI, Sb, M, I, b);
     // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
 
@@ -272,9 +287,20 @@ Word RefineCell(Word k, Word Cs, Word M, Word I, Word b, Word c, Word PFs)
 // convenience function for next polynomial
 void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* Pb_, Word* J_, Word* Ps_)
 {
-    Word P;
+    Word P, b;
     ADV(Ps, &P, Ps_);
-    FIRST3(FIRST(P), PM_, PI_, Pb_);
+    Word P1 = FIRST(P);
+
+    if (LENGTH(P1) == 5) {
+        // extended representation
+        FIRST2(P1, PM_, PI_);
+        *Pb_ = AFGEN();
+    } else {
+        // primitive
+        FIRST3(P1, PM_, PI_, &b);
+        *Pb_ = LAST(b);
+    }
+
     *J_ = SECOND(P);
 }
 
@@ -285,17 +311,15 @@ void MIDPOINT(Word M1, Word I1, Word b1, Word M2, Word I2, Word b2, Word* M_, Wo
     Word af2 = LAST(b2);
 
     // if a is rational...
-    if (!IsAF(b1)) {
+    Word a1;
+    if (AfIsRat(b1, &a1)) {
         // extract rational value
-        Word a1 = b1 == 0 ? 0 : FIRST(b1);
         Word a2;
         Word c;
 
         // ... and b2 is also rational
-        if (!IsAF(af2)) {
+        if (AfIsRat(af2, &a2)) {
             // simply extract the rational value and calculate the midpoint between a1 and a2
-            a2 = af2 == 0 ? 0 : FIRST(af2);
-
             c = RNQ(RNSUM(a1, a2), RNINT(2));
         } else { // .. otherwise, b2 is algebraic
             // extract left-hand endpoint of isolating interval.
@@ -335,7 +359,6 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
     Word Ch1 = Ch;
     while (Ps != NIL) {
         NextPolynomial(Ps, &PM, &PI, &Pb, &J, &Ps);
-        Pb = LAST(Pb);
 
         // find child cell which needs splitting.
         // i.e., the sector cell whose top is aftor the current refinement point, or the last cell.
@@ -356,9 +379,11 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
             FIRST3(LELTI(C,SAMPLE), &SM, &SI, &Sb);
             Sb = LAST(Sb);
 
+            printf("in loop.\n");
             sign = COMPARE(SM, SI, Sb, PM, PI, Pb);
         }
 
+        // refinement point coincides with an existing 0-cell
         if (sign == 0) continue; // point P coincides with an existing section cell. no refinement
 
         // change of sign occurs in cell Cp = FIRST(Ch). refine it

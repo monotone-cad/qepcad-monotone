@@ -297,19 +297,18 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
         ADV2(B, &J, &M, &B);
         Word b = LCOPY(Sb);
 
-        // TODO when S is algebraic.
         // construct sample point using minimal polynomial M and isolating interval J
         if (PDEG(M) == 1) { // M is linear, easy!
             a = AFFRN(IUPRLP(M));
             bp = CONC(b,LIST1(a));
             S1 = LIST3(SM,SI,bp);
-        } else if (EQUAL(M, SM)) { // nonlinear, construct as an algebraic -- same M and I as in S
+        } else if (PDEG(SM) == 1 || EQUAL(M, SM)) { // nonlinear, construct as an algebraic -- same M and I as in S
             a = AFGEN();
             bp = CONC(b,LIST1(a));
 
-            S1 = LIST3(SM,SI,bp);
+            S1 = LIST3(M,J,bp);
         } else { // algebraic, but with a new M and I. write in extended form
-            S1 = LIST5(M, J, SM, SI, bp);
+            S1 = LIST5(AFPFIP(1,M), J, SM, SI, bp);
         }
 
         // add the sample points to set RPs

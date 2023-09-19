@@ -255,7 +255,7 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
     return Rs;
 }
 
-// refinement points, rational sample.
+// refinement points
 void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
 {
     const Word Z1 = LFS("K");
@@ -307,8 +307,16 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
             bp = CONC(b,LIST1(a));
 
             S1 = LIST3(M,J,bp);
-        } else { // algebraic, but with a new M and I. write in extended form
-            S1 = LIST5(AFPFIP(1,M), J, SM, SI, bp);
+        } else { // algebraic, but with a new M and I. convert the sample point
+            Word C, t, u, K, a1, b1, junk;
+            SIMPLEQE(SM,SI,AFPFIP(1,M),J,&C,&t,&u,&K,&a1,&b1,&junk,&junk);
+            if (u != 0) {
+                MODCRDB(b,C,a1,b1,&b);
+            } else {
+                b = CCONC(b,LIST1(b1));
+            }
+
+            S1 = LIST4(C,K,b,S);
         }
 
         // add the sample points to set RPs

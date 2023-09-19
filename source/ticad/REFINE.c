@@ -62,7 +62,7 @@ Word COMPARE(Word Ma, Word Ia, Word Ba, Word Mb, Word Ib, Word Bb)
     }
 
     // this is the tricky bit. a and b lie in two different extensions.
-    return AFCOMP(G, K, Ba, bs1);
+    return 0;
 }
 
 // set cell C index, element k to value a
@@ -291,15 +291,8 @@ void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* Pb_, Word* J_, Word* Ps
     ADV(Ps, &P, Ps_);
     Word P1 = FIRST(P);
 
-    if (LENGTH(P1) == 5) {
-        // extended representation
-        FIRST2(P1, PM_, PI_);
-        *Pb_ = AFGEN();
-    } else {
-        // primitive
-        FIRST3(P1, PM_, PI_, &b);
-        *Pb_ = LAST(b);
-    }
+    FIRST3(P1, PM_, PI_, &b);
+    *Pb_ = LAST(b);
 
     *J_ = SECOND(P);
 }
@@ -375,11 +368,18 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
             // top of sector is past refinement ponit
             ADV(Ch1, &C, &Ch1);
-            Word SM, SI, Sb, junk;
-            FIRST3(LELTI(C,SAMPLE), &SM, &SI, &Sb);
+            Word S, SM, SI, Sb, junk;
+
+            S = LELTI(C, SAMPLE);
+            if (LENGTH(S) == 5) {
+                // convert if in extended representation
+                SWRITE("Cell "); LWRITE(LELTI(C, INDX)); SWRITE(" has an EXTENDED sample point -- convert.\n");
+                //SLELTI(C, SAMPLE, CONVERT(S, k));
+            }
+
+            FIRST3(S, &SM, &SI, &Sb);
             Sb = LAST(Sb);
 
-            printf("in loop.\n");
             sign = COMPARE(SM, SI, Sb, PM, PI, Pb);
         }
 

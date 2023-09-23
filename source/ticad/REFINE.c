@@ -34,26 +34,21 @@ inline bool AfIsRat(Word b, Word* r_)
 }
 
 // compare two coordinates of sample points.
-Word COMPARE(Word M1, Word I1, Word M2, Word I2)
+Word COMPARE(Word M1, Word *I1_, Word M2, Word *I2_)
 {
-    //LWRITE(M1); SWRITE(" ");
-    //LWRITE(I1); SWRITE(" ");
-    //LWRITE(M2); SWRITE(" ");
-    //LWRITE(I2); SWRITE("\n");
-
     bool a_rat = PDEG(M1) == 1;
     bool b_rat = PDEG(M2) == 1;
 
     // easy case: rational comparison
     if (a_rat && b_rat) {
-        return RNCOMP(FIRST(I1), FIRST(I2));
+        return RNCOMP(FIRST(*I1_), FIRST(*I2_));
     }
 
     // otherwise, at least one of a and b is algebraic. compare using rational approximation.
     Word a1, a2, b1, b2;
     while(1) {
-        FIRST2(I1, &a1, &a2);
-        FIRST2(I2, &b1, &b2);
+        FIRST2(*I1_, &a1, &a2);
+        FIRST2(*I2_, &b1, &b2);
 
         // check whether the intervals are separated, if not, then refine them until they are.
         Word c1 = RNCOMP(a2, b1);
@@ -75,8 +70,8 @@ Word COMPARE(Word M1, Word I1, Word M2, Word I2)
         }
 
         // or we can refine the isolating intervals and do endpoint comparisons again.
-        if (!a_rat) I1 = IUPIIR(M1, LIST2(a1,a2));
-        if (!b_rat) I2 = IUPIIR(M2, LIST2(b1,b2));
+        if (!a_rat) *I1_ = IUPIIR(M1, LIST2(a1,a2));
+        if (!b_rat) *I2_ = IUPIIR(M2, LIST2(b1,b2));
     }
 
     return 0;
@@ -216,7 +211,7 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
     Word S1;
     if (PDEG(M) == 1) {
         // then append it
-        Word c = LIST2(FIRST(I), PMON(1,0));
+        Word c = AFFRN(FIRST(I));
         Sb = CONC(Sb, LIST1(c));
 
         S1 = LIST3(SM, SI, Sb);
@@ -230,7 +225,7 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
 
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
 // (0,...,0,0)-cell
-Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word c, Word PFs)
+Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word PFs, bool* rc)
 {
     Word Cs2 = Cs;
 
@@ -244,7 +239,6 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word c, Wor
     Word j = LELTI(LELTI(C1, INDX), k);
 
     printf("refine cell "); LWRITE(LELTI(C1, INDX));
-    LWRITE(PM); SWRITE(" "); LWRITE(PI); SWRITE("\n");
 
     // update indices
     SETINDEXK(C2, k, ++j);
@@ -252,18 +246,21 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word c, Wor
 
     // update sample
     // existing sample point of C1 will be correct for one of the cells. check.
-    Word sign = COMPARE(SQ, SJ, PM, PI);
+    Word sign = COMPARE(SQ, &SJ, PM, &PI);
     // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
 
     if (sign != -1) { // need to update C1 ...
         // ... to the left-hand end of the isolating interval
-        SETSAMPLE(C1, PMON(1,1), LIST1(c), PFs);
+        SETSAMPLE(C1, PMON(1,1), PI, PFs);
     }
 
     if (sign != 0) { // need to update C2 ...
         // to the new "refinement point" given
         SETSAMPLE(C2, PM, PI, PFs);
     }
+
+    // we will need to update the sampe of C3, but this is done later.
+    *rc = sign != 1;
 
     // update indices of remaining cells.
     Word Cs1 = Cs;
@@ -302,6 +299,14 @@ Word STRIP(Word P)
 // convenience function for next polynomial
 void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word* Ps_)
 {
+    if (Ps == NIL) {
+        *PM_ = NIL;
+        *PI_ = NIL;
+        *J_ = NIL;
+
+        return;
+    }
+
     Word P, M, I, b, a;
     ADV(Ps, &P, Ps_);
     Word P1 = FIRST(P);
@@ -371,93 +376,74 @@ void MIDPOINT(Word M1, Word I1, Word b1, Word M2, Word I2, Word b2, Word* M_, Wo
     // TODO
 }
 
+// get k-th coordinate of the sample point as an algebraic number
+void GETSAMPLEK(Word S, Word* Q_, Word* J_)
+{
+    Word SQ, SJ, SM, SI, Sb, junk;
+    if (LENGTH(S) == 5) {
+        FIRST4(S, &SQ, &SJ, &SM, &SI);
+        SQ = AFPNORM(1, SM, SQ);
+    } else {
+        FIRST3(S, &SM, &SI, &Sb);
+        Sb = LAST(Sb);
+        Word b;
+        if (AfIsRat(Sb, &b)) {
+            SQ = PMON(1,1);
+            SJ = LIST2(b, b);
+        } else {
+            ANFAF(SM, SI, Sb, &SQ, &SJ);
+        }
+    }
+
+    *Q_ = SQ;
+    *J_ = SJ;
+}
+
 // Refine subcad D to be compatible with level 1 polynomials Ps
 Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 {
     Word Ch2 = Ch; // backup of list, to return.
     Word PM, PI, J;
 
-    // Ps is a list of sample points, in ascending order, which define new 0-cells we will add to D
+    // Ps is a list of sample points in ascending order, which define new 0-cells we will add to D
+    NextPolynomial(Ps, &PM, &PI, &J, &Ps);
+
+    // first sector cell
+    Word sign = -1;
     Word Ch1 = Ch;
-    while (Ps != NIL) {
-        NextPolynomial(Ps, &PM, &PI, &J, &Ps);
+    bool refined = false;
+    while (Ch != NIL) {
+        Word C;
+        // next sector
+        ADV(Ch, &C, &Ch1);
 
-        // find child cell which needs splitting.
-        // i.e., the sector cell whose top is aftor the current refinement point, or the last cell.
-        Word sign = -1, SQ, SJ;
-        while (sign < 0) {
-            Word C;
-            Ch = Ch1;
-            ADV(Ch, &C, &Ch1);
-
-            // last cell?
-            if (Ch1 == NIL) {
-                break;
-            }
-
-            // top of sector is past refinement ponit
-            Word S, SM, SI, Sb, junk;
-            ADV(Ch1, &C, &Ch1);
-            S = LELTI(C, SAMPLE);
-            if (LENGTH(S) == 5) {
-                FIRST4(S, &SQ, &SJ, &SM, &SI);
-                SQ = AFPNORM(1, SM, SQ);
-            } else {
-                FIRST3(S, &SM, &SI, &Sb);
-                Sb = LAST(Sb);
-                Word b;
-                if (AfIsRat(Sb, &b)) {
-                    SQ = PMON(1,1);
-                    SJ = LIST2(b, b);
-                } else {
-                    ANFAF(SM, SI, Sb, &SQ, &SJ);
-                }
-            }
-
-            sign = COMPARE(SQ, SJ, PM, PI);
+        if (refined) {
+            printf("need to set sample of "); LWRITE(LELTI(C, INDX)); SWRITE("\n");
         }
 
-        // refinement point coincides with an existing 0-cell
-        if (sign == 0) continue; // point P coincides with an existing section cell. no refinement
+        if (Ch1 == NIL || PM == NIL) { // C was last sector
+            break;
+        }
 
-        // change of sign occurs in cell Cp = FIRST(Ch). refine it
-        Ch1 = RefineCell(k, Ch, SQ, SJ, PM, PI, AFFRN(FIRST(J)), PFs);
+        // next section.
+        ADV(Ch1, &C, &Ch1);
+
+        // get k-th coordinate of the sample point of C
+        Word SQ, SJ;
+        GETSAMPLEK(LELTI(C, SAMPLE), &SQ, &SJ);        sign = COMPARE(SQ, &SJ, PM, &PI);
+
+        if (sign < 0) { // S < P, don't refine, keep looking.
+            Ch = Ch1;
+
+            continue;
+        } else if (sign > 0) { // S > P, refine previous sector, FIRST(Ch)
+            Ch1 = RED2(RefineCell(k, Ch, SQ, SJ, PM, PI, PFs, &refined));
+        }
+
+        // and get next polynomial
+        NextPolynomial(Ps, &PM, &PI, &J, &Ps);
+        Ch = Ch1;
     }
-
-    // final step: update sample point of last refined cell.
-    Ch1 = RED2(Ch1);
-
-    Word Jl, Jr;
-    FIRST2(J, &Jl, &Jr);
-    Word C1 = FIRST(Ch1);
-    Word M1, I1, Sb1;
-    FIRST3(LELTI(C1, SAMPLE), &M1, &I1, &Sb1);
-
-    // then it's the last sector
-    if (LENGTH(Ch1) == 1) {
-        Word b = AFFINT(RNCEIL(Jr) + 1);
-        SETSAMPLE(C1, PMON(1,1), LIST1(b), PFs);
-
-        return Ch2;
-    }
-
-    // maybe we will get lucky and the sample point of the original cell is already correct.
-    //if (COMPARE(PM, PI, Pb, M1, I1, LAST(Sb1)) < 0) {
-    //    printf("we got lucky, sample point is already correct.\n");
-
-    //    return  Ch2;
-    //}
-
-    // otherwise, the sample point needs updating. it's bounded from the right by a cell C2.
-    //Word C2, SM, SI, Sb;
-    //C2 = SECOND(Ch1);
-    //Word S = LELTI(C2, SAMPLE);
-    //FIRST3(S, &SM, &SI, &Sb);
-
-    //Word M, I, b;
-    //MIDPOINT(PM, PI, Pb, SM, SI, Sb, &M, &I, &b);
-    //LWRITE(LELTI(C1, INDX)); SWRITE(" "); LWRITE(b); SWRITE("\n");
-    //SETSAMPLERAT(C1, M, I, b, PFs);
 
     return Ch2;
 }

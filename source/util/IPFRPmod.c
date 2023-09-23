@@ -30,7 +30,7 @@ inline Word RUPConvert(Word A)
             a2 = 1;
         }
 
-        As = COMP(a, As);
+        As = COMP(a1, As);
         // update lcm for integer conversion
         if (lcm == 1) { // set lcm
             lcm = a2;
@@ -47,7 +47,7 @@ inline Word RUPConvert(Word A)
         ADV(Es, &e, &Es);
 
         Word b = IPROD(lcm, a);
-        B = COMP2(b, e, B);
+        B = COMP2(e, b, B);
     }
 
     return B;
@@ -61,7 +61,9 @@ Word IPFRPmod(Word r, Word A)
     }
 
     // base case: r = 1 (convert coefficients)
-    return RUPConvert(A);
+    if (r == 1) {
+        return RUPConvert(A);
+    }
 
     // recursive case: r > 0 (reconstruct polynomial)
     Word As = A;

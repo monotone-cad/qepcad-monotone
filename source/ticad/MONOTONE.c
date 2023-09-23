@@ -256,7 +256,7 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
 }
 
 // refinement points
-void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
+void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word* RPs_)
 {
     const Word Z1 = LFS("K");
     const Word Z2 = LFS("M");
@@ -271,7 +271,7 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
         ADV(R1s, &P, &R1s);
         if (P == 0) continue;
 
-        ADDPOL(PPREPVS(P, k), NIL, k, Z1, J_, &Label);
+        ADDPOL(PPREPVS(P, k), NIL, k1, Z1, J_, &Label);
         Label = COMP(Z1, Label);
         Word W = MPOLY(P, Label, NIL, PO_POLY, PO_KEEP);
 
@@ -307,35 +307,15 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
             bp = CONC(b,LIST1(a));
 
             S1 = LIST3(M,J,bp);
-        } else { // algebraic, but with a new M and I. convert the sample point
-            Word C, t, u, K, a1, b1, junk;
-            SIMPLEQE(SM,SI,AFPFIP(1,M),J,&C,&t,&u,&K,&a1,&b1,&junk,&junk);
-            if (u != 0) {
-                MODCRDB(b,C,a1,b1,&b);
-            } else {
-                b = CCONC(b,LIST1(b1));
-            }
-
-            S1 = LIST4(C,K,b,S);
+        } else { // algebraic, but with a new M and I. extended form with normalised polynomial.
+            S1 = LIST5(AFPFIP(1, M), J ,SM, SI, b);
         }
 
         // add the sample points to set RPs
-        Word RP1 = LELTI(RPs, k1);
-        Word W = MPOLY(LIST2(S1, J), LIST3(Z2,k1,LENGTH(RP1)), NIL, PO_REFINEMENT, PO_KEEP);
+        Word RP1 = LELTI(*RPs_, k1);
+        Word W = MPOLY(LIST2(S1, J), LIST3(Z2,k1,LENGTH(RP1) + 1), NIL, PO_REFINEMENT, PO_KEEP);
         SLELTI(W, PO_REFINEMENT, I);
-        SLELTI(RPs, k1, COMP(W, RP1));
-    }
-}
-
-// refinement points, algebraic sample.
-void REFINEMENTPOINTSALG(Word I, Word S, Word R1s, Word* A_, Word* J_, Word RPs)
-{
-    LWRITE(I); SWRITE(" algebraic refinements.\n");
-
-    while (R1s != NIL) {
-        Word P;
-        ADV(R1s, &P, &R1s);
-        LWRITE(P); SWRITE("\n");
+        SLELTI(*RPs_, k1, COMP(W, RP1));
     }
 }
 
@@ -348,10 +328,10 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
     for (int i = 0; i < r; ++i) RPs = COMP(NIL, RPs);
 
     while (Rs != NIL) {
-        Word k, k1, Label, I, SM, SI, Sb, S, R1s;
+        Word I, S, R1s;
         ADV3(Rs, &I, &S, &R1s, &Rs);
 
-        REFINEMENTPOINTSRAT(I, S, R1s, A_, J_, RPs);
+        REFINEMENTPOINTSRAT(I, S, R1s, A_, J_, &RPs);
     }
 
     return RPs;
@@ -368,7 +348,7 @@ void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word* A_)
         ADV3(A, &I1, &S1, &Ps, &A);
 
         // found
-        if (I1 == I) {
+        if (I == 1I) {
             Ps = CONC(Ps, Rs);
 
             return;
@@ -452,8 +432,6 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         }
     }
 
-    // TODO modify for alg and rat, i.e., check on the sample point, that will determine n or n+1 variables real root
-    // isolation, etc.
     return REFINEMENTPOINTS(r, Rs, A_, J_);
 }
 

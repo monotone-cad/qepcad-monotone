@@ -348,7 +348,7 @@ void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word* A_)
         ADV3(A, &I1, &S1, &Ps, &A);
 
         // found
-        if (I == 1I) {
+        if (I == I1) { // avoid proper list comparison because subcads are identical
             Ps = CONC(Ps, Rs);
 
             return;

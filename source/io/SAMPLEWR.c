@@ -38,8 +38,6 @@ Step2: /* Extended representation. */
        ANDWRITE(Ms,Is,PCNUMDEC); SWRITE("\n");
 
        printf("\n");
-       LWRITE(M);
-       printf("\n");
        goto Return;
 
 Step3: /* Primitive representation. */

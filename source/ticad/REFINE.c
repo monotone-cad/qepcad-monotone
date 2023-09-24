@@ -160,22 +160,15 @@ void SETSAMPLERAT(Word C, Word M, Word I, Word b, Word PFs)
 }
 
 // are the first n-1 coordinates of S rational
-bool IsRat(Word SQ, Word SJ, Word SM, Word SI, Word Sb)
+bool SampleIsRat(Word SM, Word Sb)
 {
     // base polynomial is rational
     if (PDEG(SM) == 1) {
         return true;
     }
 
-    // otherwise, SM represents an algebraic extension.
-    if (SQ != NIL) {
-        // at least one of (c_1,...,c_{k-1}) has to be algebraic
-        return false;
-    }
-
     // otherwise, the point is in primitive form. we must check whether all c_1,...,c_{k-1} are all rational.
-    Word k = LENGTH(Sb) - 1;
-    while (Sb != NIL && k > 0) {
+    while (Sb != NIL) {
         Word b;
         ADV(Sb, &b, &Sb);
 
@@ -215,6 +208,11 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
         Sb = CONC(Sb, LIST1(c));
 
         S1 = LIST3(SM, SI, Sb);
+    } else if (SampleIsRat(SM, Sb)) {
+        // k-th coordinate is algebraic, but we can use primitive representation.
+        Sb = CONC(Sb, LIST1(AFGEN()));
+
+        S1 = LIST3(M, I, Sb);
     } else {
         // otherwise (algebraic), store in extended form
         S1 = LIST5(AFPFIP(1,M), I, SM, SI, Sb);

@@ -248,9 +248,32 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
     SLELTI(C, SAMPLE, S1);
 }
 
+// convenience function: get k-th coordinate of the sample point as an algebraic number
+void GETSAMPLEK(Word S, Word* Q_, Word* J_)
+{
+    Word SQ, SJ, SM, SI, Sb, junk;
+    if (LENGTH(S) == 5) {
+        FIRST4(S, &SQ, &SJ, &SM, &SI);
+        SQ = AFPNORM(1, SM, SQ);
+    } else {
+        FIRST3(S, &SM, &SI, &Sb);
+        Sb = LAST(Sb);
+        Word b;
+        if (AfIsRat(Sb, &b)) {
+            SQ = PMON(1,1);
+            SJ = LIST2(b, b);
+        } else {
+            ANFAF(SM, SI, Sb, &SQ, &SJ);
+        }
+    }
+
+    *Q_ = SQ;
+    *J_ = SJ;
+}
+
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
 // (0,...,0,0)-cell
-Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word c, Word PFs, bool* rc)
+Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word c, Word PFs, bool* rc)
 {
     Word Cs2 = Cs;
 
@@ -270,15 +293,19 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word c, Wor
 
     // update sample
     // we will need to update only noe cell, as the existing sample will be correct for one of them
+    Word SQ, SJ;
+    GETSAMPLEK(LELTI(C1, SAMPLE), &SQ, &SJ);
+
     Word sign = COMPARE(SQ, &SJ, PM, &PI);
     // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
 
     if (sign != -1) { // need to update C1 ...
+        // to the given rational point c
         SETSAMPLE(C1, PMON(1,1), LIST1(c), PFs);
     }
 
     if (sign != 0) { // need to update C2 ...
-                     // to the new "refinement point" given
+        // to the new "refinement point" given
         SETSAMPLE(C2, PM, PI, PFs);
     }
 
@@ -355,29 +382,6 @@ void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word* Ps_)
     *J_ = SECOND(P);
 }
 
-// convenience function: get k-th coordinate of the sample point as an algebraic number
-void GETSAMPLEK(Word S, Word* Q_, Word* J_)
-{
-    Word SQ, SJ, SM, SI, Sb, junk;
-    if (LENGTH(S) == 5) {
-        FIRST4(S, &SQ, &SJ, &SM, &SI);
-        SQ = AFPNORM(1, SM, SQ);
-    } else {
-        FIRST3(S, &SM, &SI, &Sb);
-        Sb = LAST(Sb);
-        Word b;
-        if (AfIsRat(Sb, &b)) {
-            SQ = PMON(1,1);
-            SJ = LIST2(b, b);
-        } else {
-            ANFAF(SM, SI, Sb, &SQ, &SJ);
-        }
-    }
-
-    *Q_ = SQ;
-    *J_ = SJ;
-}
-
 // Refine subcad D to be compatible with level 1 polynomials Ps
 Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 {
@@ -391,38 +395,51 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
     Word Ch1 = Ch;
     bool refined = false;
     while (Ch != NIL) {
-        Word C;
+        Word C, CT, PM1, PI1;
         // next sector cell
         ADV(Ch, &C, &Ch1);
 
-        // sample point may need updating if a refinement of its bottom was just performed.
-        if (refined) {
-            printf("need to set sample of "); LWRITE(LELTI(C, INDX)); SWRITE("\n");
+        // get next polynomial if needed.
+        if (sign != -1) {
+            PM1 = PM, PI1 = PI;
+            NextPolynomial(Ps, &PM, &PI, &J, &Ps);
         }
 
         // no more cells or no more polynomials
-        if (Ch1 == NIL || PM == NIL) {
+        if (Ch1 == NIL) {
+            if (refined) {
+                SETSAMPLE(C, PMON(1,1), RNSUM(RNINT(1), RNCEIL(SECOND(J))), PFs);
+            }
+
             break;
         }
 
         // next section -- top of C
-        ADV(Ch1, &C, &Ch1);
+        ADV(Ch1, &CT, &Ch1);
 
         // get k-th coordinate of the sample point of C
         Word SQ, SJ;
-        GETSAMPLEK(LELTI(C, SAMPLE), &SQ, &SJ);        sign = COMPARE(SQ, &SJ, PM, &PI);
-
-        if (sign < 0) { // S < P, don't refine, keep looking.
-            Ch = Ch1;
-
-            continue;
-        } else if (sign > 0) { // S > P, refine previous sector, FIRST(Ch)
-            Word c = PDEG(PM) == 1 ? FIRST(J) : FIRST(PI);
-            Ch1 = RED2(RefineCell(k, Ch, SQ, SJ, PM, PI, c, PFs, &refined));
+        GETSAMPLEK(LELTI(CT, SAMPLE), &SQ, &SJ);
+        if (PM != NIL) {
+            sign = COMPARE(SQ, &SJ, PM, &PI);
         }
 
-        // and get next polynomial
-        NextPolynomial(Ps, &PM, &PI, &J, &Ps);
+        // previous cell was refined, need to update
+        if (refined) {
+            Word c = RNQ(RNSUM(SECOND(PI1), FIRST(SJ)), RNINT(2));
+            SWRITE("refine "); RNWRITE(c); SWRITE("\n");
+            SETSAMPLE(C, PMON(1,1), LIST1(c), PFs);
+            refined = false;
+        }
+
+        // no more polynomials
+        if (PM == NIL) break;
+
+        if (sign > 0) { // S > P, refine previous sector, FIRST(Ch)
+            Word c = PDEG(PM) == 1 ? FIRST(J) : FIRST(PI);
+            Ch1 = RED2(RefineCell(k, Ch, PM, PI, c, PFs, &refined));
+        }
+
         Ch = Ch1;
     }
 

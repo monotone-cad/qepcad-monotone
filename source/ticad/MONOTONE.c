@@ -290,6 +290,7 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word* RPs
     Word B = ROOTS(Ps);
 
     // now construct level k+1 sample points from the basis
+    // TODO is S always primitive? should be since there are other coordinates above it
     Word SM, SI, Sb;
     FIRST3(S, &SM, &SI, &Sb);
     while (B != NIL) {

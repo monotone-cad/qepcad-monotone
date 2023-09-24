@@ -18,6 +18,8 @@ Output
 // need a new property of cells, SIGNRP, like SIGNPF. this wiss contain signs of refinement polynomials, level k, above
 // the sub-cad as indicated in the polynomial. add in cell write.
 
+// is algebraic field element a rational number? return true if rational and store the rational number in r_
+// otherwise, return false, if algebraic then r_ is not modified
 inline bool AfIsRat(Word b, Word* r_)
 {
     if (b == 0) {
@@ -33,7 +35,9 @@ inline bool AfIsRat(Word b, Word* r_)
     return PDEG(Q) == 0;
 }
 
-// compare two coordinates of sample points.
+// compare two algebraic numbers
+// if a or b is rational, then this function expects M = PMON(1,1), I = (r,r) where r is the rational number
+// TODO how many interval refinements needed? can we have infinite refinement?
 Word COMPARE(Word M1, Word *I1_, Word M2, Word *I2_)
 {
     bool a_rat = PDEG(M1) == 1;
@@ -85,80 +89,6 @@ void SETINDEXK(Word C, Word k, Word a)
     SLELTI(I, k, a);
 }
 
-void SETSAMPLEALG(Word C, Word Q, Word J, Word M, Word I, Word b, Word PFs)
-{
-    Word S;
-    if (Q == NIL) {
-        S = LIST3(M, I, b);
-    } else {
-        S = LIST5(Q, J, M, I, b);
-    }
-
-    SLELTI(C, SAMPLE, S);
-}
-
-void SETSAMPLERAT(Word C, Word M, Word I, Word b, Word PFs)
-{
-    Word S = LIST3(M, I, b);
-    SLELTI(C, SAMPLE, S);
-
-    Word Ch = LELTI(C, CHILD);
-    if (Ch == NIL) return;
-
-    // head and tail of PFs
-    Word PF;
-    ADV(PFs, &PF, &PFs);
-
-    // one child, just set it to zero.
-    if (LENGTH(Ch) == 1) {
-        Word b1 = CONC(LCOPY(b), LIST1(AFFINT(0)));
-        SETSAMPLERAT(FIRST(Ch), M, I, b1, PFs);
-
-        return;
-    }
-
-    // otherwise, we have roots to find and sample poits to update.
-    Word SP = NIL;
-    Word r = LELTI(C, LEVEL) + 1;
-    while (PF != NIL) {
-        Word P1;
-        ADV(PF, &P1, &PF);
-
-        Word PP = SUBSTITUTE(r, LELTI(P1, PO_POLY), S, true); // with rational coefficients
-        SP = COMP(PP, SP);
-    }
-
-    // root finding.
-    Word B = ROOTS(SP);
-
-    Word C1, C2, JR, MR;
-    while (Ch != NIL && B != NIL) {
-        ADV2(Ch, &C1, &C2, &Ch);
-        ADV2(B, &JR, &MR, &B);
-
-        // sector cell C1 takes on left hand end of isolating interval
-        Word b1 = CONC(LCOPY(b), LIST1(AFFRN(FIRST(JR))));
-        SETSAMPLERAT(C1, M, I, b1, PFs);
-
-        // for the sector cell C2, set sample point to the root.
-        if (PDEG(MR) == 1) { // rational root
-            Word c = AFFRN(IUPRLP(MR));
-
-            Word b2 = CONC(LCOPY(b), LIST1(c));
-            SETSAMPLERAT(C2, M, I, b2, PFs);
-        } else { // algebraic root, sample point is now algebraic
-            Word c = AFGEN();
-
-            Word b2 = CONC(LCOPY(b), LIST1(c));
-            SETSAMPLEALG(C2, NIL, NIL, MR, JR, b2, PFs);
-        }
-    }
-
-    // last cell, integer number, ceiling of right endpoint of last isolating interval + 1
-    Word b1 = CONC(LCOPY(b), LIST1(AFFINT(RNCEIL(SECOND(JR)) + 1)));
-    SETSAMPLERAT(FIRST(Ch), M, I, b1, PFs);
-}
-
 // are the first n-1 coordinates of S rational
 bool SampleIsRat(Word SM, Word Sb)
 {
@@ -183,22 +113,14 @@ bool SampleIsRat(Word SM, Word Sb)
     return true;
 }
 
-// let C be a level k cell. set sample, level k to (M,I,b), updating children as appropriate.
-void SETSAMPLE(Word C, Word M, Word I, Word PFs)
+// set sample point, recursive helper function
+// S is *always a primitive* sample point for a cell C
+// Ch is the list of children of C
+// M, I is an algebraic or rational value to append to the sample point.
+Word SetSampleHelper(Word S, Word Ch, Word M, Word I, Word PFs)
 {
-    Word k = LELTI(C, LEVEL);
-    Word S = LELTI(C, SAMPLE);
-
-    // since we will set the k-th coordinate, the last coordinate should be discarded.
-    Word junk, SM, SI, Sb;
-    if (LENGTH(S) == 5) { // extended (we don't care about the last coordinate)
-        // if in extended form, the first k-1 coordinates are given.
-        FIRST5(S, &junk, &junk, &SM, &SI, &Sb);
-    } else {
-        // otherwise, throw out the last coordinate.
-        FIRST3(S, &SM, &SI, &Sb);
-        Sb = INV(RED(INV(Sb))); // clumsy way to delete the last element
-    }
+    Word SM, SI, Sb;
+    FIRST3(S, &SM, &SI, &Sb);
 
     // is the new sample rational?
     Word S1;
@@ -213,11 +135,38 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
         Sb = CONC(Sb, LIST1(AFGEN()));
 
         S1 = LIST3(M, I, Sb);
+    } else if (Ch == NIL) {
+        // algebraic and no children to update -- extended
+        S1 = LIST5(AFPFIP(1,M), I, SM, SI, Sb);
     } else {
-        // otherwise (algebraic), store in extended form
+        // algebraic but has children to update -- convert to primitive
         S1 = LIST5(AFPFIP(1,M), I, SM, SI, Sb);
     }
 
+    return S1;
+}
+
+// let C be a level k cell. set index K of sample point to the algebraic number M,I
+// if rational, algebraic number should be in the same format as for COMPARE
+void SETSAMPLE(Word C, Word M, Word I, Word PFs)
+{
+    // get the sample point, put it in the correct format for the helper function
+    Word k = LELTI(C, LEVEL);
+    Word S = LELTI(C, SAMPLE);
+    Word Ch = LELTI(C, CHILD);
+
+    // since we will set the k-th coordinate, the last coordinate should be discarded.
+    Word junk, SM, SI, Sb;
+    if (LENGTH(S) == 5) { // extended (we don't care about the last coordinate)
+        // if in extended form, the first k-1 coordinates are given.
+        FIRST5(S, &junk, &junk, &SM, &SI, &Sb);
+    } else {
+        // otherwise, throw out the last coordinate.
+        FIRST3(S, &SM, &SI, &Sb);
+        Sb = INV(RED(INV(Sb))); // clumsy way to delete the last element
+    }
+
+    Word S1 = SetSampleHelper(S, Ch, M, I, PFs);
     SLELTI(C, SAMPLE, S1);
 }
 
@@ -243,7 +192,7 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word PFs, b
     SETINDEXK(C3, k, ++j);
 
     // update sample
-    // existing sample point of C1 will be correct for one of the cells. check.
+    // we will need to update only noe cell, as the existing sample will be correct for one of them
     Word sign = COMPARE(SQ, &SJ, PM, &PI);
     // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
 
@@ -257,10 +206,10 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word PFs, b
         SETSAMPLE(C2, PM, PI, PFs);
     }
 
-    // we will need to update the sampe of C3, but this is done later.
+    // we may will need to update the sample of C3, but this is done later.
     *rc = sign != 1;
 
-    // update indices of remaining cells.
+    // increment indices of remaining cells.
     Word Cs1 = Cs;
     while (Cs1 != NIL) {
         Word C;
@@ -274,7 +223,8 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word PFs, b
     return Cs2;
 }
 
-// univariate algebraic number polynomial strip, assuming algebraic coordinate does not appear.
+// let P in Q(alpha)[x] such that every coefficient is rational. Convert P into a polynomial in Z[x]
+// requires less computation than AFPNORM
 Word STRIP(Word P)
 {
     Word P1, e, A, a, b;
@@ -329,52 +279,7 @@ void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word* Ps_)
     *J_ = SECOND(P);
 }
 
-// find some rational point between the last coordinates of P1 = (M1, I1, b1) and P2 = (M2, I2, b2)
-void MIDPOINT(Word M1, Word I1, Word b1, Word M2, Word I2, Word b2, Word* M_, Word* I_, Word* b_)
-{
-    Word k = LENGTH(b2);
-    Word af2 = LAST(b2);
-
-    // if a is rational...
-    Word a1;
-    if (AfIsRat(b1, &a1)) {
-        // extract rational value
-        Word a2;
-        Word c;
-
-        // ... and b2 is also rational
-        if (AfIsRat(af2, &a2)) {
-            // simply extract the rational value and calculate the midpoint between a1 and a2
-            c = RNQ(RNSUM(a1, a2), RNINT(2));
-        } else { // .. otherwise, b2 is algebraic
-            // extract left-hand endpoint of isolating interval.
-            a2 = FIRST(I2);
-
-            // if a1 < a2, a2 can be used
-            if (RNCOMP(a1, a2) < 0) {
-                c = a2;
-            } else {
-                perror("a1 > a2. need to calculate a new \"midpoint\".\n");
-                c = 0;
-            }
-        }
-
-        // return M, I, (a1 + a2) / 2
-        *M_ = LCOPY(M1);
-        *I_ = LCOPY(I1);
-
-        Word b = LCOPY(b2);
-        SLELTI(b, k, AFFRN(c));
-        *b_ = b;
-
-        return;
-    }
-
-    // otherwise a1 is algebraic
-    // TODO
-}
-
-// get k-th coordinate of the sample point as an algebraic number
+// convenience function: get k-th coordinate of the sample point as an algebraic number
 void GETSAMPLEK(Word S, Word* Q_, Word* J_)
 {
     Word SQ, SJ, SM, SI, Sb, junk;
@@ -406,24 +311,25 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
     // Ps is a list of sample points in ascending order, which define new 0-cells we will add to D
     NextPolynomial(Ps, &PM, &PI, &J, &Ps);
 
-    // first sector cell
     Word sign = -1;
     Word Ch1 = Ch;
     bool refined = false;
     while (Ch != NIL) {
         Word C;
-        // next sector
+        // next sector cell
         ADV(Ch, &C, &Ch1);
 
+        // sample point may need updating if a refinement of its bottom was just performed.
         if (refined) {
             printf("need to set sample of "); LWRITE(LELTI(C, INDX)); SWRITE("\n");
         }
 
-        if (Ch1 == NIL || PM == NIL) { // C was last sector
+        // no more cells or no more polynomials
+        if (Ch1 == NIL || PM == NIL) {
             break;
         }
 
-        // next section.
+        // next section -- top of C
         ADV(Ch1, &C, &Ch1);
 
         // get k-th coordinate of the sample point of C

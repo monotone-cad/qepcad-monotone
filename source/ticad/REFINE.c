@@ -113,6 +113,23 @@ bool SampleIsRat(Word SM, Word Sb)
     return true;
 }
 
+// helper function: convert sample to primitive, no timekeeping
+void ConvertToPrimitive(Word SQ, Word SJ, Word SM, Word SI, Word Sb, Word* M_, Word* I_, Word* b_)
+{
+    Word G, K, t, u, a, b, junk;
+    SIMPLEQE(SM,SI,SQ,SJ,&G,&t,&u,&K,&a,&b,&junk,&junk);
+
+    if (u != 0) {
+        MODCRDB(Sb,G,a,b,&Sb);
+    } else {
+        Sb = CCONC(Sb,LIST1(b));
+    }
+
+    *M_ = G;
+    *I_ = K;
+    *b_ = Sb;
+}
+
 // set sample point, recursive helper function
 // S is *always a primitive* sample point for a cell C
 // Ch is the list of children of C
@@ -140,7 +157,10 @@ Word SetSampleHelper(Word S, Word Ch, Word M, Word I, Word PFs)
         S1 = LIST5(AFPFIP(1,M), I, SM, SI, Sb);
     } else {
         // algebraic but has children to update -- convert to primitive
-        S1 = LIST5(AFPFIP(1,M), I, SM, SI, Sb);
+        Word SM1, SI1, Sb1;
+        ConvertToPrimitive(AFPFIP(1,M), I, SM, SI, Sb, &SM1, &SI1, &Sb1);
+
+        S1 = LIST3(SM1, SI1, Sb1);
     }
 
     return S1;
@@ -158,7 +178,7 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
     // since we will set the k-th coordinate, the last coordinate should be discarded.
     Word junk, SM, SI, Sb;
     if (LENGTH(S) == 5) { // extended (we don't care about the last coordinate)
-        // if in extended form, the first k-1 coordinates are given.
+                          // if in extended form, the first k-1 coordinates are given.
         FIRST5(S, &junk, &junk, &SM, &SI, &Sb);
     } else {
         // otherwise, throw out the last coordinate.
@@ -197,12 +217,12 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word PFs, b
     // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
 
     if (sign != -1) { // need to update C1 ...
-        // ... to the left-hand end of the isolating interval
+                      // ... to the left-hand end of the isolating interval
         SETSAMPLE(C1, PMON(1,1), PI, PFs);
     }
 
     if (sign != 0) { // need to update C2 ...
-        // to the new "refinement point" given
+                     // to the new "refinement point" given
         SETSAMPLE(C2, PM, PI, PFs);
     }
 

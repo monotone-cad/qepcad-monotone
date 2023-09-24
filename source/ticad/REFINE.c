@@ -134,7 +134,7 @@ void ConvertToPrimitive(Word SQ, Word SJ, Word SM, Word SI, Word Sb, Word* M_, W
 // S is *always a primitive* sample point for a cell C
 // Ch is the list of children of C
 // M, I is an algebraic or rational value to append to the sample point.
-Word SetSampleHelper(Word S, Word Ch, Word M, Word I, Word PFs)
+Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
 {
     Word SM, SI, Sb;
     FIRST3(S, &SM, &SI, &Sb);
@@ -144,14 +144,14 @@ Word SetSampleHelper(Word S, Word Ch, Word M, Word I, Word PFs)
     if (PDEG(M) == 1) {
         // then append it
         Word c = AFFRN(FIRST(I));
-        Sb = CONC(Sb, LIST1(c));
+        Word Sb1 = CCONC(Sb, LIST1(c));
 
-        S1 = LIST3(SM, SI, Sb);
+        S1 = LIST3(SM, SI, Sb1);
     } else if (SampleIsRat(SM, Sb)) {
         // k-th coordinate is algebraic, but we can use primitive representation.
-        Sb = CONC(Sb, LIST1(AFGEN()));
+        Word Sb1 = CCONC(Sb, LIST1(AFGEN()));
 
-        S1 = LIST3(M, I, Sb);
+        S1 = LIST3(M, I, Sb1);
     } else if (Ch == NIL) {
         // algebraic and no children to update -- extended
         S1 = LIST5(AFPFIP(1,M), I, SM, SI, Sb);
@@ -161,6 +161,60 @@ Word SetSampleHelper(Word S, Word Ch, Word M, Word I, Word PFs)
         ConvertToPrimitive(AFPFIP(1,M), I, SM, SI, Sb, &SM1, &SI1, &Sb1);
 
         S1 = LIST3(SM1, SI1, Sb1);
+    }
+
+    // the sample points of all children are now wrong. update those.
+    if (Ch == NIL) {
+        // if there are 0 children there is nothing to do
+        return S1;
+    } else if (LENGTH(Ch) == 1) {
+        // if there is one child, sample point can be any number. Let it be 0.
+        Word C = FIRST(Ch);
+        SetSampleHelper(r+1, S1, LELTI(C, CHILD), PMON(1,1), LIST1(RNINT(0)), RED(PFs));
+
+        return S1;
+    }
+    LWRITE(S1); SWRITE("\n");
+
+    // recompute sample points using root finding
+    // otherwise, there are k > 1 child cells. since polynomials are delineable FIRST(PFs) is a system with k roots
+    Word Ps;
+    ADV(PFs, &Ps, &PFs);
+
+    // evaluate the polynomials at new sample point.
+    Word SPs = NIL;
+    while (Ps != NIL) {
+        Word P;
+        ADV(Ps, &P, &Ps);
+
+        Word P1 = SUBSTITUTE(r, LELTI(P, PO_POLY), S1, true); // with rational coefficients
+        SPs = COMP(P1, SPs);
+    }
+    SWRITE("\n");
+
+    // and find their roots
+    Word B = ROOTS(SPs);
+    while (B != NIL && Ch != NIL) {
+        Word C1, C2, RM, RI;
+        ADV2(Ch, &C1, &C2, &Ch);
+        ADV2(B, &RI, &RM, &B);
+
+        // TODO if the first root is not algebraic, then the isolating interval is not sufficient. same is true for the
+        // last root. maybe we should do C_B,C instead, and set the first sector to floo or first interval - 1.
+        Word SC1 = SetSampleHelper(r+1, S1, LELTI(C1, CHILD), PMON(1,1), LIST1(FIRST(RI)), PFs);
+
+        // if root is rational
+        Word SC2;
+        if (PDEG(RM) == 1) {
+            Word c = IUPRLP(RM);
+
+            SC2 = SetSampleHelper(r+1, S1, LELTI(C2, CHILD), PMON(1,1), LIST1(c), PFs);
+        } else { // polynomial and isolating interval define the algebraic number
+            SC2 = SetSampleHelper(r+1, S1, LELTI(C2, CHILD), RM, RI, PFs);
+        }
+
+        SLELTI(C1, SAMPLE, SC1);
+        SLELTI(C2, SAMPLE, SC2);
     }
 
     return S1;
@@ -186,7 +240,7 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
         Sb = INV(RED(INV(Sb))); // clumsy way to delete the last element
     }
 
-    Word S1 = SetSampleHelper(S, Ch, M, I, PFs);
+    Word S1 = SetSampleHelper(k+1, S, Ch, M, I, PFs);
     SLELTI(C, SAMPLE, S1);
 }
 

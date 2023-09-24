@@ -174,7 +174,6 @@ Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
 
         return S1;
     }
-    LWRITE(S1); SWRITE("\n");
 
     // recompute sample points using root finding
     // otherwise, there are k > 1 child cells. since polynomials are delineable FIRST(PFs) is a system with k roots
@@ -190,7 +189,6 @@ Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
         Word P1 = SUBSTITUTE(r, LELTI(P, PO_POLY), S1, true); // with rational coefficients
         SPs = COMP(P1, SPs);
     }
-    SWRITE("\n");
 
     // and find their roots
     Word B = ROOTS(SPs);
@@ -237,16 +235,22 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
     } else {
         // otherwise, throw out the last coordinate.
         FIRST3(S, &SM, &SI, &Sb);
-        Sb = INV(RED(INV(Sb))); // clumsy way to delete the last element
+        if (LENGTH(Sb) == 1) {
+            SM = PMON(1,1);
+            SI = LIST2(0,0);
+            Sb = NIL;
+        } else {
+            Sb = INV(RED(INV(Sb))); // clumsy way to delete the last element
+        }
     }
 
-    Word S1 = SetSampleHelper(k+1, S, Ch, M, I, PFs);
+    Word S1 = SetSampleHelper(k+1, LIST3(SM, SI, Sb), Ch, M, I, PFs);
     SLELTI(C, SAMPLE, S1);
 }
 
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
 // (0,...,0,0)-cell
-Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word PFs, bool* rc)
+Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word c, Word PFs, bool* rc)
 {
     Word Cs2 = Cs;
 
@@ -259,8 +263,7 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word PFs, b
     // k-th element of C index.
     Word j = LELTI(LELTI(C1, INDX), k);
 
-    printf("refine cell "); LWRITE(LELTI(C1, INDX));
-
+    SWRITE("Refine cell "); LWRITE(LELTI(C1, INDX)); SWRITE("\n");
     // update indices
     SETINDEXK(C2, k, ++j);
     SETINDEXK(C3, k, ++j);
@@ -271,8 +274,7 @@ Word RefineCell(Word k, Word Cs, Word SQ, Word SJ, Word PM, Word PI, Word PFs, b
     // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
 
     if (sign != -1) { // need to update C1 ...
-                      // ... to the left-hand end of the isolating interval
-        SETSAMPLE(C1, PMON(1,1), PI, PFs);
+        SETSAMPLE(C1, PMON(1,1), LIST1(c), PFs);
     }
 
     if (sign != 0) { // need to update C2 ...
@@ -415,7 +417,8 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
             continue;
         } else if (sign > 0) { // S > P, refine previous sector, FIRST(Ch)
-            Ch1 = RED2(RefineCell(k, Ch, SQ, SJ, PM, PI, PFs, &refined));
+            Word c = PDEG(PM) == 1 ? FIRST(J) : FIRST(PI);
+            Ch1 = RED2(RefineCell(k, Ch, SQ, SJ, PM, PI, c, PFs, &refined));
         }
 
         // and get next polynomial

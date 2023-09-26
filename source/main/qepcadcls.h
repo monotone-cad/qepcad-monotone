@@ -5,6 +5,7 @@ class QEPCADContext
 {
 public:
   string SingularPath;
+  string MaplePath;
 };
 extern QEPCADContext* GVContext;
 

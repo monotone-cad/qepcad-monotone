@@ -17,6 +17,8 @@
   if \v{t} is \c{INEQU}, otherwise \v{Fs} is undefined.
   ======================================================================*/
 #include "qepcad.h"
+#include "db/MAPLE.h"
+extern MapleServer *GVMaple; // gain access to MapleServer global
 
 void QepcadCls::QEPCAD(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_)
 {
@@ -26,6 +28,9 @@ void QepcadCls::QEPCAD(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_)
     Word Cs,Ps,Qs,Pps,Cps,Qps,SF; /* Chris variables. */
     char c1,c2; /* Chris variables. */
 Step1: /* Normalize. */
+    // TODO delete me. testing out maple
+    GVMaple->test(LIST2(3,2), LIST2(4,5));
+
     FIRST4(Fs,&r,&f,&Q,&Fh);
     /*Int*/ PCNSTEP = 1;
     /*Int*/ if (INTERACT()) USERINT(LFS("Before Normalization"),'a');

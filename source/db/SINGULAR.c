@@ -7,10 +7,10 @@ using namespace std;
 SingularServer::SingularServer(string SingularBase)
 {
   string SingularCall = SingularBase + "/Singular";
-  
+
   // Fork
   childpid = fork();
-  if (childpid == -1) { perror("Failed to fork!"); exit(1); }
+  if (childpid == -1) { perror("SingularServer(): failed to fork!"); exit(1); }
   // Child process's code
   if (childpid == 0) {
     intoSingular.setStdinToPipe();
@@ -50,15 +50,15 @@ int SingularServer::serverTime()
 
 void SingularServer::reportStats(ostream &out)
 {
-  out << "Time in Singular: " 
+  out << "Time in Singular: "
       << serverTime()
-      << " ms." << endl;    
+      << " ms." << endl;
 }
 
 
-char peekNonWS(istream &in) 
-{ 
-  char c; while((c = in.peek()) && c == ' ' || c == '\t' || c == '\n') in.get(); return c; 
+char peekNonWS(istream &in)
+{
+  char c; while((c = in.peek()) && c == ' ' || c == '\t' || c == '\n') in.get(); return c;
 }
 
 
@@ -75,8 +75,8 @@ Word readSingularPoly(Word r, Word V, istream &in)
   IPEXPREADR(r,V,&A,&t);
   PopInputContext();
 
-  if (t == 0) 
-  { 
+  if (t == 0)
+  {
     cerr << "QEPCADB could not read Singular's output!" << endl
          << s << endl;
     exit(1);
@@ -135,7 +135,7 @@ Word SingularServer::IPRES(Word r, Word A, Word B)
   string s_B =  WritePolyForSingular(r,B,V);
   intoSingular.out() << "poly B = " << s_B << ";" << endl;
   intoSingular.out() << "resultant(A,B," << char('a' + r - 1) << ");" << endl;
-  
+
   // Read & parse Singular output
   Word p = readSingularPoly(r-1,V,outofSingular.in());
 
@@ -171,7 +171,7 @@ void SingularServer::IPFAC(Word r, Word P, Word *s_, Word *c_, Word *L_)
   DefineRing(intoSingular.out(),"myring",r);
   intoSingular.out() << "poly F = " << out << ";" << endl;
   intoSingular.out() << "factorize(F);" << endl;
-  
+
   // Read & parse Singular output
   istream &in = outofSingular.in();
   string s1, s2;
@@ -242,7 +242,7 @@ Word SingularServer::IPFACTGB(Word r, Word I, Word N)
 
   // READ SINGULAR OUTPUT
   Word F = NIL;
-  string marker; 
+  string marker;
   while(outofSingular.in() >> marker && marker != "[end]:")
   {
     Word GBi = NIL;
@@ -250,7 +250,7 @@ Word SingularServer::IPFACTGB(Word r, Word I, Word N)
     {
       while(outofSingular.in().get() != '=');
       Word p = readSingularPoly(r,V,outofSingular.in());
-      GBi = COMP(p,GBi);      
+      GBi = COMP(p,GBi);
     }
     F = COMP(CINV(GBi),F);
   }
@@ -274,7 +274,7 @@ Word SingularServer::CONSTORDTEST(Word r, Word A, Word L)
   intoSingular.out() << "ideal I = ";
   for(Word Lp = L; Lp != NIL; Lp = RED(Lp))
     intoSingular.out() << WritePolyForSingular(r,FIRST(Lp),V) << ", ";
-  intoSingular.out() 
+  intoSingular.out()
     << WritePolyForSingular(r,A,V) << ";" << endl
     << "ideal G = std(I);" << endl
     << "G;" << endl
@@ -286,7 +286,7 @@ Word SingularServer::CONSTORDTEST(Word r, Word A, Word L)
   {
     while(outofSingular.in().get() != '=');
     Word p = readSingularPoly(r,V,outofSingular.in());
-    G = COMP(p,G);      
+    G = COMP(p,G);
   }
   { string em; while(outofSingular.in() >> em && em != "[end]:"); }
   G = CINV(G);
@@ -297,14 +297,14 @@ Word SingularServer::CONSTORDTEST(Word r, Word A, Word L)
   {
     for(Word P = IPALLPARTIALS(r,A,k,1); P != NIL; P = RED(P))
     {
-      intoSingular.out() 
+      intoSingular.out()
 	<< "reduce(" << WritePolyForSingular(r,FIRST(P),V) << ",G);" << endl;
       Word p = readSingularPoly(r,V,outofSingular.in());
       if (p != 0)
 	M = COMP(p,M);
-    }    
+    }
   }
-  
+
   // SINGULAR INPUT: Compute groebner basis for G + all partials
   intoSingular.out() << "ideal J = ";
   for(Word Lp = G; Lp != NIL; Lp = RED(Lp))
@@ -320,16 +320,16 @@ Word SingularServer::CONSTORDTEST(Word r, Word A, Word L)
   {
     while(outofSingular.in().get() != '=');
     Word p = readSingularPoly(r,V,outofSingular.in());
-    GBi = COMP(p,GBi);      
+    GBi = COMP(p,GBi);
   }
   { string em; while(outofSingular.in() >> em && em != "[end]:"); }
   GBi = CINV(GBi);
-  
-  if (LENGTH(GBi) == 1) 
-  { 
-    Word rs,ps; PSIMREP(r,FIRST(GBi),&rs,&ps); 
+
+  if (LENGTH(GBi) == 1)
+  {
+    Word rs,ps; PSIMREP(r,FIRST(GBi),&rs,&ps);
     if (rs == 0) return TRUE;
   }
   return GBi;
-    
+
 }

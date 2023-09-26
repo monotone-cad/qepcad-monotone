@@ -13,6 +13,7 @@ already been initialized!
 #include "db/SingSacPolicy.h"
 #include "db/convenientstreams.h"
 #include "db/CAPolicy.h"
+#include "db/MAPLE.h"
 #include <ctype.h>
 #include <sys/wait.h>
 
@@ -27,6 +28,7 @@ int experimentalExtensionFlag = 0;
 
 ServerBase GVSB;
 CAPolicy *GVCAP = 0;
+MapleServer *GVMaple = 0;
 QEPCADContext* GVContext = 0;
 
 void BEGINQEPCAD(int &argc, char**& argv)
@@ -94,6 +96,10 @@ void BEGINQEPCAD(int &argc, char**& argv)
     printf("=== USING SINGULAR AS A CA SERVER. ====================\n");
   }
 
+  // setup maple server
+  if (GVContext->MaplePath != "") {
+    GVMaple = new MapleServer(GVContext->MaplePath);
+  }
 }
 
 void QEPCAD_ProcessRC(int argc, char **argv)
@@ -112,6 +118,9 @@ void QEPCAD_ProcessRC(int argc, char **argv)
     {
       if (!(sin >> tmp)) { cerr << "Error reading SINGULAR path in " << rcFileName << "!" << endl; }
       else { GVContext->SingularPath = tmp; }
+    } else if (name == "MAPLE") {
+      if (!(sin >> tmp)) { cerr << "Error reading MAPLE path in " << rcFileName << "!" << endl; }
+      else { GVContext->MaplePath = tmp; }
     }
   }
 }

@@ -5,21 +5,16 @@ Clean up the qepcad system.
 ======================================================================*/
 #include "qepcad.h"
 #include "db/CAPolicy.h"
-#include "db/MAPLE.h"
 extern ServerBase GVSB;
-extern MapleServer* GVMaple;
 
 void ENDQEPCAD()
 {
   /* Delete the CAServers ... mostly to let them kill child processes! */
-  for(ServerBase::iterator p = GVSB.begin(); p != GVSB.end(); ++p)
+  for(ServerBase::iterator p = GVSB.begin(); p != GVSB.end(); ++p)    
     delete p->second;
   GVSB.clear();
   delete GVCAP;
   delete GVContext;
-
-  // and delete Maple
-  if (GVMaple) delete GVMaple;
 
 Return: /* Prepare for return. */
        return;

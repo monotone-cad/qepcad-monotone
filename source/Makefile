@@ -80,8 +80,7 @@ $(LIB)(db/GETRPDB.o) \
 $(LIB)(db/IPFACDB.o) \
 $(LIB)(db/MODCRDB.o) \
 $(LIB)(db/SUBSTDB.o) \
-$(LIB)(db/SINGULAR.o)\
-$(LIB)(db/MAPLE.o)
+$(LIB)(db/SINGULAR.o)
 
 OBJS_IO = \
 $(LIB)(io/OW.o) \
@@ -450,8 +449,7 @@ $(LIBD)(db/GETRPDB.o) \
 $(LIBD)(db/IPFACDB.o) \
 $(LIBD)(db/MODCRDB.o) \
 $(LIBD)(db/SUBSTDB.o) \
-$(LIBD)(db/SINGULAR.o)\
-$(LIBD)(db/MAPLE.o)
+$(LIBD)(db/SINGULAR.o)
 
 OBJS_IOd = \
 $(LIBD)(io/OW.o) \

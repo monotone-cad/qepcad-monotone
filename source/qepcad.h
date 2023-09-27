@@ -850,7 +850,7 @@ Word GMSDSL(Word A, Word (*C)(Word,Word));
 Word GMSL(Word A, Word (*C)(Word,Word));
 
 // Maple interface
-void InitMaple();
+MKernelVector InitMaple();
 
 #endif
 

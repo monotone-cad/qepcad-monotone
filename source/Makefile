@@ -35,9 +35,9 @@ endif
 # ============================================================
 
 INCLUDES  =	-I${saclib}/include \
+        -I${MAPLE}/extern/include \
 		${SPECIFLAGS} \
-		-I. \
-        -I${MAPLE}/extern/include
+		-I.
 
 EXTLIBS   =	${qe}/extensions/sfext/sfexto.a \
 		${qe}/extensions/lift2D/lift2Do.a \
@@ -46,7 +46,8 @@ EXTLIBS   =	${qe}/extensions/sfext/sfexto.a \
 		${qe}/extensions/rend/rendo.a \
 		${saclib}/lib/saclibo.a \
 		-lreadline \
-		${SPECLFLAGS}
+		${SPECLFLAGS} \
+		-L${MAPLE}/bin.X86_64_LINUX -lmaplec -lrt
 
 
 EXTLIBSD  =	${qe}/extensions/sfext/sfextd.a \
@@ -56,7 +57,8 @@ EXTLIBSD  =	${qe}/extensions/sfext/sfextd.a \
 		${qe}/extensions/rend/rendd.a \
 		${saclib}/lib/saclibd.a \
 		-lreadline \
-		${SPECLFLAGS}
+		${SPECLFLAGS} \
+		-L${MAPLE}/bin.X86_64_LINUX -lmaplec -lrt
 
 NAME      =  qepcad
 LIB       =  $(NAME).a

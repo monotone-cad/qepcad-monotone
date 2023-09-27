@@ -18,6 +18,8 @@
   ======================================================================*/
 #include "qepcad.h"
 
+extern MKernelVector GVMaple;
+
 void QepcadCls::QEPCAD(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_)
 {
     Word A,D,F,F_e,F_n,F_s,Fh,J,P,Q,Ths,f,i,r,t, T;
@@ -25,6 +27,10 @@ void QepcadCls::QEPCAD(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_)
     Word cL,**cC,cr,ce,ci,*cT,cj,cs,cl,ct; /* Chris variables. */
     Word Cs,Ps,Qs,Pps,Cps,Qps,SF; /* Chris variables. */
     char c1,c2; /* Chris variables. */
+
+    // TODO testing maple
+    EvalMapleStatement(GVMaple,"solve(x^2 + x - 2);");
+
 Step1: /* Normalize. */
     FIRST4(Fs,&r,&f,&Q,&Fh);
     /*Int*/ PCNSTEP = 1;

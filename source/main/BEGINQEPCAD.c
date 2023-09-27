@@ -29,6 +29,8 @@ ServerBase GVSB;
 CAPolicy *GVCAP = 0;
 QEPCADContext* GVContext = 0;
 
+MKernelVector GVMaple = 0;
+
 void BEGINQEPCAD(int &argc, char**& argv)
 {
   /* Process QEPCAD's command line arguments.
@@ -95,7 +97,9 @@ void BEGINQEPCAD(int &argc, char**& argv)
   }
 
   if (GVContext->LinkMaple) {
-    InitMaple();
+    MKernelVector kv = InitMaple();
+    GVMaple = kv;
+    printf("=== USING OpenMaple AS A CA SYSTEM. ====================\n");
   }
 }
 
@@ -116,7 +120,6 @@ void QEPCAD_ProcessRC(int argc, char **argv)
       if (!(sin >> tmp)) { cerr << "Error reading SINGULAR path in " << rcFileName << "!" << endl; }
       else { GVContext->SingularPath = tmp; }
     } else if (name == "MAPLE") {
-      FAIL("BEGINQEPCAD", "aaaaaaaaa");
       GVContext->LinkMaple = true;
     }
   }

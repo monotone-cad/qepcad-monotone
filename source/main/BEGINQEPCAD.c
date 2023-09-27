@@ -94,6 +94,9 @@ void BEGINQEPCAD(int &argc, char**& argv)
     printf("=== USING SINGULAR AS A CA SERVER. ====================\n");
   }
 
+  if (GVContext->LinkMaple) {
+    InitMaple();
+  }
 }
 
 void QEPCAD_ProcessRC(int argc, char **argv)
@@ -112,6 +115,9 @@ void QEPCAD_ProcessRC(int argc, char **argv)
     {
       if (!(sin >> tmp)) { cerr << "Error reading SINGULAR path in " << rcFileName << "!" << endl; }
       else { GVContext->SingularPath = tmp; }
+    } else if (name == "MAPLE") {
+      FAIL("BEGINQEPCAD", "aaaaaaaaa");
+      GVContext->LinkMaple = true;
     }
   }
 }

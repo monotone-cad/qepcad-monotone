@@ -29,7 +29,7 @@ void QepcadCls::QEPCAD(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_)
     char c1,c2; /* Chris variables. */
 
     // TODO testing maple
-    EvalMapleStatement(GVMaple,"solve(x^2 + x - 2);");
+    EvalMapleStatement(GVMaple,"solve(x^2 - 3);");
 
 Step1: /* Normalize. */
     FIRST4(Fs,&r,&f,&Q,&Fh);

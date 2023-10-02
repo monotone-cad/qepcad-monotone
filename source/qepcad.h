@@ -851,6 +851,7 @@ Word GMSL(Word A, Word (*C)(Word,Word));
 
 // Maple interface
 MKernelVector InitMaple();
+const char *SacPolyToMapleString(Word r, Word P);
 
 #endif
 

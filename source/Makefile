@@ -437,7 +437,7 @@ $(LIB)(saclib/RVSPTSVSP.o) \
 $(LIB)(saclib/SOSRSUBS.o) \
 $(LIB)(saclib/SOSRSUPS.o) \
 $(LIB)(saclib/SUBSET.o) \
-$(LIB)(maple/InitMaple.o)
+$(LIB)(maple/SacPolyToMapleString.o)
 
 OBJS_DBd = \
 $(LIBD)(db/AFCSBMDB.o) \
@@ -807,7 +807,8 @@ $(LIBD)(saclib/RVSPTSVSP.o) \
 $(LIBD)(saclib/SOSRSUBS.o) \
 $(LIBD)(saclib/SOSRSUPS.o) \
 $(LIBD)(saclib/SUBSET.o) \
-$(LIBD)(maple/InitMaple.o)
+$(LIBD)(maple/InitMaple.o) \
+$(LIBD)(maple/SacPolyToMapleString.o)
 
 # ============================================================
 #     Dependecies

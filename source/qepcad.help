@@ -24,7 +24,7 @@ C is one of the followings:
   C    -- Use Collins&Loos Algorithm.
 @
 
-adj-test-1 72 cde cp
+adj-test-1 72 cdme cp
 @
 Test the three adjacency methods.  (My temporary addition.)
 @
@@ -51,7 +51,7 @@ the assumption we'd get something like [a = 0 /\ b /= 0] \/
 [a /= 0 /\ 4 a c - b^2 <= 0] \/ [a = 0 /\ b = 0 /\ c = 0].
 @
 
-boundary2d 94 cde cp
+boundary2d 94 cdme cp
 @
 boundary2d
 
@@ -123,7 +123,7 @@ issue the command "d-eqn-const i".
 @
 
 
-closure2d 79 cde cp
+closure2d 79 cdme cp
 @
 closure2d
 
@@ -143,7 +143,7 @@ pipes or sockets than by calling the C++ API.
 @
 
 
-d-2d-cad 71 de cp
+d-2d-cad 71 dme cp
 @
 d-2d-cad [ D ] | [ E x1 x2 y1 y2 Sx Sy e ]
 
@@ -227,7 +227,7 @@ q -- which stands for quit.  This command exits the plotting program and
 @
 
 
-d-all-cells-in-subtree 48 de d
+d-all-cells-in-subtree 48 dme d
 @
 d-all-cells-in-subtree C
 
@@ -250,14 +250,14 @@ Displays the list of the current candiate cells.
 @
 
 
-d-cell 19 de d
+d-cell 19 dme d
 @
 d-cell C
 
 Displays the info about the cell with the index C.
 @
 
-d-cell-tarski 119 de d
+d-cell-tarski 119 dme d
 @
 d-cell-tarski C
 
@@ -282,7 +282,7 @@ Displays all i-th level equational constraints.
 @
 
 
-d-false-cells 64 bcde d
+d-false-cells 64 dme d
 @
 d-false-cells
 
@@ -290,7 +290,7 @@ Displays all false cells using d-cell.
 @
 
 
-d-false-cells-tarski 164 bcde d
+d-false-cells-tarski 164 dme d
 @
 d-false-cells-tarski
 
@@ -298,7 +298,7 @@ Displays all false cells using d-cell-tarski.
 @
 
 
-d-all-cells-tarski 165 bcde d
+d-all-cells-tarski 165 dme d
 @
 d-all-cells-tarski
 
@@ -322,7 +322,7 @@ Displays the statistics on the final partial CAD.
 @
 
 
-d-input-polynomials 15 bcde d
+d-input-polynomials 15 bcdme d
 @
 d-input-polynomials
 
@@ -338,7 +338,7 @@ Displays the current level.
 @
 
 
-d-level-factors 61 bcde d
+d-level-factors 61 bcdme d
 @
 d-level-factors i
 
@@ -346,7 +346,7 @@ Displays the level i projection factors.
 @
 
 
-d-level-polynomials 60 bcde d
+d-level-polynomials 60 bcdme d
 @
 d-level-polynomials i
 
@@ -354,7 +354,7 @@ Displays the level i projection polynomials.
 @
 
 
-d-nqf-formula 14 bcde d
+d-nqf-formula 14 bcdme d
 @
 d-nqf-formula
 
@@ -362,7 +362,7 @@ Displays the normalized quantifier-free part of the input formula.
 @
 
 
-d-number-solutions 84 de d
+d-number-solutions 84 dme d
 @
 d-number solutions
 
@@ -371,7 +371,7 @@ many, and tells you if there are not finitely many.
 @
 
 
-d-pcad 16 de d
+d-pcad 16 dme d
 @
 d-pcad C
 
@@ -379,7 +379,7 @@ Display the partial CAD over the cell whose index is C.
 @
 
 
-d-proj-factors 22 bcde d
+d-proj-factors 22 bcdme d
 @
 d-proj-factors
 
@@ -387,7 +387,7 @@ Displays the projection factors.
 @
 
 
-d-proj-polynomials 23 bcde d
+d-proj-polynomials 23 bcdme d
 @
 d-proj-polynomials
 
@@ -395,7 +395,7 @@ Displays the projection polynomials.
 @
 
 
-d-refinement-polynomials 152 e d
+d-refinement-polynomials 152 me d
 @
 d-refinement-polynomials
 
@@ -403,7 +403,7 @@ Displays the refinement polynomials used in computing monotone CAD.
 @
 
 
-d-pscad 49 de d
+d-pscad 49 dme d
 @
 d-pscad C
 
@@ -450,7 +450,7 @@ d-setting
 Displays the current setting of the program control variables.
 @
 
-d-solution-dimension 82 de d
+d-solution-dimension 82 dme d
 @
 d-solution-dimension
 
@@ -458,7 +458,7 @@ Returns the dimension of the solution set.  If the solution
 set is empty, -1 is returned.
 @
 
-d-stack 69 de d
+d-stack 69 dme d
 @
 d-stack C
 
@@ -491,7 +491,7 @@ Displays the current setting of the data traces options.
 @
 
 
-d-true-cells 63 bcde d
+d-true-cells 63 bcdme d
 @
 d-true-cells
 
@@ -499,7 +499,7 @@ Displays all true cells using d-cell.
 @
 
 
-d-true-cells-tarski 163 bcde d
+d-true-cells-tarski 163 bcdme d
 @
 d-true-cells-tarski
 
@@ -515,7 +515,7 @@ Dispalys the variable list.
 @
 
 
-d-witness-list 103 e d
+d-witness-list 103 me d
 @
 d-witness-list
 
@@ -580,7 +580,7 @@ exp1
 This is whatever experimental stuff I stick in USERINT under #95.
 @
 
-exprop 85 cde cp
+exprop 85 cdme cp
 @
 exprop N
 
@@ -612,7 +612,7 @@ Finish up the remaining computation without interaction.
 @
 
 
-full-cad 39 abcdm pc
+full-cad 39 abcd pc
 @
 full-cad
 
@@ -724,7 +724,7 @@ of R^k.  In return for losing "accuracy", qepcad is often able
 to substantially speed up computation.
 @
 
-negate-truth-values 100 de pc
+negate-truth-values 100 dme pc
 @
 negate-truth-values
 
@@ -732,7 +732,7 @@ Changes the truth values of all TRUE cells to FALSE and all
 FALSE cells to TRUE.
 @
 
-p-2d-cad 96 de d
+p-2d-cad 96 dme d
 @
 p-2d-cad xmin xmax ymin ymax step filename [optional flags]
 
@@ -858,7 +858,7 @@ C is one of the following:
 @
 
 
-search-cells-cond 58 abcdm pc
+search-cells-cond 58 abcd pc
 @
 search-cells-cond T F
 
@@ -871,7 +871,7 @@ If F = 'y' then the program stops as soon as a false cell has been found.
 @
 
 
-selected-cells-cond 41 abcdm pc
+selected-cells-cond 41 abcd pc
 @
 selected-cells-cond E
 
@@ -901,7 +901,7 @@ Example:
 @
 
 
-set-kth-section 81 cde cp
+set-kth-section 81 cdme cp
 @
 set-kth-section i j k op
 
@@ -910,7 +910,7 @@ section of the jth i-level projection factor in signiture list.
 @
 
 
-set-truth-value 80 cde cp
+set-truth-value 80 cdme cp
 @
 set-truth-value
 
@@ -918,7 +918,7 @@ Manually set the truth value of a cell. Press return and you'll be promted.
 @
 
 
-simple-cad-info  75 cde cp
+simple-cad-info  75 cdme cp
 @
 simple-cad-info N
 
@@ -940,7 +940,7 @@ formula construction.
   t :  Top-down/Bottom-up mixed (using also external routine).
 @
 
-solution-extension  59 de pc
+solution-extension  59 dme pc
 @
 solution-extension x
 
@@ -963,7 +963,7 @@ Step NNN times within phases.
 @
 
 
-replace-with-simple  88 cde cp
+replace-with-simple  88 cdme cp
 @
 replace-with-simple (f1,f2)
 
@@ -1023,7 +1023,7 @@ C is one of the of followings:
 @
 
 
-tvc1d 76 cde cp
+tvc1d 76 cdme cp
 @
 tvc1d N
 
@@ -1034,7 +1034,7 @@ Truth value closure by topology 1D case.
 @
 
 
-tvc1ds 77 cde cp
+tvc1ds 77 cdme cp
 @
 tvc1ds N
 
@@ -1045,7 +1045,7 @@ Truth value closure by topology 1D-stack case.
 @
 
 
-tvc2d 78 cde cp
+tvc2d 78 cdme cp
 @
 tvc1ds
 
@@ -1054,7 +1054,7 @@ values based on the assumption that the solution space is the
 closure of an open set.
 @
 
-tvff 86 cde cp
+tvff 86 cdme cp
 @
 tvff F
 
@@ -1062,7 +1062,7 @@ Truth value from formula.  Enter in a formula as a list.  This sets
 the truth values of the cells in the CAD according to the formula.
 @
 
-tv-lim-inf 101 cde cp
+tv-lim-inf 101 cdme cp
 @
 tv-lim-inf
 
@@ -1072,7 +1072,7 @@ for all cells, except the section representing the lim-inf in that
 stack, if it exists.
 @
 
-tv-lim-sup 102 cde cp
+tv-lim-sup 102 cdme cp
 @
 tv-lim-sup
 
@@ -1083,7 +1083,7 @@ stack, if it exists.
 @
 
 
-univprop 91 cde cp
+univprop 91 cdme cp
 @
 univprop N
 
@@ -1103,7 +1103,7 @@ If C = n then, databases are NOT used.
 @
 
 
-use-selected-cells-cond 42 abcdm m
+use-selected-cells-cond 42 abcd m
 @
 use-selected-cells-cond C
 
@@ -1119,7 +1119,7 @@ If x is 'y' sets the verbose mode on, if x is 'n' turns
 the verbose mode off.
 @
 
-vertical-fill-2d 92 cde cp
+vertical-fill-2d 92 cdme cp
 @
 vertical-fill-2d
 

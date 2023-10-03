@@ -82,11 +82,19 @@ Word COMPARE(Word M1, Word *I1_, Word M2, Word *I2_)
 }
 
 // set cell C index, element k to value a
-// child recursive update not needed.
+// also updates all children
 void SETINDEXK(Word C, Word k, Word a)
 {
     Word I = LELTI(C, INDX);
     SLELTI(I, k, a);
+
+    Word Children = LELTI(C, CHILD);
+    while (Children != NIL) {
+        Word C1;
+        ADV(Children, &C1, &Children);
+
+        SETINDEXK(C1, k, a);
+    }
 }
 
 // are the first n-1 coordinates of S rational

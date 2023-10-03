@@ -1,6 +1,6 @@
 @
 
-afupbri 83 abcd a
+afupbri 83 abcdm a
 @
 afupbri C
 
@@ -14,7 +14,7 @@ interval arithmetic fails.
 @
 
 
-alg-rr 29 abcd a
+alg-rr 29 abcdm a
 @
 alg-rr C
 
@@ -29,7 +29,7 @@ adj-test-1 72 cde cp
 Test the three adjacency methods.  (My temporary addition.)
 @
 
-approx-precision 46 abcde m
+approx-precision 46 abcdme m
 @
 approx-precision N
 
@@ -61,7 +61,7 @@ defined by current truth values.
 
 
 
-cell-choice-bound 8 abcd pc
+cell-choice-bound 8 abcdm pc
 @
 cell-choice-bound CCC
 
@@ -87,7 +87,7 @@ For example, "cell-choice-bound (SR,LD,HL)".
 @
 
 
-cell-choice-free 44 abcd pc
+cell-choice-free 44 abcdm pc
 @
 cell-choice-free CCC   (Not supported for a while)
 
@@ -131,7 +131,7 @@ Changes truth values in a 2D CAD to the closure of the set
 defined by current truth values.
 @
 
-continue 105 abcde pc
+continue 105 abcdme pc
 @
 continue
 
@@ -235,7 +235,7 @@ Displays the info about all the cells in the subtree
 rooted at the cell with index C.
 @
 
-d-assumptions 99 abcde d
+d-assumptions 99 abcdme d
 @
 d-assumptions
 
@@ -266,7 +266,7 @@ Displays the cell with index C in the form of a Tarski formula.
 
 
 
-d-dstat 38 abcde d
+d-dstat 38 abcdme d
 @
 d-dstat
 
@@ -306,7 +306,7 @@ Displays all cells using d-cell-tarski.
 @
 
 
-d-formula 10 abcde d
+d-formula 10 abcdme d
 @
 d-formula
 
@@ -411,7 +411,7 @@ Display the partial CAD with signatures over the cell whose index is C.
 @
 
 
-d-qf-formula 13 abcde d
+d-qf-formula 13 abcdme d
 @
 d-qf-formula
 
@@ -419,7 +419,7 @@ Dislays the quantifier-free part of the input formula.
 @
 
 
-d-quantifier-list 12 abcde d
+d-quantifier-list 12 abcdme d
 @
 d-quantifier-list
 
@@ -427,14 +427,14 @@ Displays the quantifier list.
 @
 
 
-d-search-cells-cond 57 abcd d
+d-search-cells-cond 57 abcdm d
 @
 d-search-cells-cond
 
 Displays whether true/false cells are searched for.
 @
 
-d-selected-cells-cond 43 abcd d
+d-selected-cells-cond 43 abcdm d
 @
 d-selected-cells-cond
 
@@ -443,7 +443,7 @@ and also indicates whether the condition is being used or not.
 @
 
 
-d-setting 20 abcde d
+d-setting 20 abcdme d
 @
 d-setting
 
@@ -467,7 +467,7 @@ of the sections in the stack over the cell with index C.
 @
 
 
-d-stat 28 abcde d
+d-stat 28 abcdme d
 @
 d-stat
 
@@ -475,7 +475,7 @@ Displays the statistics gathered so far.
 @
 
 
-d-trace-alg 25 abcde d
+d-trace-alg 25 abcdme d
 @
 d-trace-alg
 
@@ -483,7 +483,7 @@ Displays the current setting of the algorithm traces options.
 @
 
 
-d-trace-data 34 abcde d
+d-trace-data 34 abcdme d
 @
 d-trace-data
 
@@ -507,7 +507,7 @@ Displays all true cells using d-cell-tarski.
 @
 
 
-d-variable-list 11 abcde d
+d-variable-list 11 abcdme d
 @
 d-variable-list
 
@@ -573,7 +573,7 @@ must have been issued.
 @
 
 
-exp1 95 abcde d
+exp1 95 abcdme d
 @
 exp1
 
@@ -604,7 +604,7 @@ cell-choice-bound or cell-choice-free are used.)
 @
 
 
-finish 21 abcde pc
+finish 21 abcdime pc
 @
 finish
 
@@ -612,7 +612,7 @@ Finish up the remaining computation without interaction.
 @
 
 
-full-cad 39 abcd pc
+full-cad 39 abcdm pc
 @
 full-cad
 
@@ -621,7 +621,7 @@ evaluation and propagation for cells in free-variable space.
 @
 
 
-go  40 abcde pc
+go  40 abcdme pc
 @
 go
 
@@ -629,7 +629,7 @@ Go to the beginning of the next phase.
 @
 
 
-help 1 abcde m
+help 1 abcdme m
 @
 help
 
@@ -665,7 +665,7 @@ Hoon's solution formula construction without the input dependence.
 @
 
 
-implicant-generation 9 abcde pc
+implicant-generation 9 abcdme pc
 @
 implicant-generation C
 
@@ -695,18 +695,8 @@ If C is 'y', turn MCT on.
 Otherwise,  turn it off.
 @
 
-frt 151 ab m
-@
-frt  C
 
-CAD with frontier condition
-If C is 'y', turn MCT on.
-Otherwise,  turn it off.
-
-Only currently available when the number of free variables is less than or equal to 3.
-@
-
-limit-entry-db 6 abcde m
+limit-entry-db 6 abcdme m
 @
 limit-entry-db NNN
 
@@ -763,7 +753,7 @@ z - does not put a dot at each 0-dimensional cell
 @
 
 
-passline 93 abcde d
+passline 93 abcdme d
 @
 passline
 
@@ -817,7 +807,7 @@ prior to normalization.
 @
 
 
-quit 3 abcde pc
+quit 3 abcdme pc
 @
 quit
 
@@ -825,7 +815,7 @@ Quit the QEPCAD system right here.
 @
 
 
-rational-sample 31 abcd pc
+rational-sample 31 abcdm pc
 @
 rational-sample C
 
@@ -868,7 +858,7 @@ C is one of the following:
 @
 
 
-search-cells-cond 58 abcd pc
+search-cells-cond 58 abcdm pc
 @
 search-cells-cond T F
 
@@ -881,7 +871,7 @@ If F = 'y' then the program stops as soon as a false cell has been found.
 @
 
 
-selected-cells-cond 41 abcd pc
+selected-cells-cond 41 abcdm pc
 @
 selected-cells-cond E
 
@@ -939,7 +929,7 @@ This option simply displays stats.
 @
 
 
-simplifier 47 abcd pc
+simplifier 47 abcdm pc
 @
 simplifier C
 
@@ -965,7 +955,7 @@ constructed and displayed.
 @
 
 
-step 4 abcde pc
+step 4 abcdme pc
 @
 step NNN
 
@@ -986,7 +976,7 @@ CAD is projection definable.
 @
 
 
-trace-alg 26 abcde d
+trace-alg 26 abcdme d
 @
 trace-alg A; E; X.
 
@@ -1009,7 +999,7 @@ to all the tracable algorithms.
 @
 
 
-trace-data 27 abcde d
+trace-data 27 abcdme d
 @
 trace-data D; M
 
@@ -1021,7 +1011,7 @@ tracable data.
 @
 
 
-triv-convert 30 abcd pc
+triv-convert 30 abcdm pc
 @
 triv-convert C
 
@@ -1104,7 +1094,7 @@ level higher.
 @
 
 
-use-db 5  abcde m
+use-db 5  abcdme m
 @
 use-db C
 
@@ -1113,7 +1103,7 @@ If C = n then, databases are NOT used.
 @
 
 
-use-selected-cells-cond 42 abcd m
+use-selected-cells-cond 42 abcdm m
 @
 use-selected-cells-cond C
 
@@ -1121,7 +1111,7 @@ If C = 'y' then use the condition for desired cells.
 If C = 'n' then do not use the condition for desired cells.
 @
 
-verbose 74 abcde pc
+verbose 74 abcdme pc
 @
 verbose C
 
@@ -1139,7 +1129,7 @@ stack as true.
 @
 
 
-whatis 2 abcde m
+whatis 2 abcdme m
 @
 whatis CCCC
 

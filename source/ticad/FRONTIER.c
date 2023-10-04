@@ -1,21 +1,14 @@
 /*======================================================================
-                      D <- FRONTIER(C,Q,F,f,P,A)
+                      D <- FRONTIER(r,C,P)
 
 Frontier condition (lifting above bad points, lazard-style)
 
 \Input
+  \parm{r} is the number of free variables in the input formula.
   \parm{C} is the original cad with missing signs of proj factors (may be recursive i.e., level of C may be > 1)
-  \parm{Q} is the list of quantifiers
-           in the input formula.
-  \parm{F} $=F(x_1,\ldots,x_r)$
-           is the normalized input quantifier-free formula.
-  \parm{f} is the number of free variables in the input formula.
   \parm{P} is the list~$(P_1,\ldots,P_r)$,
            where $P_i$ is the list of
            $i$--level projection factors.
-  \parm{A} is the list~$(A_1,\ldots,A_r)$,
-           where $A_i$ is the list of all
-           the distinct $i$--level normalized input polynomials.
 
 Output
   \parm{D} is a truth--invariant partial CAD of $f$--space
@@ -23,81 +16,105 @@ Output
 ======================================================================*/
 #include "qepcad.h"
 
-void ZEROCELLS(Word C, Word level, Word *L_);
-
-bool VANISHES(Word C, Word k);
-
-Word QepcadCls::FRONTIER(Word C, Word Q, Word F, Word f, Word P, Word A)
+// returns the index of first polynomial which is zero, -1 otherwise.
+Word IndexOfFirstZero(Word S)
 {
-    // if R < 3, frontier condition is obtaoined automatically.
-    if (f == 2) return C;
+    Word i = 1;
+    while (S != NIL) {
+        Word s;
+        ADV(S, &s, &S);
 
-    // gather 0-cells
-    Word Cells = NIL;
-    ZEROCELLS(C, 2, &Cells);
+        if (s == 0) {
+            return i;
+        }
 
-    // for each base 0-cell B
-    Word B, f1, f2, f3, P1, P2, P3;
-    FIRST3(P, &P1, &P2, &P3);
-    while (Cells != NIL) {
-        ADV(Cells, &B, &Cells);
+        ++i;
+    }
 
-        Word AP3 = P3; Word i = 0;
-        while (AP3 != NIL) {
-            ADV(AP3, &f3, &AP3);
-            i++; // index of f3
+    return -1;
+}
 
-            if (VANISHES(B, i)) {
-                printf("f3 at %d vanishes identically\n", i);
+// unique comp, with == check
+Word UCOMP(Word x, Word L)
+{
+    Word LL = L;
+    while (LL != NIL) {
+        Word y;
+        ADV(LL, &y, &LL);
+
+        if (x == y) return L;
+    }
+
+    return COMP(x, L);
+}
+
+Word IdentifyBadCells(Word r, Word C, Word Ps)
+{
+    Word Children = LELTI(C, CHILD);
+    if (Children == NIL) return NIL;
+
+    Word P;
+    ADV(Ps, &P, &Ps);
+
+    Word Is = NIL;
+    Word Js = NIL;
+    Word ik = 0;
+    bool section = true;
+    while (Children != NIL) {
+        Word C, Is2, i;
+        ADV(Children, &C, &Children);
+        section = !section;
+        ++ik;
+
+        if (section && (Is2 = IdentifyBadCells(r + 1, C, Ps)) != NIL) {
+            Word j = IndexOfFirstZero(FIRST(LELTI(C, SIGNPF)));
+            Word Pj = LELTI(LELTI(P, j), PO_POLY);
+
+            while (Is2 != NIL) {
+                Word ik1, I;
+                ADV2(Is2, &ik1, &I, &Is2);
+
+                Is = COMP2(COMP(ik, ik1), COMP(Pj, I), Is);
             }
+        } else if (!section && r > 2 && (i = IndexOfFirstZero(FIRST(LELTI(C, SIGNPF)))) > 0) {
+            Js = UCOMP(i, Js);
+        }
+    }
+
+    // look up the polynomials from indices in Js
+    Word JPs = NIL;
+    while (Js != NIL) {
+        Word i;
+        ADV(Js, &i, &Js);
+
+        JPs = COMP2(NIL, LIST1(LELTI(LELTI(P, i), PO_POLY)), JPs);
+    }
+
+    return CONC(Is, JPs);
+}
+
+Word QepcadCls::FRONTIER(Word r, Word C, Word P)
+{
+    // if r < 3, frontier condition is obtaoined automatically.
+    if (r < 3) return C;
+
+    // find bad cells
+    Word L = IdentifyBadCells(1, C, P);
+    while (L != NIL) {
+        Word I, Ps;
+        ADV2(L, &I, &Ps, &L);
+
+        printf("bad point: cell "); LWRITE(I); printf("\n");
+        Word r1 = 0;
+        while (Ps != NIL) {
+            Word P;
+            ADV(Ps, &P, &Ps);
+            ++r1;
+
+            SacPolyToMapleString(r1, P);
         }
     }
 
     return C;
-}
-
-void ZEROCELLS(Word C, Word level, Word *L_) {
-    Word Children = LELTI(C, CHILD);
-
-    // no children
-    if (Children == NIL) return;
-
-    // isolate level 2 cells
-    if (level == 0) {
-        printf("appendi "); LWRITE(LELTI(C, INDX)); SWRITE("\n");
-        *L_ = COMP(C, *L_);
-    }
-
-    Word Ch;
-    while (Children != NIL) {
-        ADV(Children, &Ch, &Children);
-
-        if (EVEN(LAST(LELTI(Ch, INDX)))) {
-            ZEROCELLS(Ch, level-1, L_);
-        }
-    }
-}
-
-// does polynomial at level l, index k vanish identically above C?
-bool VANISHES(Word C, Word k) {
-    Word Children = LELTI(C, CHILD);
-
-    // no children TODO check what if not full CAD
-    if (Children == NIL) return false;
-
-    // for each child of C
-    Word Ch; Word i = 0;
-    while (Children != NIL) {
-        ADV(Children, &Ch, &Children);
-        i++; // index (in stack above C) of Ch.
-
-        if (EVEN(i)) continue; // can,t "vanish identically" on a section
-
-        Word S = LELTI(FIRST(LELTI(Ch, SIGNPF)), k);
-        if (S == ZERO) return true; // f3 vanishes identically on an interval above C.
-    }
-
-    // othervise f3 does not vanish on any intervals.
-    return false;
 }
 

@@ -74,21 +74,24 @@ Step3: /* Truth-invariant CAD. */
     /*Int*/ for (i=1; i<=f; i++) NMFPF=NMFPF+LENGTH(LELTI(P,i));
     /*Int*/ PCNSTEP = 1;
     D = TICAD(Q,F,f,P,A);
+    if (PCMCT == 'y') {
+        // add extra polynomials for [semi]-monotone cells and recompute the cad if needed
+        Word RPs = MONOTONE(&P, &J, D, r);
+        GVREFL = RPs;
+    }
 
 Step5: /* Monotone cells, if needed */
     if (PCMCT == 'y') {
         /*Int*/ GVPC = D;
         /*Int*/ PCNSTEP = 1;
-        /*Int*/ if (INTERACT()) USERINT(LFS("Before Monotone Cell Construction"),'m');
+        /*Int*/ if (INTERACT()) USERINT(LFS("Before Refinement For Monotone Cells"),'m');
         /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
         /*Int*/ Ths = ACLOCK();
 
-        // add extra polynomials for [semi]-monotone cells and recompute the cad if needed
-        Word RPs = MONOTONE(&P, &J, D, r);
-        GVREFL = RPs;
-        D = REFINE(1, D, RPs, P);
+        // refine the CAD
+        D = REFINE(1, D, GVREFL, P);
 
-        D = FRONTIER(D, Q, F, f, P, A);
+        D = FRONTIER(f, D, P);
         /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
     }
 

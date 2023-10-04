@@ -4,86 +4,89 @@
  * converts a saclib polynomial P, in r variables, into a char array.
  *====================================================================*/
 #include "qepcad.h"
+#include <iostream>
+#include <string>
+using namespace std;
 
-inline Word AsciiInt(Word a) {
-    return a + 48;
-}
-
-inline Word AsciiChar(Word a) {
-    return a + 96;
-}
-
-void IntToString(Word A, Word* S)
+inline Word VariableList(Word r)
 {
-    Word a, b;
-    bool sign = false;
-    a = A;
-    if (a < 0) {
-        sign = true;
-        a = -a;
+    Word i = 0;
+    Word L = NIL;
+    while (i < r) {
+        L = COMP('A' + i, L);
+
+        ++i;
     }
 
-    do {
-        b = a % 10;
-        a = a / 10;
-
-        *S = COMP(AsciiInt(b), *S);
-    } while (a > 10);
-
-    if (sign) {
-        *S = COMP('-', *S);
-    }
+    return L;
 }
 
-void SacPolyToStringHelper(Word r, Word P, Word* S)
+string WriteMonomial(Word r, Word D, Word V)
 {
-    if (r == 0) {
-        IntToString(P, S);
+    bool write_mul = false;
+    string term = "";
 
-        return;
-    }
+    while (D != NIL) {
+        Word e, v;
+        ADV(D, &e, &D);
+        ADV(V, &v, &V);
 
-    Word e, A;
-    ADV2(P, &e, &A, &P);
+        // skip variables of 0 degree
+        if (e == 0) {
+            continue;
+        }
 
-    if (e == 0) {
-        return SacPolyToStringHelper(r - 1, A, S);
-    }
+        // write multiplication sign
+        if (write_mul) {
+            term += " * ";
+        }
 
-    *S = COMP(')', *S);
-    while (true) {
-        // exponent
+        write_mul = true;
+
+        // write variable...
+        term += string(1, v);
+
+        // ... and the exponent if needed
         if (e > 1) {
-            *S = COMP2('^', AsciiInt(e), *S);
+            term += "^" + to_string(e);
+        }
+    }
+
+    return term;
+}
+
+string SacPolyToMapleString(Word r, Word P)
+{
+    Word P1 = DIPFP(r, P);
+
+    // construct variable list
+    Word V = VariableList(r);
+    Word a, D;
+    ADV2(P1, &a, &D, &P1);
+
+    string out = "";
+    while (true) {
+        if (a != 1) {
+            out += to_string(a) + " ";
         }
 
-        // variable
-        if (e > 0) {
-            *S = COMP2('*', AsciiChar(r), *S);
-        }
+        out += WriteMonomial(r, D, V);
 
-        // print A, polynomial in r-1 variables
-        SacPolyToStringHelper(r - 1, A, S);
-
-        // done?
-        if (P == NIL) {
+        if (P1 == NIL) {
             break;
         }
 
-        *S = COMP('+', *S);
-        ADV2(P, &e, &A, &P);
+        ADV2(P1, &a, &D, &P1);
+        // write sign
+        if (a < 0) {
+            out += " - ";
+            a = -a;
+        } else {
+            out += " + ";
+        }
     }
 
-    *S = COMP('(', *S);
-}
-
-const char* SacPolyToMapleString(Word r, Word P)
-{
-    // convert to distributed form
-    LWRITE(P); SWRITE("\n");
-    Word S = NIL;
-    SacPolyToStringHelper(r, P, &S);
-    CLOUT(S); SWRITE("\n");
-    return "x";
+    cout << out << "\n";
+    return out;
 }
 

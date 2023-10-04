@@ -115,32 +115,28 @@ Step11: /* MCT test? */
        SWRITE("MCT                                   : ");
        CWRITE(PCMCT); SWRITE("\n");
 
-Step12: /* FRT test? */
-       SWRITE("FRT                                   : ");
-       CWRITE(PCFRT); SWRITE("\n");
-
-Step13: /* approx precision */
+Step12: /* approx precision */
        SWRITE("Approx precision                      : ");
        GWRITE(PCNUMDEC); SWRITE("\n");
 
-Step14: /* Algorithm for resultant and discriminant computation. */
+Step13: /* Algorithm for resultant and discriminant computation. */
        SWRITE("Resultant and discriminant algorithm  : ");
        switch (PCRESALG) {
          case MODULAR: SWRITE("modular\n"); break;
          case SUBRES:  SWRITE("subresultant prs\n");  break; }
 
-Step15: /* Propagate equational constraints? */
+Step14: /* Propagate equational constraints? */
        SWRITE("Propagate equational constraints      : ");
        if (PCPROPEC == TRUE) SWRITE("True\n");
        else                  SWRITE("False\n");
 
-Step16: /* Search for true/false cells? */
+Step15: /* Search for true/false cells? */
        SWRITE("Search for true cell?                 : ");
        CWRITE(PCSEARCHTRUE); SWRITE("\n");
        SWRITE("Search for false cell?                : ");
        CWRITE(PCSEARCHFALSE); SWRITE("\n");
 
-Step17: /* SACLIB system parameters. */
+Step16: /* SACLIB system parameters. */
        SWRITE("\n");
        SWRITE("Size of Heap (NU)                     : ");
        GWRITE(NU); SWRITE(" words\n");

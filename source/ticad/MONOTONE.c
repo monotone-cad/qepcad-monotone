@@ -286,6 +286,10 @@ void REFINEMENTPOINTSRAT(Word I, Word S, Word R1s, Word* A_, Word* J_, Word* RPs
         }
     }
 
+    if (Ps == NIL) {
+        return;
+    }
+
     // compute the list of roots of the polynomials
     Word B = ROOTS(Ps);
 

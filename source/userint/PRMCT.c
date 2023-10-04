@@ -22,7 +22,6 @@ Step2: /* Check for the validity. */
 
 Step3: /* Set. */
     PCMCT = C;
-    PCFRT = C;
     PCFULL = C;
     goto Return;
 

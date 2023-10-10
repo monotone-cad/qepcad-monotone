@@ -72,10 +72,10 @@ Word IdentifyBadCells(Word r, Word C, Word Ps)
             Word Pj = LELTI(LELTI(P, j), PO_POLY);
 
             while (Is2 != NIL) {
-                Word ik1, I;
-                ADV2(Is2, &ik1, &I, &Is2);
+                Word ik1, I, S;
+                ADV3(Is2, &ik1, &I, &S, &Is2);
 
-                Is = COMP2(COMP(ik, ik1), COMP(Pj, I), Is);
+                Is = COMP3(COMP(ik, ik1), COMP(Pj, I), S, Is);
             }
         } else if (!section && r > 2 && (i = IndexOfFirstZero(FIRST(LELTI(C, SIGNPF)))) > 0) {
             Js = UCOMP(i, Js);
@@ -88,7 +88,7 @@ Word IdentifyBadCells(Word r, Word C, Word Ps)
         Word i;
         ADV(Js, &i, &Js);
 
-        JPs = COMP2(NIL, LIST1(LELTI(LELTI(P, i), PO_POLY)), JPs);
+        JPs = COMP3(NIL, LIST1(LELTI(LELTI(P, i), PO_POLY)), LELTI(C, SAMPLE), JPs);
     }
 
     return CONC(Is, JPs);
@@ -102,10 +102,10 @@ Word QepcadCls::FRONTIER(Word r, Word C, Word P)
     // find bad cells
     Word L = IdentifyBadCells(1, C, P);
     while (L != NIL) {
-        Word I, Ps, As, f;
-        ADV2(L, &I, &Ps, &L);
+        Word I, Ps, S, As, f;
+        ADV3(L, &I, &Ps, &S, &L);
 
-        LazardLifting(Ps, P);
+        LazardLifting(Ps, S, P); // TODO pass S
     }
 
     return C;

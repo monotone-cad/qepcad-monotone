@@ -430,12 +430,10 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         // perform refinement
         if (CT != NIL) {
             STOREPOLYNOMIALS(Refinement(nv, Gs, FT, Fs), I0, S0, &Rs);
-            SacPolyToMapleString(nv, FT); printf("\n");
         }
 
         if (CB != NIL) {
             STOREPOLYNOMIALS(Refinement(nv, Gs, FB, Fs), I0, S0, &Rs);
-            SacPolyToMapleString(nv, FB); printf("\n");
         }
     }
 

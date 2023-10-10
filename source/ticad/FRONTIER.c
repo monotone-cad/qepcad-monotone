@@ -15,6 +15,10 @@ Output
            in which every leaf cell has a determined truth value.
 ======================================================================*/
 #include "qepcad.h"
+#include <iostream>
+using namespace std;
+
+extern MKernelVector GVMaple;
 
 // returns the index of first polynomial which is zero, -1 otherwise.
 Word IndexOfFirstZero(Word S)
@@ -101,18 +105,10 @@ Word QepcadCls::FRONTIER(Word r, Word C, Word P)
     // find bad cells
     Word L = IdentifyBadCells(1, C, P);
     while (L != NIL) {
-        Word I, Ps;
+        Word I, Ps, As, f;
         ADV2(L, &I, &Ps, &L);
 
-        printf("bad point: cell "); LWRITE(I); printf("\n");
-        Word r1 = 0;
-        while (Ps != NIL) {
-            Word P;
-            ADV(Ps, &P, &Ps);
-            ++r1;
-
-            SacPolyToMapleString(r1, P);
-        }
+        LazardLifting(GVMaple, Ps, P);
     }
 
     return C;

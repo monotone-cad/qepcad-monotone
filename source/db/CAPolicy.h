@@ -10,9 +10,9 @@
 #include <iostream>
 using namespace std;
 
-class CASComp 
-{ 
-public: 
+class CASComp
+{
+public:
    bool operator()(CAServer *p1, CAServer *p2) { return p1->name() < p2->name(); }
 };
 
@@ -25,7 +25,7 @@ public:
   virtual void IPFAC(Word r, Word P, Word *s_, Word *c_, Word *L_) = 0;
   virtual Word IPRES(Word r, Word A, Word B) = 0;
   virtual Word IPDSCR(Word r, Word A) = 0;
-  virtual Word IPFACTGB(Word r, Word I, Word N) 
+  virtual Word IPFACTGB(Word r, Word I, Word N)
     { FAIL("CAPolicy::IPFACTGB","Not implemented in this policy!"); }
 
 /*
@@ -35,13 +35,23 @@ Input
  A : an r-level saclib polynomial
  L : a list of r-variate saclib polynomials
 
-Returns TRUE if it is determined that the vanishing of A and 
+Returns TRUE if it is determined that the vanishing of A and
 the elements of L implies that the order of A is constant.
 Otherwise returns a GB for A,L and all k-order partials s.t.
 some of the partials are not 0.
  */
-  virtual Word CONSTORDTEST(Word r, Word A, Word L) 
+  virtual Word CONSTORDTEST(Word r, Word A, Word L)
     { FAIL("CAPolicy::CONSTORDTEST","Not implemented in this policy!"); }
+/*
+ * B = GROEBNER(Ps, Rs, r)
+ * Computes the Groebner basis of a list of polynomials
+ * Ps = [P_1,...,P_k], each P_i has degree 1 <= R_i <= r in
+ * Rs = [R_1,...,R_k].
+ * r >= 1
+ */
+  virtual Word GROEBNER(Word Ps, Word Rs, Word r)
+    { FAIL("CAPolicy::GROEBNER","Not implemented in this policy!"); }
+
 
   virtual const string name() = 0;
   virtual bool supports(const string &s) = 0;

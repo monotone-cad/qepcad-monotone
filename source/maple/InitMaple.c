@@ -31,6 +31,10 @@ MKernelVector InitMaple()
         FAIL("InitMaple", "Maple initialisation failed.");
     }
 
+    // load packages
+    LoadMaplePackage(kv, "RootFinding");
+    LoadMaplePackage(kv, "Groebner");
+
     return kv;
 }
 

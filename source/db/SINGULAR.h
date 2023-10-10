@@ -16,16 +16,17 @@ class SingularServer : public CAServer
 public:
   UnnamedPipe intoSingular, outofSingular;
   pid_t childpid;
-  
+
   SingularServer(string SingluarBase); // give path to Singular
   ~SingularServer();
   void kill() { ::kill(childpid,SIGKILL); }
-  
+
   void IPFAC(Word r, Word P, Word *s_, Word *c_, Word *L_);
   Word IPRES(Word r, Word A, Word B);
   Word IPDSCR(Word r, Word A);
   Word IPFACTGB(Word r, Word I, Word N);
   Word CONSTORDTEST(Word r, Word A, Word L);
+  Word GROEBNER(Word Ps, Word Rs, Word r);
 
   const string name() { return "Singular"; }
   int serverTime();

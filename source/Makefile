@@ -436,7 +436,11 @@ $(LIB)(saclib/RVSPTSVSP.o) \
 $(LIB)(saclib/SOSRSUBS.o) \
 $(LIB)(saclib/SOSRSUPS.o) \
 $(LIB)(saclib/SUBSET.o) \
-$(LIB)(maple/SacPolyToMapleString.o)
+$(LIB)(maple/InitMaple.o) \
+$(LIB)(maple/CreateMapleVariableList.o) \
+$(LIB)(maple/SacPolyToMapleString.o) \
+$(LIB)(maple/LoadMaplePackage.o) \
+$(LIB)(maple/LazardLifting.o) \
 
 OBJS_DBd = \
 $(LIBD)(db/AFCSBMDB.o) \
@@ -806,7 +810,10 @@ $(LIBD)(saclib/SOSRSUBS.o) \
 $(LIBD)(saclib/SOSRSUPS.o) \
 $(LIBD)(saclib/SUBSET.o) \
 $(LIBD)(maple/InitMaple.o) \
-$(LIBD)(maple/SacPolyToMapleString.o)
+$(LIBD)(maple/CreateMapleVariableList.o) \
+$(LIBD)(maple/SacPolyToMapleString.o) \
+$(LIBD)(maple/LoadMaplePackage.o) \
+$(LIBD)(maple/LazardLifting.o)
 
 # ============================================================
 #     Dependecies

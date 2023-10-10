@@ -8,19 +8,6 @@
 #include <string>
 using namespace std;
 
-inline Word VariableList(Word r)
-{
-    Word i = 0;
-    Word L = NIL;
-    while (i < r) {
-        L = COMP('A' + i, L);
-
-        ++i;
-    }
-
-    return L;
-}
-
 string WriteMonomial(Word r, Word D, Word V)
 {
     bool write_mul = false;
@@ -55,12 +42,12 @@ string WriteMonomial(Word r, Word D, Word V)
     return term;
 }
 
-string SacPolyToMapleString(Word r, Word P)
+string SacPolyToMapleString(Word r, Word P, Word V)
 {
+    // put polynomial in distributed form.
+    // list of pairs (a, E) where a in Z is the coefficient and E is a list (e1,...,er) of degrees in each variable
     Word P1 = DIPFP(r, P);
 
-    // construct variable list
-    Word V = VariableList(r);
     Word a, D;
     ADV2(P1, &a, &D, &P1);
 
@@ -86,7 +73,6 @@ string SacPolyToMapleString(Word r, Word P)
         }
     }
 
-    cout << out << "\n";
     return out;
 }
 

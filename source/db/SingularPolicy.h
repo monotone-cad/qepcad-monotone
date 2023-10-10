@@ -21,19 +21,27 @@ public:
     return GVSB["Singular"]->IPDSCR(r,A);
   }
 
-  Word IPFACTGB(Word r, Word I, Word N)  
+  Word IPFACTGB(Word r, Word I, Word N)
   {
     return GVSB["Singular"]->IPFACTGB(r,I,N);
   }
-  Word CONSTORDTEST(Word r, Word A, Word L) 
+  Word CONSTORDTEST(Word r, Word A, Word L)
   {
     return GVSB["Singular"]->CONSTORDTEST(r,A,L);
+  }
+  Word GROEBNER(Word Ps, Word Rs, Word r) {
+    return GVSB["Singular"]->GROEBNER(Ps, Rs, r);
   }
   const string name() { return "SingularPolicy"; }
 
   bool supports(const string &s)
   {
-    return s == "IPFAC" || s == "IPRES" || s == "IPDSCR" || s == "IPFACTGB" || s == "CONSTORDTEST"; 
+    return s == "IPFAC"
+        || s == "IPRES"
+        || s == "IPDSCR"
+        || s == "IPFACTGB"
+        || s == "CONSTORDTEST"
+        || s == "GROEBNER";
   }
 };
 

@@ -851,7 +851,10 @@ Word GMSL(Word A, Word (*C)(Word,Word));
 
 // Maple interface
 MKernelVector InitMaple();
-string SacPolyToMapleString(Word r, Word P);
+string SacPolyToMapleString(Word r, Word P, Word V);
+void LoadMaplePackage(MKernelVector kv, string name);
+Word CreateMapleVariableList(Word r);
+Word LazardLifting(MKernelVector kv, Word Ps, Word As);
 
 #endif
 

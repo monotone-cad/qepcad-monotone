@@ -1,21 +1,3 @@
-/*======================================================================
-  A -< QUASIAFFINE(A, r; P)
-
-Add partial differentials of (factorised) input polynomials to ensure cells are quasi-affine. Projection factors are
-sufficient for smoothness and such that each cell will either be increasing, decreasing or constant along each
-coordinate axis.
-
-Input
-  \parm{A} projection factor set
-  \parm{r} number of variables
-
-Output
-  \parm{A*}: projection factor set with added derivatives
-
-SideEffect
-  \parm{A} is modified.
-
-  ======================================================================*/
 #include "qepcad.h"
 
 // convenience function for multi-degree of polynomial, returns (d_r,...,d_1) where d_i is degree of P in variable i

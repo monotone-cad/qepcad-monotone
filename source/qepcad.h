@@ -6,10 +6,6 @@
 #include <stdio.h>
 #include <string>
 
-#include "maplec.h"
-#define M_FAIL FAIL
-#undef FAIL
-
 using namespace std;
 
 /*-- Saclib is a C library, so we need C-style linkage --*/
@@ -849,12 +845,7 @@ Word GMSDS(Word *A, Word m, Word (*C)(Word,Word));
 Word GMSDSL(Word A, Word (*C)(Word,Word));
 Word GMSL(Word A, Word (*C)(Word,Word));
 
-// Maple interface
-MKernelVector InitMaple();
-string SacPolyToMapleString(Word r, Word P, Word V);
-void LoadMaplePackage(MKernelVector kv, string name);
-Word CreateMapleVariableList(Word r);
-Word LazardLifting(MKernelVector kv, Word Ps, Word As);
+Word LazardLifting(Word Ps, Word As);
 
 #endif
 

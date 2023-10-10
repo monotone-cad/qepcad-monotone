@@ -16,9 +16,6 @@ Output
 ======================================================================*/
 #include "qepcad.h"
 #include <iostream>
-using namespace std;
-
-extern MKernelVector GVMaple;
 
 // returns the index of first polynomial which is zero, -1 otherwise.
 Word IndexOfFirstZero(Word S)
@@ -108,7 +105,7 @@ Word QepcadCls::FRONTIER(Word r, Word C, Word P)
         Word I, Ps, As, f;
         ADV2(L, &I, &Ps, &L);
 
-        LazardLifting(GVMaple, Ps, P);
+        LazardLifting(Ps, P);
     }
 
     return C;

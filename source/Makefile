@@ -35,7 +35,6 @@ endif
 # ============================================================
 
 INCLUDES  =	-I${saclib}/include \
-        -I${MAPLE}/extern/include \
 		${SPECIFLAGS} \
 		-I.
 
@@ -46,8 +45,7 @@ EXTLIBS   =	${qe}/extensions/sfext/sfexto.a \
 		${qe}/extensions/rend/rendo.a \
 		${saclib}/lib/saclibo.a \
 		-lreadline \
-		${SPECLFLAGS} \
-		-L${MAPLE}/bin.X86_64_LINUX -lmaplec -lrt
+		${SPECLFLAGS}
 
 
 EXTLIBSD  =	${qe}/extensions/sfext/sfextd.a \
@@ -57,8 +55,7 @@ EXTLIBSD  =	${qe}/extensions/sfext/sfextd.a \
 		${qe}/extensions/rend/rendd.a \
 		${saclib}/lib/saclibd.a \
 		-lreadline \
-		${SPECLFLAGS} \
-		-L${MAPLE}/bin.X86_64_LINUX -lmaplec -lrt
+		${SPECLFLAGS}
 
 NAME      =  qepcad
 LIB       =  $(NAME).a
@@ -436,11 +433,7 @@ $(LIB)(saclib/RVSPTSVSP.o) \
 $(LIB)(saclib/SOSRSUBS.o) \
 $(LIB)(saclib/SOSRSUPS.o) \
 $(LIB)(saclib/SUBSET.o) \
-$(LIB)(maple/InitMaple.o) \
-$(LIB)(maple/CreateMapleVariableList.o) \
-$(LIB)(maple/SacPolyToMapleString.o) \
-$(LIB)(maple/LoadMaplePackage.o) \
-$(LIB)(maple/LazardLifting.o) \
+$(LIB)(ticad/LazardLifting.o) \
 
 OBJS_DBd = \
 $(LIBD)(db/AFCSBMDB.o) \
@@ -809,11 +802,7 @@ $(LIBD)(saclib/RVSPTSVSP.o) \
 $(LIBD)(saclib/SOSRSUBS.o) \
 $(LIBD)(saclib/SOSRSUPS.o) \
 $(LIBD)(saclib/SUBSET.o) \
-$(LIBD)(maple/InitMaple.o) \
-$(LIBD)(maple/CreateMapleVariableList.o) \
-$(LIBD)(maple/SacPolyToMapleString.o) \
-$(LIBD)(maple/LoadMaplePackage.o) \
-$(LIBD)(maple/LazardLifting.o)
+$(LIBD)(ticad/LazardLifting.o)
 
 # ============================================================
 #     Dependecies

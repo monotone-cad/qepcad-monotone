@@ -24,7 +24,6 @@ ARFLAGS = rvU
 
 
 INCLUDES  = \
-        -I${MAPLE}/extern/include \
 		-I${saclib}/include \
 		-I${qe}/source \
 		-I${qe}/extensions/sfext \

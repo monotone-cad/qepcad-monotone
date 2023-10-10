@@ -1,7 +1,7 @@
 /*======================================================================
  * (J, M, ...) <- ROOTS(Ps)
  *
- & Real root isolation for a univariate polynomal with integer coefficients
+ & Real root isolation for a univariate polynomials with rational coefficients
  *
  *====================================================================*/
 #include "qepcad.h"

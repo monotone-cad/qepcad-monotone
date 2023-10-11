@@ -35,7 +35,7 @@ Word IndexOfFirstZero(Word S)
     return -1;
 }
 
-// unique comp, with == check
+// unique comp, with == check, O(n)
 Word UCOMP(Word x, Word L)
 {
     Word LL = L;
@@ -59,23 +59,21 @@ Word IdentifyBadCells(Word r, Word C, Word Ps)
 
     Word Is = NIL;
     Word Js = NIL;
-    Word ik = 0;
     bool section = true;
     while (Children != NIL) {
         Word C, Is2, i;
         ADV(Children, &C, &Children);
         section = !section;
-        ++ik;
 
         if (section && (Is2 = IdentifyBadCells(r + 1, C, Ps)) != NIL) {
             Word j = IndexOfFirstZero(FIRST(LELTI(C, SIGNPF)));
             Word Pj = LELTI(LELTI(P, j), PO_POLY);
 
             while (Is2 != NIL) {
-                Word ik1, I, S;
-                ADV3(Is2, &ik1, &I, &S, &Is2);
+                Word I, C1;
+                ADV2(Is2, &I, &C1, &Is2);
 
-                Is = COMP3(COMP(ik, ik1), COMP(Pj, I), S, Is);
+                Is = COMP2(COMP(Pj, I), C1, Is);
             }
         } else if (!section && r > 2 && (i = IndexOfFirstZero(FIRST(LELTI(C, SIGNPF)))) > 0) {
             Js = UCOMP(i, Js);
@@ -88,13 +86,13 @@ Word IdentifyBadCells(Word r, Word C, Word Ps)
         Word i;
         ADV(Js, &i, &Js);
 
-        JPs = COMP3(NIL, LIST1(LELTI(LELTI(P, i), PO_POLY)), LELTI(C, SAMPLE), JPs);
+        JPs = COMP2(LIST1(LELTI(LELTI(P, i), PO_POLY)), C, JPs);
     }
 
     return CONC(Is, JPs);
 }
 
-Word QepcadCls::FRONTIER(Word r, Word C, Word P)
+Word QepcadCls::FRONTIER(Word r, Word C, Word P, Word* A_, Word* J_, Word* RPs_)
 {
     // if r < 3, frontier condition is obtaoined automatically.
     if (r < 3) return C;
@@ -102,10 +100,15 @@ Word QepcadCls::FRONTIER(Word r, Word C, Word P)
     // find bad cells
     Word L = IdentifyBadCells(1, C, P);
     while (L != NIL) {
-        Word I, Ps, S, As, f;
-        ADV3(L, &I, &Ps, &S, &L);
+        Word Ps, C, As, f;
+        ADV2(L, &Ps, &C, &L);
+        // need access to the cell for refinement. store two elements, cell and polynomials.
 
-        LazardLifting(Ps, S, P); // TODO pass S
+        Word Hs = LazardLifting(Ps, LELTI(C, SAMPLE), P); // TODO pass S
+
+        // add refinement points and refine cell immediately.
+        ADDREFINEMENTPOINTS(LELTI(C, INDX), LELTI(C, SAMPLE), Hs, A_, J_, RPs_);
+        C = REFINE(1, C, GVREFL, P);
     }
 
     return C;

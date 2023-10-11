@@ -87,7 +87,7 @@ Word   TMAPPEND[MNV1];     /* Time for Appending, APPEND */
 Word TMTICAD[MNV1];     /* Time for Truth invariant CAD Construnction Phase, TICAD */
 Word MONOTONE(Word* A_, Word* J_, Word D, Word r);
 Word REFINE(Word k, Word D, Word A, Word P);
-Word FRONTIER(Word r, Word C, Word P);
+Word FRONTIER(Word r, Word C, Word P, Word* A, Word* J_, Word* RPs_);
 Word   TMCHOOSE[MNV1];    /* Time for Choosing a cell, CHOOSE */
 Word   TMCONVERT[MNV1];   /* Time for Conversion, CONVERT */
 Word     TMTCN[MNV1];       /* Time for Trivial Conversion */

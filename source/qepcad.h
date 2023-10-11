@@ -845,6 +845,7 @@ Word GMSDS(Word *A, Word m, Word (*C)(Word,Word));
 Word GMSDSL(Word A, Word (*C)(Word,Word));
 Word GMSL(Word A, Word (*C)(Word,Word));
 
+void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word* A_, Word* J_, Word* RPs_);
 Word LazardLifting(Word Ps, Word S, Word As);
 
 #endif

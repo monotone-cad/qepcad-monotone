@@ -338,14 +338,10 @@ Word SingularServer::CONSTORDTEST(Word r, Word A, Word L)
 // Ps = (P1,...,Pk) each polynomial P_i is in 1 <= R_i <= r variables
 Word SingularServer::GROEBNER(Word Ps, Word Rs, Word r)
 {
-    printf("In GB Sat Ideal\n");
-    // TODO -- in higher dimension
-
     // write into singular
     DefineRing(intoSingular.out(), "myring", r, "dp");
     Word V = CreateVariableList(r);
     intoSingular.out() << "ideal I = ";
-
 
     // write ideal I, compute Groebner basis G
     while (true) {

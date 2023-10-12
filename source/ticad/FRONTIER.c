@@ -102,13 +102,16 @@ Word QepcadCls::FRONTIER(Word r, Word C, Word P, Word* A_, Word* J_, Word* RPs_)
     while (L != NIL) {
         Word Ps, C, As, f;
         ADV2(L, &Ps, &C, &L);
-        // need access to the cell for refinement. store two elements, cell and polynomials.
 
-        Word Hs = LazardLifting(Ps, LELTI(C, SAMPLE), P); // TODO pass S
+        SWRITE("bad cell: "); LWRITE(LELTI(C, INDX)), SWRITE("\n");
+
+        // perform Lazard lifting to obtain a list of univariate polynomials defining refinement points above C
+        Word Hs = LazardLifting(LELTI(C, LEVEL), Ps, LELTI(C, SAMPLE), P);
 
         // add refinement points and refine cell immediately.
         ADDREFINEMENTPOINTS(LELTI(C, INDX), LELTI(C, SAMPLE), Hs, A_, J_, RPs_);
-        C = REFINE(1, C, GVREFL, P);
+        LWRITE(Hs); SWRITE("\n");
+        C = REFINE(1, C, *RPs_, P);
     }
 
     return C;

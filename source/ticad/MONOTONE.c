@@ -208,8 +208,19 @@ Word LagrangeRefinement(Word r, Word f, Word i, Word Gs, Word Is)
     // check for zero polynomial. no solutions
     if (Q == 0) return NIL;
 
+    // factorise
+    Word junk, Qs, Q1;
+    IPFACDB(r ,Q, &junk, &junk, &Qs);
+    while (Qs != NIL) {
+        ADV(Qs, &Q1, &Qs);
+
+        Gs = COMP(SECOND(Q1), Gs);
+    }
+
     // find solution in x by projecton
-    Word J = ProjSolve(r, COMP(Q, Gs));
+    // Gs now contains factors of the jacobi determinant
+    Word J = ProjSolve(r, Gs);
+
 
     return J;
 }

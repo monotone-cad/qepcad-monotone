@@ -347,7 +347,11 @@ Word SingularServer::GROEBNER(Word Ps, Word Rs, Word r)
     while (true) {
         Word P, r1;
         ADV(Ps, &P, &Ps);
-        ADV(Rs, &r1, &Rs);
+        if (Rs != NIL) {
+            ADV(Rs, &r1, &Rs);
+        } else {
+            r1 = r;
+        }
 
         intoSingular.out() << WritePolyForSingular(r1,P,V);
 

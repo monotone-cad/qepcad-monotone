@@ -15,6 +15,8 @@ Side Effect
 
 ======================================================================*/
 #include "qepcad.h"
+#include "db/CAPolicy.h"
+using namespace std;
 
 // suppose I = (i_1,...,i_n) is a cell index.
 // if i_j = i_k = 1 but all other components are 0, then C is 2-dimensional.
@@ -217,12 +219,14 @@ Word LagrangeRefinement(Word r, Word f, Word i, Word Gs, Word Is)
         Gs = COMP(SECOND(Q1), Gs);
     }
 
+    // simplify Gs by constructing a Groebner basis, if we have Singular
+    if (GVCAP->supports("GROEBNER")) {
+        Gs = GVCAP->GROEBNER(Gs, NIL, r);
+    }
+
     // find solution in x by projecton
     // Gs now contains factors of the jacobi determinant
-    Word J = ProjSolve(r, Gs);
-
-
-    return J;
+    return ProjSolve(r, Gs);
 }
 
 // iterative application of lagrange multipliers then projection to x1.

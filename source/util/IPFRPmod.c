@@ -15,7 +15,7 @@
 
 inline Word RUPConvert(Word A)
 {
-    Word lcm = 1, Es = NIL, As = NIL;
+    Word lcm = 1, Es = NIL, As = NIL, Bs = NIL;
 
     while (A != NIL) {
         Word a, e, a1, a2;
@@ -31,6 +31,8 @@ inline Word RUPConvert(Word A)
         }
 
         As = COMP(a1, As);
+        Bs = COMP(a2, Bs);
+
         // update lcm for integer conversion
         if (lcm == 1) { // set lcm
             lcm = a2;
@@ -42,12 +44,13 @@ inline Word RUPConvert(Word A)
     // reconstruct (backwards for return), multiplying the coefficients by the lcm of their denominators
     Word B = NIL;
     while (As != NIL && Es != NIL) {
-        Word a, e;
+        Word a, b, e;
         ADV(As, &a, &As);
+        ADV(Bs, &b, &Bs);
         ADV(Es, &e, &Es);
 
-        Word b = IPROD(lcm, a);
-        B = COMP2(e, b, B);
+        Word c = IQ(IPROD(lcm, a), b);
+        B = COMP2(e, c, B);
     }
 
     return B;

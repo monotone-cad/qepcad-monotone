@@ -369,14 +369,6 @@ Word SingularServer::GROEBNER(Word Ps, Word Rs, Word r)
     Word GB1 = NIL;
 
     // ecah element of the GB produced by singular begins with _.*=
-/*
-    {
-        string em;
-        while(outofSingular.in() >> em && em != "[end]:") {
-            cout << em << " ";
-        }
-    }
-*/
     while(peekNonWS(outofSingular.in()) == 'G')
     {
         while(outofSingular.in().get() != '=');
@@ -385,7 +377,7 @@ Word SingularServer::GROEBNER(Word Ps, Word Rs, Word r)
         GB1 = COMP(P,GB1);
     }
 
-    // read the remaining singular output.
+    // read the remaining singular output and discard
     { string em; while(outofSingular.in() >> em && em != "[end]:"); }
 
     return GB1;

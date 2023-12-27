@@ -1,23 +1,26 @@
 /*======================================================================
-  QUASIAFFINE(A, Word r, Word *A_);
+  QUASIAFFINE(A, r, *A_);
 
-Adding first derivatives of projections onto coordinate axes, to result in 2d cells which are either increasing,
-decreasing or constant along coordinate axes.
+Adds first partial derivatives of projections onto coordinate axes, to result in 2d cells which are either increasing,
+decreasing or constant with respect to coordinate axes.
 
 \Input
-  \parm{AA} set of input polynomials (I_1,...,i_r), each A_i is a list of polynomials in Z[x_1,...,x_i]
-  \parm{r} number of variables
+  \parm{A} set of projection factors (A_1,...,A_r), each A_i is a list of polynomials in Z[x_1,...,x_i]
+  \parm{r} positive integer, number of variables
 
 Output
-  \parm{A}: modified projection factors
+  \parm{*A}: set of projection factors, modified to include first partial derivatives of each element with respect to
+  each vaciable.
 
 SideEffect
-  \parm{AA} is modified.
+  \parm{A} is also modified.
 
 ======================================================================*/
 #include "qepcad.h"
 
-Word PARTIALS(Word k, Word P) {
+// all nonconstant partial derivatives of polynomial P, in Z[x_1,...,x_k]
+Word PARTIALS(Word k, Word P)
+{
     Word L = IPALLPARTIALS(k, LELTI(P, PO_POLY), 1, 1);
 
     Word LL = NIL, D;
@@ -37,34 +40,33 @@ void QepcadCls::QUASIAFFINE(Word A, Word r, Word *A_)
 {
     Word AA, A1, A11, k, L;
 
-Step1: /* decide based on dimension */
+    // nothing to do
     if (r <= 1) {
-        // nothing to do
+        *A_ = A;
 
-        goto Return;
+        return;
     }
 
-Step3: /* dim >= 2: all partials of input polynomials */
-    /* levels. */
+    /* consider projection factors at each level */
     AA = A; k = 0;
     while (AA != NIL) {
         ADV(AA, &A1, &AA);
         ++k;
 
-        /* polynomials. */
+        // consider each polynomial
         L = NIL;
         while (A1 != NIL) {
             ADV(A1, &A11, &A1);
 
+            // adding each partial derivative
             L = CONC(L, PARTIALS(k, A11));
-        } /* END polynomials. */
+        }
 
-        // factorise and append -- same function as used on input formula
+        // and factorise (same function as used with the input formula)
 	    ADDPOLS(IPLFAC(k, L),k,LFS("D"), &A);
-    } /* END level. */
+    }
 
-Return: /* prepare for return */
-    // put proj fac in correct order
+    /* prepare for return */
     *A_ = A;
 }
 

@@ -15,10 +15,10 @@ Word LDCOPY(Word L)
     // base: empty
     if (L == NIL) return NIL;
 
-    // base: non-list
+    // base case
     if (!ISLIST(L)) return L;
 
-    // recursive: list
+    // recursive case
     Word LL = NIL, A;
     while (L != NIL) {
         ADV(L, &A, &L);

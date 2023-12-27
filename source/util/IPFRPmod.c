@@ -1,7 +1,7 @@
 /*======================================================================
  * B <- IPFRP(r,A)
  *
- * Integral polynomial from rational polynomial (modified for ratinoal coefficients).
+ * Integral polynomial from rational polynomial (modified to handle ratinoal coefficients).
  *
  * Inputs
  *     r : a BETA-digit, r >= 0, the number of variables.
@@ -12,7 +12,7 @@
 ======================================================================*/
 #include "qepcad.h"
 
-
+// rational univariate polynomial convert to integer coefficients
 inline Word RUPConvert(Word A)
 {
     Word lcm = 1, Es = NIL, As = NIL, Bs = NIL;
@@ -21,7 +21,7 @@ inline Word RUPConvert(Word A)
         Word a, e, a1, a2;
         ADV2(A, &e, &a, &A);
 
-        // store the exponents and coefficients for reconstruction
+        // store the exponents and coefficients for reconstruction later
         Es = COMP(e, Es);
         if (a != 0) {
             FIRST2(a, &a1, &a2);

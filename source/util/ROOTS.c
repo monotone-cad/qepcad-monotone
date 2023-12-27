@@ -1,7 +1,13 @@
 /*======================================================================
- * (J, M, ...) <- ROOTS(Ps)
+ * (J_1, M_1, ..., J_l, M_l) <- ROOTS(Ps)
  *
- & Real root isolation for a univariate polynomials with rational coefficients
+ * Real root isolation for a list of univariate polynomials with rational coefficients
+ *
+ * Input
+ *   Ps : a list of univariate polynomials with rational coefficients
+ * Output
+ *   M_i,J_i : represents a real root of a polynomial in P. M_i is a univariate polynomial and J_i is an isolating
+ *             interval for the root
  *
  *====================================================================*/
 #include "qepcad.h"

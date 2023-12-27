@@ -20,6 +20,7 @@
  *====================================================================*/
 #include "qepcad.h"
 
+// construct one row
 Word JacobiRow(Word r, Word P, Word Is, Word i)
 {
     // rightmost d f / d xi

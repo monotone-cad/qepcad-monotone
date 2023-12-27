@@ -7,12 +7,20 @@ Adds additional variables to a saclib polynomial.
     P : polynomial in K[x_1,...,x_r]
     k : non-negative integer, number of variables to add
 Output
-    Q : P written in K[x_1,...,x_k,x_k+1,...,x_r+k]
+    Q : P written in K[y_1,...,y_k,x_1,...,x_r]
 
 ======================================================================*/
 #include "qepcad.h"
 
-Word PrepHelper(Word k, Word P);
+// helper function to construct a zero polynomial on top of which the original will be written
+Word PrepHelper(Word k, Word P)
+{
+    // base case: polynomial in one variable
+    if (k == 1) return LIST2(0, P);
+
+    // recursive case
+    return LIST2(0, PrepHelper(k - 1, P));
+}
 
 Word PPREPVS(Word P, Word k)
 {
@@ -27,14 +35,5 @@ Word PPREPVS(Word P, Word k)
     }
 
     return INV(P1);
-}
-
-Word PrepHelper(Word k, Word P)
-{
-    // base case: polynomial in one variable
-    if (k == 1) return LIST2(0, P);
-
-    // recursive case
-    return LIST2(0, PrepHelper(k - 1, P));
 }
 

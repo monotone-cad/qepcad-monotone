@@ -1,6 +1,8 @@
 /*======================================================================
                     L <- LEVELIDX(C)
 
+Level index -- lest of coordinate indices at which cell C is onedimensional
+
 \Input
   \parm{C} cad cell
 Output

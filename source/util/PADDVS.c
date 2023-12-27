@@ -7,7 +7,7 @@ Adds additional variables to a saclib polynomial.
     P : polynomial in K[x_1,...,x_r]
     k : non-negative integer, number of variables to add
 Output
-    Q : P written in K[x_1,...,x_r,x_r+1,...,x_r+k]
+    Q : P written in K[x_1,...,x_r,y_1,...,y_k]
 
 ======================================================================*/
 #include "qepcad.h"

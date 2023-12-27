@@ -6,13 +6,13 @@ Add (unfactored) polynomial to "A" with given label prefix Z
 \Input
   P : a k-variate saclib polynomial
  PP : parent of P (or null if input)
-  k : the level of P (as well as its "variate-ness")
-  A : the list of polynomials extracted from the input formula thus far
+  k : positive integer, level and number of variables in P
+  A : set of [input/projection] polynomials.
   Z : Label prefix
 
 \SideEffect
-  A : is modified if P does not already appear in it
-  L : L is set to the label (i.e. pair (i,j) ) of P in A
+  A : if A does not contain P, A is modified so that it contains P
+  L : L is set to the newly assigned label (i.e. pair (i,j) ) of P in A
 ======================================================================*/
 #include "qepcad.h"
 

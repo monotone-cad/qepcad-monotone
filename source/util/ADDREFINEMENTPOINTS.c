@@ -1,7 +1,7 @@
 /*======================================================================
   ADDREFINEMENTPOINTS(I, S, R1s; A, J, RPs)
 
-Add refinement points based on root of a list of polynomials.
+Add refinement points based on real roots of a list of polynomials.
 
 \Input
     I : (i_1,...,i_k), cell index

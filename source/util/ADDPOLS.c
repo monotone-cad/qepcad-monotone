@@ -4,14 +4,14 @@
 Add (unfactored) polynomials to "A" with given prefix Z
 
 \Input
-  P s: a list of k-variate saclib polynomial
-  k : the level of P (as well as its "variate-ness")
-  A : the list of polynomials extracted from the input formula thus far
+ Ps : a list of k-variate saclib polynomial
+  k : positive integer, level and number of variables in P
+  A : set of [input/projection] polynomials.
   Z : Label prefix
 
 \SideEffect
-  A : is modified if P does not already appear in it
-  The label of each polynomial in Ps is set to the label it was assigned in A
+  A : if A does not contain each P in Ps, A is modified so that it contains P
+
 ======================================================================*/
 #include "qepcad.h"
 

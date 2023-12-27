@@ -85,7 +85,6 @@ Step5: /* Monotone cells, if needed */
         // refine the CAD
         D = REFINE(1, D, GVREFL, P);
 
-        Word RPs = GVREFL;
         D = FRONTIER(f, D, P, &P, &J, &RPs);
         GVREFL = RPs;
 

@@ -332,7 +332,6 @@ $(LIB)(ticad/MONOTONE.o) \
 $(LIB)(ticad/REFINE.o) \
 $(LIB)(ticad/FRONTIER.o) \
 $(LIB)(proj/QUASIAFFINE.o) \
-$(LIB)(proj/PermuteAndProject.o) \
 $(LIB)(ticad/TICADauto.o)
 
 OBJS_USERINT = \
@@ -702,7 +701,6 @@ $(LIBD)(ticad/MONOTONE.o) \
 $(LIBD)(ticad/REFINE.o) \
 $(LIBD)(ticad/FRONTIER.o) \
 $(LIBD)(proj/QUASIAFFINE.o) \
-$(LIBD)(proj/PermuteAndProject.o) \
 $(LIBD)(ticad/TICADauto.o)
 
 OBJS_USERINTd = \

@@ -6,7 +6,7 @@ Refine CAD D so that its zero-cells C0 are compatible with relevant new PO_REFIN
 \Input
   \parm{k} is the level of D
   \parm{D} is the original cad
-  \parm{A} list of refinement polynomials (list of lists)
+  \parm{A} list of refinement polynomials (same structure as projection factor set)
   \parm{P} list of projection factors (list of lists)
 
 Output
@@ -14,9 +14,6 @@ Output
 
 ======================================================================*/
 #include "qepcad.h"
-
-// need a new property of cells, SIGNRP, like SIGNPF. this wiss contain signs of refinement polynomials, level k, above
-// the sub-cad as indicated in the polynomial. add in cell write.
 
 // is algebraic field element a rational number? return true if rational and store the rational number in r_
 // otherwise, return false, if algebraic then r_ is not modified
@@ -37,6 +34,7 @@ inline bool AfIsRat(Word b, Word* r_)
 
 // compare two algebraic numbers
 // if a or b is rational, then this function expects M = PMON(1,1), I = (r,r) where r is the rational number
+// if both algebraic and not equal, rational isolating interval refinements until separated are used.
 // TODO how many interval refinements needed? can we have infinite refinement?
 Word COMPARE(Word M1, Word *I1_, Word M2, Word *I2_)
 {
@@ -97,7 +95,7 @@ void SETINDEXK(Word C, Word k, Word a)
     }
 }
 
-// are the first n-1 coordinates of S rational
+// are the first n-1 coordinates of S rational?
 bool SampleIsRat(Word SM, Word Sb)
 {
     // base polynomial is rational
@@ -171,7 +169,7 @@ Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
         S1 = LIST3(SM1, SI1, Sb1);
     }
 
-    // the sample points of all children are now wrong. update those.
+    // the sample points of all children are now wrong. update those recursively.
     if (Ch == NIL) {
         // if there are 0 children there is nothing to do
         return S1;
@@ -184,7 +182,9 @@ Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
     }
 
     // recompute sample points using root finding
-    // otherwise, there are k > 1 child cells. since polynomials are delineable FIRST(PFs) is a system with k roots
+    // there are k > 1 child cells.
+    // since polynomials are delineable before refinement, they are still delineable after refinement,
+    // therefore FIRST(PFs) is a system with k roots
     Word Ps;
     ADV(PFs, &Ps, &PFs);
 
@@ -295,12 +295,13 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word c, Word PFs, bool* rc)
     Word j = LELTI(LELTI(C1, INDX), k);
 
     SWRITE("Refine cell "); LWRITE(LELTI(C1, INDX)); SWRITE("\n");
+
     // update indices
     SETINDEXK(C2, k, ++j);
     SETINDEXK(C3, k, ++j);
 
     // update sample
-    // we will need to update only noe cell, as the existing sample will be correct for one of them
+    // we will need to update only two of the cells, as the existing sample will be correct for one of them
     Word SQ, SJ;
     GETSAMPLEK(LELTI(C1, SAMPLE), &SQ, &SJ);
 
@@ -393,7 +394,7 @@ void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word* Ps_)
 // Refine subcad D to be compatible with level 1 polynomials Ps
 Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 {
-    Word Ch2 = Ch; // backup of list, to return.
+    Word Ch2 = Ch; // backup of list pointer, to return.
     Word PM, PI, J;
 
     // Ps is a list of sample points in ascending order, which define new 0-cells we will add to D

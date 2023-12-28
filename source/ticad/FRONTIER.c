@@ -4,7 +4,7 @@
 Frontier condition (lifting above bad points, lazard-style)
 
 \Input
-  \parm{r} is the number of free variables in the input formula.
+  \parm{r} positive integer, dimension
   \parm{C} is the original cad with missing signs of proj factors (may be recursive i.e., level of C may be > 1)
   \parm{P} is the list~$(P_1,\ldots,P_r)$,
            where $P_i$ is the list of
@@ -49,6 +49,11 @@ Word UCOMP(Word x, Word L)
     return COMP(x, L);
 }
 
+// identifies bad cells in the children of C, i.e., section cells on which a polynomial vanishes identically
+//  r : positive integer, number of variables
+//  C : CAD cell
+// Ps : projection factor set
+// return : list of pairs (P_1, C_1, ..., P_l, C_l) such that each P_i is the bad polynomial on cell C_i
 Word IdentifyBadCells(Word r, Word C, Word Ps)
 {
     Word Children = LELTI(C, CHILD);
@@ -109,7 +114,7 @@ Word QepcadCls::FRONTIER(Word r, Word C, Word P, Word* A_, Word* J_, Word* RPs_)
         Word Hs = LazardLifting(LELTI(C, LEVEL), Ps, LELTI(C, SAMPLE), P);
 
         // add refinement points and refine cell immediately.
-        ADDREFINEMENTPOINTS(LELTI(C, INDX), LELTI(C, SAMPLE), Hs, A_, J_, RPs_);
+        ADDREFINEMENTPOINTS(LELTI(C, INDX), LELTI(C, SAMPLE), Hs, LIST2(NIL, NIL), A_, J_, RPs_);
         LWRITE(Hs); SWRITE("\n");
         C = REFINE(1, C, *RPs_, P);
     }

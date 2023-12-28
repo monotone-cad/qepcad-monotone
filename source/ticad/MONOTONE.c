@@ -263,7 +263,7 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
 
     Rs = NIL; // refinement polynomials
 
-    // semi-monotone: crptical points of P subject to Gs
+    // semi-monotone: critical points of P subject to Gs
     if (Gs != NIL) {
         Rs = CONC(LagrangeRefinement(r, P, k, Gs, Is), Rs);
     }
@@ -296,10 +296,10 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
 
     // add refinement points using refinement polnomials
     while (Rs != NIL) {
-        Word I, S, R1s;
-        ADV3(Rs, &I, &S, &R1s, &Rs);
+        Word I, S, R1s, Endpoints;
+        ADV4(Rs, &I, &S, &R1s, &Endpoints, &Rs);
 
-        ADDREFINEMENTPOINTS(I, S, R1s, A_, J_, &RPs);
+        ADDREFINEMENTPOINTS(I, S, R1s, Endpoints, A_, J_, &RPs);
     }
 
     return RPs;
@@ -307,7 +307,7 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
 
 // Store refinement polynomials Rs with base index I
 // TODO only save relevant roots, i.e., those inside some interval (1-cell)
-void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word* A_)
+void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word Endpoints, Word* A_)
 {
     // find cell index if exists
     Word A = *A_, Rs1 = NIL;
@@ -323,7 +323,7 @@ void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word* A_)
     }
 
     // cell index not yet included, make new
-    *A_ = COMP3(I, S, Rs, *A_);
+    *A_ = COMP4(I, S, Rs, Endpoints, *A_);
 }
 
 Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
@@ -359,6 +359,7 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
 
         // C0 := proj_{j-1}(C) is a 0-dimensional cell (c_1,...,c_{j-1})
         Word C0, S0, I0;
+        Word ij = LELTI(I, Ij);
         if (Ij == 1) { // base CAD is D
             C0 = D;
             S0 = LIST3(PMON(1,1), LIST2(0,0), NIL);
@@ -380,6 +381,18 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         SLELTI(I1, Ik, LELTI(I, Ik) - 1);
         Word CB = FindByIndex(Ds, I1, Ik, 1);
 
+        // Top and bottom of 1-sector, level J
+        Word C0C = LELTI(C0, CHILD);
+        Word I01 = CCONC(I0, LIST1(ij));
+        Word S0B = NIL, S0T = NIL, Endpoints;
+        if (ij > 1) {
+            S0B = LELTI(LELTI(C0C, ij - 1), SAMPLE);
+        }
+        if (ij < LENGTH(C0C)) {
+            S0T = LELTI(LELTI(C0C, ij + 1), SAMPLE);
+        }
+        Endpoints = LIST2(S0B, S0T);
+
         // find polynomials in sub-cad
         // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
@@ -396,11 +409,11 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
 
         // perform refinement
         if (CT != NIL) {
-            STOREPOLYNOMIALS(Refinement(nv, Gs, FT, Fs), I0, S0, &Rs);
+            STOREPOLYNOMIALS(Refinement(nv, Gs, FT, Fs), I01, S0, Endpoints, &Rs);
         }
 
         if (CB != NIL) {
-            STOREPOLYNOMIALS(Refinement(nv, Gs, FB, Fs), I0, S0, &Rs);
+            STOREPOLYNOMIALS(Refinement(nv, Gs, FB, Fs), I01, S0, Endpoints, &Rs);
         }
     }
 

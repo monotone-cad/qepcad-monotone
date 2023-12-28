@@ -7,6 +7,7 @@ Add refinement points based on real roots of a list of polynomials.
     I : (i_1,...,i_k), cell index
     S : (primitive?!) sample point
   R1s : list of univariate polynomials with integer coefficients, defining the refinement of subcad above cell with
+Endpoi: list of 2 items, representing interval in which to compute roots
         index I
 Output
    As : projection factors structure
@@ -16,13 +17,13 @@ Output
 ======================================================================*/
 #include "qepcad.h"
 
-void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word* A_, Word* J_, Word* RPs_)
+void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Word* J_, Word* RPs_)
 {
     const Word Z1 = LFS("K");
     const Word Z2 = LFS("M");
 
-    Word k = LENGTH(I); // level of base cell
-    Word k1 = k + 1; // level of current polynomials
+    Word k1 = LENGTH(I); // level of current polynomials
+    Word k = k1 - 1; // level of base cell
     printf("adding refinement points for ");LWRITE(I);SWRITE("\n");
 
     // factorise the list of polynomials, add to J and store as rationals for root finding

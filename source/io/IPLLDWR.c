@@ -33,7 +33,7 @@ Step1: /* Write. */
             if (LELTI(A11,PO_TYPE) == PO_ECON)
                 SWRITE("  *** Equational Constraint ***  ");
             if (LELTI(A11,PO_TYPE) == PO_REFINEMENT) {
-                SWRITE("  *** Refinement of CAD above cell ");
+                SWRITE("  *** Refinement of cell ");
                 LWRITE(LELTI(A11,PO_REFINEMENT));
                 SWRITE(" ***  ");
             }

@@ -1,17 +1,22 @@
 /*======================================================================
-                   F -< MONOTONE(FF)
+                   R -< MONOTONE(A, J, D, r)
 
-Adds extra polynomials to projection factor set to ensure monotone cells will be produced
-A refinement of the kind { x_i < c }, { x_i = c }, { x_i > c } will be required.
+Refinements of the kind { x_i < c }, { x_i = c }, { x_i > c } above a 0-dimensional cell in R^{i-1} will be performed
+such that every cell is monotone. Monotone functions are obtained using Lagrange Multipliers.
 
 \Input
-  \parm{A} proj factor set
-  \parm{J} proj polynomial set
-  \parm{r} is the space in which D lives
-  \parm{D} is a CAD
+  \parm{A} projection factor set
+  \parm{J} projection polynomial set
+  \parm{D} base CAD (of R^0)
+  \parm{r} positive integer, dimension of ambient space
+
+\Output
+  \parm{R} set of *refinement points*: a set R_1, ..., R_r
+           such that each R_i is a set of i-dimensional sample points c_j which define the refinement { x_i < c_j }, {
+           x_i = c_j }, { x_i > c_j }.
 
 Side Effect
-  A and J are modified by adding new polynomials
+  refinement polynomials (roots of which are the refinement points) re added to J
 
 ======================================================================*/
 #include "qepcad.h"
@@ -20,9 +25,9 @@ using namespace std;
 
 // suppose I = (i_1,...,i_n) is a cell index.
 // if i_j = i_k = 1 but all other components are 0, then C is 2-dimensional.
-// set j and k to indicate which components are equal to one and return true.
-// otherwise, C is not two-dimensional. return false. Values of j and k are not defined.
-bool TwoDimIndex(Word I, Word *j_, Word *k_)
+// set j and k to indicate which components are equal to one and return 2.
+// otherwise, C is not two-dimensional. return d := dim(C) if dim(C) < 2, otherwise d := 3. Values of j and k are undefined.
+int TwoDimIndex(Word I, Word *j_, Word *k_)
 {
     Word J,d,n,l;
 
@@ -52,11 +57,11 @@ bool TwoDimIndex(Word I, Word *j_, Word *k_)
 // return the cell in list L with (partial) index I.
 // purpose is to find parent cells.
 // L : list of cells, level k
-// I : partial index, level j
+// I : partial index to match, level j
 // return : C s.t. C has index I
 Word FindByIndex(Word L, Word I, Word j, Word k)
 {
-    Word J,C,C1;
+    Word J, C, C1;
 
     while (L != NIL) {
         ADV(L, &C, &L);
@@ -68,7 +73,7 @@ Word FindByIndex(Word L, Word I, Word j, Word k)
         // otherwise, partial match. if j == k then we're done
         if (j == k) return C;
 
-        // if j < k, then we have a partial match but need to keep on searching recursively
+        // if j < k, then we have a partial but incomplete match, continue searching recursively
         return FindByIndex(LELTI(C, CHILD), RED(I), j, k + 1);
     }
 
@@ -76,12 +81,12 @@ Word FindByIndex(Word L, Word I, Word j, Word k)
     return NIL;
 }
 
-// return a list (f_j,...,f_k), where f_i is a level j polynomial which is 0 on C with sample point S substituted in.
-// A : reversed list of projection factors
-// r : ambient dimension of CAD
+// return a list (f_i1,...,f_i2), where each f_i is a level i polynomial which is 0 on C with sample point S substituted in.
+// A : (reversed) projection factor set
+// r : positive integer, dimension of CAD
 // C : cell to check
-// i1 <= i1 : min and max indices to search
-// S : sample point of level l < i1 to substitute. give the empty sample point of D to do no substitution.
+// i1 <= i2 : min and max indices to search
+// S0 : sample point of level l < i1 to substitute. give the empty sample point of D to do no substitution.
 // return : (f_{i_1}, ..., f_{i2}) in Q[x_{l+1},...,k_n]
 Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word n)
 {
@@ -121,12 +126,15 @@ Word ZeroPolsSub(Word A, Word r, Word C, Word i1, Word i2, Word S0, Word l, Word
         --i2;
     }
 
-    return L; // note: L is in ascending level order.
+    return L; // note: L is in ascending level order, since A is reversed.
 }
 
 // use proj McCallum without leading coeffs, removes constants, see PROJMCx
 // resultants and discriminants of input polynomials
 // it is assumed that no polynomial in the list is equal to 0. otherwise the function will crash
+// A : a set of polynomials in r variables
+// r : positive integer
+// return : projection onto R^{r-1} by McCallum's operator
 Word ProjMcx(Word r, Word A)
 {
     Word A1,Ap,Ap1,Ap2,App,D,L,Lh,P,R,W,i,t;
@@ -187,7 +195,10 @@ Word ProjMcx(Word r, Word A)
     return P;
 }
 
-// use CAD projection to find x-values of a set (not system) of equations
+// use CAD projection to solve a set of multivariate polynomials for x_1
+// A : set of polynomials in r variables
+// r : positive integer
+// return : set of univariat polynomials whose roots are x_1 coordinates of zeros of A
 Word ProjSolve(Word r, Word A)
 {
     Word J = A;
@@ -202,7 +213,7 @@ Word ProjSolve(Word r, Word A)
 // find the local maxima and minima of function f in Q[x_1,...,x_r] subject to constraints
 // Gs in Q[k_1,...,x_i], 2 <= i < r using the method of Lagrange Multipliers.
 // return a list of polynomials, each h in Q[x_1]
-// such that the roots of h give the x_1-coordinates of the critical points of f.
+// such that the roots of h give the x_1-coordinates of the critical points of f subject to Gs.
 Word LagrangeRefinement(Word r, Word f, Word i, Word Gs, Word Is)
 {
     Word Q = JACOBI(r, f, i, Gs, Is);
@@ -219,25 +230,28 @@ Word LagrangeRefinement(Word r, Word f, Word i, Word Gs, Word Is)
         Gs = COMP(SECOND(Q1), Gs);
     }
 
-    // simplify Gs by constructing a Groebner basis, if we have Singular
+    // simplify Gs by constructing a Groebner basis is supported
+    // this step makes solving the jacobi determinant for x_1 a lot quicker in practice.
     if (GVCAP->supports("GROEBNER")) {
         Gs = GVCAP->GROEBNER(Gs, NIL, r);
     }
 
-    // find solution in x by projecton
-    // Gs now contains factors of the jacobi determinant
+    // find solution in x_1 by projecton
+    // Gs now includes factors of the jacobi determinant
     return ProjSolve(r, Gs);
 }
 
-// iterative application of lagrange multipliers then projection to x1.
+// iterative application of lagrange multipliers then projection to x_1.
 // r  : number of variables
 // Gs : minimal constraints
 // P  : polynomial denoting top / bottom of sector cell
 // Fs : polynomials constituting map from sector cell to section cell
-// lagrange is done on P and each element of Fs, adding more constraints each time.
+// lagrange multipliers is done first with P subject to Gs, then on each subsequent round, a polynomial from F is used
+// and the optimisation polynomial used in the previous round is appended to the constraints.
 Word Refinement(Word r, Word Gs, Word P, Word Fs)
 {
     Word Rs, Q, i, k, Is;
+
     // generate sequence Is = (1,...,k-1)
     i = 1;
     k = LENGTH(Gs) + i;
@@ -254,7 +268,7 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
         Rs = CONC(LagrangeRefinement(r, P, k, Gs, Is), Rs);
     }
 
-    // monotone
+    // monotone: ecah F_i subject to Gs, F_1,...F_{i-1} for each i
     while (Fs != NIL) {
         ADV(Fs, &Q, &Fs);
         Gs = COMP(P, Gs);
@@ -266,18 +280,21 @@ Word Refinement(Word r, Word Gs, Word P, Word Fs)
         Rs = CONC(LagrangeRefinement(r, Q, k, Gs, Is), Rs);
     }
 
-    // solve for x1
+    // solve for x_1
     return Rs;
 }
 
-// adds roots of refinement polynomials, as sample points, to a new set. These will be sample points of new 0-cells.
+// constructs a set of *refinement points* -- roots of refinement polynomials as sample points. Each of these sample
+// points will be the sample point of a new 0-cell in the refinement of the CAD.
 // TODO at the momont we add all roots, but we may only need roots inside specific cells. Fix this.
+// TODO fix to work with total derivatives. i.e., discard roots at which partial f / partial x_r is zero
 Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
 {
     // initialise refinement polynomials set
     Word RPs = NIL;
     for (int i = 0; i < r; ++i) RPs = COMP(NIL, RPs);
 
+    // add refinement points using refinement polnomials
     while (Rs != NIL) {
         Word I, S, R1s;
         ADV3(Rs, &I, &S, &R1s, &Rs);
@@ -289,16 +306,15 @@ Word REFINEMENTPOINTS(Word r, Word Rs, Word* A_, Word* J_)
 }
 
 // Store refinement polynomials Rs with base index I
-// TODO also save max/min root of polynomial so we only add the relevant ponts rather than roots not outside the cell
+// TODO only save relevant roots, i.e., those inside some interval (1-cell)
 void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word* A_)
 {
-    // find cell if exists
+    // find cell index if exists
     Word A = *A_, Rs1 = NIL;
     while (A != NIL) {
         Word I1, S1, Ps;
         ADV3(A, &I1, &S1, &Ps, &A);
 
-        // found
         if (I == I1) { // avoid proper list comparison because subcads are identical
             Ps = CONC(Ps, Rs);
 
@@ -306,7 +322,7 @@ void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word* A_)
         }
     }
 
-    // not found
+    // cell index not yet included, make new
     *A_ = COMP3(I, S, Rs, *A_);
 }
 
@@ -316,6 +332,7 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
     Word Rs = NIL;
 
     // consider each true cell in D
+    // note: in practice, it is slower and takes more memory to do a walk of the CAD, saving polynomials along the way.
     Word TrueCells, junk;
     LISTOFCWTV(D, &TrueCells, &junk);
     Word Ds = LELTI(D, CHILD); // cells of D, for searching cells
@@ -324,9 +341,9 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
     while (TrueCells != NIL) {
         Word C;
         ADV(TrueCells, &C, &TrueCells);
-        Word I = LELTI(C, INDX);
 
         // C has dimension two, then IJ < Ik are the positions in I where the composent is equal to 1. otherwise skip
+        Word I = LELTI(C, INDX);
         Word Ij, Ik;
         Word d = TwoDimIndex(I, &Ij, &Ik);
         if (d > 2) {
@@ -354,20 +371,19 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
 
         // top and bottom of proj_k(C) are one-dimensional sections by definition.
         Word I1 = LCOPY(I);
+
         // top: (i_1,...,i_k + 1)
         SLELTI(I1, Ik, LELTI(I, Ik) + 1);
         Word CT = FindByIndex(Ds, I1, Ik, 1);
+
         // bottom: (i_1,...,i_k - 1)
         SLELTI(I1, Ik, LELTI(I, Ik) - 1);
         Word CB = FindByIndex(Ds, I1, Ik, 1);
 
         // find polynomials in sub-cad
-        // TODO
-        //   it takes a lot of work to find these polynomials, and work is often repeated.
-        //   each label is unique, so we can check whether we have already substituted to save on effort.
-        //   what other things could i cache? can i use the existing db faciility?
         // (note they will be in Z[x_i,...,x_l] after substitution):
         // Gs = g_2,...,g_{k-1} define proj_{k-1}(C).
+        // TODO can we save the polynomials, maybe using cell position, to save duplicating work?
         Word Gs = ZeroPolsSub(AA, r, C, Ij + 1, Ik - 1, S0, Ij1, nv);
 
         // Fk (f_{k,T}, f_{k,B}) are 0 on CT and CB respectively.

@@ -38,15 +38,15 @@ bool TwoDimIndex(Word I, Word *j_, Word *k_)
         }
     }
 
-    // if cell is two-dimensional
-    if (d == 2) {
-        FIRST2(J, k_, j_);
-
-        return true;
+    // if cell is not 2-dimensional, return false
+    if (d != 2) {
+        return d;
     }
 
-    // otherwise cell is not two-dimensional
-    return false;
+    // otherwise, cell is two-dimensional
+    FIRST2(J, k_, j_);
+
+    return 2;
 }
 
 // return the cell in list L with (partial) index I.
@@ -328,7 +328,12 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
 
         // C has dimension two, then IJ < Ik are the positions in I where the composent is equal to 1. otherwise skip
         Word Ij, Ik;
-        if (!TwoDimIndex(I, &Ij, &Ik)) {
+        Word d = TwoDimIndex(I, &Ij, &Ik);
+        if (d > 2) {
+            // fail: only implemented for dimension at most 2
+            FAIL("source/ticad/MONOTONE", "cell dimension greater than 2 not supported.");
+        } else if (d < 2) {
+            // cells with dimension 0 and 1 are already monotone.
             continue;
         }
 

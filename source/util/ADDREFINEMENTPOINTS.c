@@ -53,7 +53,7 @@ void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Wor
     }
 
     // compute the list of roots of the polynomials
-    Word B = ROOTS(Ps);
+    Word B = ROOTS(Ps, Endpoints);
 
     // now construct level k+1 sample points from the basis
     // TODO is S always primitive? should be since there are other coordinates above it

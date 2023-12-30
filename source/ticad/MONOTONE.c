@@ -386,10 +386,24 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
         Word I01 = CCONC(I0, LIST1(ij));
         Word S0B = NIL, S0T = NIL, Endpoints;
         if (ij > 1) {
-            S0B = LELTI(LELTI(C0C, ij - 1), SAMPLE);
+            GETSAMPLEK(
+                Ij,
+                LELTI(LELTI(C0C, ij - 1), SAMPLE),
+                &junk,
+                &S0B
+            );
+
+            S0B = SECOND(S0B);
         }
         if (ij < LENGTH(C0C)) {
-            S0T = LELTI(LELTI(C0C, ij + 1), SAMPLE);
+            GETSAMPLEK(
+                Ij,
+                LELTI(LELTI(C0C, ij + 1), SAMPLE),
+                &junk,
+                &S0T
+            );
+
+            S0T = SECOND(S0T);
         }
         Endpoints = LIST2(S0B, S0T);
 

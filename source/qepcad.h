@@ -101,7 +101,7 @@ Word PPREPVS(Word P, Word k);
 Word JACOBI(Word r, Word f, Word i, Word Hs, Word Is);
 Word IPFRPmod(Word r, Word P);
 Word SUBSTITUTE(Word r, Word P, Word S, bool rc);
-Word ROOTS(Word Ps);
+Word ROOTS(Word Ps, Word I);
 Word LDCOPY(Word L1);
 void FGWRITE(Word A, Word n);
 void FILINE();
@@ -846,6 +846,8 @@ Word GMSDSL(Word A, Word (*C)(Word,Word));
 Word GMSL(Word A, Word (*C)(Word,Word));
 
 void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Word* J_, Word* RPs_);
+void GETSAMPLEK(Word k, Word S, Word* Q_, Word* J_);
+bool AfIsRat(Word b, Word* r_);
 Word LazardLifting(Word r, Word Ps, Word S, Word As);
 
 #endif

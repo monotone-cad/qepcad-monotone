@@ -15,23 +15,6 @@ Output
 ======================================================================*/
 #include "qepcad.h"
 
-// is algebraic field element a rational number? return true if rational and store the rational number in r_
-// otherwise, return false, if algebraic then r_ is not modified
-inline bool AfIsRat(Word b, Word* r_)
-{
-    if (b == 0) {
-        *r_ = 0;
-
-        return true;
-    }
-
-    Word p, Q;
-    FIRST2(b, &p, &Q);
-    *r_ = p;
-
-    return PDEG(Q) == 0;
-}
-
 // compare two algebraic numbers
 // if a or b is rational, then this function expects M = PMON(1,1), I = (r,r) where r is the rational number
 // if both algebraic and not equal, rational isolating interval refinements until separated are used.
@@ -199,7 +182,7 @@ Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
     }
 
     // and find their roots
-    Word B = ROOTS(SPs);
+    Word B = ROOTS(SPs, LIST2(NIL, NIL));
     while (B != NIL && Ch != NIL) {
         Word C1, C2, RM, RI;
         ADV2(Ch, &C1, &C2, &Ch);
@@ -256,29 +239,6 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
     SLELTI(C, SAMPLE, S1);
 }
 
-// convenience function: get k-th coordinate of the sample point as an algebraic number
-void GETSAMPLEK(Word S, Word* Q_, Word* J_)
-{
-    Word SQ, SJ, SM, SI, Sb, junk;
-    if (LENGTH(S) == 5) {
-        FIRST4(S, &SQ, &SJ, &SM, &SI);
-        SQ = AFPNORM(1, SM, SQ);
-    } else {
-        FIRST3(S, &SM, &SI, &Sb);
-        Sb = LAST(Sb);
-        Word b;
-        if (AfIsRat(Sb, &b)) {
-            SQ = PMON(1,1);
-            SJ = LIST2(b, b);
-        } else {
-            ANFAF(SM, SI, Sb, &SQ, &SJ);
-        }
-    }
-
-    *Q_ = SQ;
-    *J_ = SJ;
-}
-
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
 // (0,...,0,0)-cell
 Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word c, Word PFs, bool* rc)
@@ -303,7 +263,7 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word c, Word PFs, bool* rc)
     // update sample
     // we will need to update only two of the cells, as the existing sample will be correct for one of them
     Word SQ, SJ;
-    GETSAMPLEK(LELTI(C1, SAMPLE), &SQ, &SJ);
+    GETSAMPLEK(-1, LELTI(C1, SAMPLE), &SQ, &SJ);
 
     Word sign = COMPARE(SQ, &SJ, PM, &PI);
     // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
@@ -428,7 +388,7 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
         // get k-th coordinate of the sample point of C
         Word SQ, SJ;
-        GETSAMPLEK(LELTI(CT, SAMPLE), &SQ, &SJ);
+        GETSAMPLEK(-1, LELTI(CT, SAMPLE), &SQ, &SJ);
         if (PM != NIL) {
             sign = COMPARE(SQ, &SJ, PM, &PI);
         }
@@ -455,9 +415,28 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
     return Ch2;
 }
 
+// are the first k elements in L1 and L2 equal
+bool EQUALK(Word k, Word L1, Word L2)
+{
+    Word i, a, b;
+
+    i = 0;
+    while (L1 != NIL && L2 != NIL && i < k) {
+        ADV(L1, &a, &L1);
+        ADV(L2, &b, &L2);
+        ++i;
+
+        if (a != b) return false;
+    }
+
+    // all elements checked are equal, also need to check lists have the same length
+    return i == k;
+}
+
 Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
 {
     PF = RED(PF);
+    Word k1 = k-1;
     Word A1;
     ADV(A, &A1, &A); // decomstruct A. A1 is the set of level k+1 polys
 
@@ -467,7 +446,7 @@ Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
         Word P;
         ADV(A1, &P, &A1);
 
-        if (LELTI(P, PO_REFINEMENT) == I) { // list equality check not needed, since same cell index pointer is used
+        if (EQUALK(k1, LELTI(P, PO_REFINEMENT), I)) { // list equality check not needed, since same cell index pointer is used
             Ps = COMP(LELTI(P, PO_POLY), Ps);
         }
     }

@@ -203,6 +203,7 @@ $(LIB)(util/SUBSTITUTE.o) \
 $(LIB)(util/ROOTS.o) \
 $(LIB)(util/LDCOPY.o) \
 $(LIB)(util/ADDREFINEMENTPOINTS.o) \
+$(LIB)(util/GETSAMPLEK.o) \
 $(LIB)(proj/APPENDEC.o) \
 $(LIB)(proj/ECLEVEL.o) \
 $(LIB)(proj/EXTRACT.o) \
@@ -572,6 +573,7 @@ $(LIBD)(util/SUBSTITUTE.o) \
 $(LIBD)(util/ROOTS.o) \
 $(LIBD)(util/LDCOPY.o) \
 $(LIBD)(util/ADDREFINEMENTPOINTS.o) \
+$(LIBD)(util/GETSAMPLEK.o) \
 $(LIBD)(proj/APPENDEC.o) \
 $(LIBD)(proj/ECLEVEL.o) \
 $(LIBD)(proj/EXTRACT.o) \

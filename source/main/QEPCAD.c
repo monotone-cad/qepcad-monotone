@@ -49,7 +49,8 @@ Step2: /* Projection. */
 
     // add extra derivatives for quasi-affine cells if needed
     if (PCMCT == 'y') {
-        QUASIAFFINE(A, r, &A);
+        STRATIFY(A, r, &A);
+        // QUASIAFFINE(A, r, &A);
     }
 
     /*Int*/ for (i = 1; i <= r; i++) NMNIP[i] = LENGTH(LELTI(A,i));

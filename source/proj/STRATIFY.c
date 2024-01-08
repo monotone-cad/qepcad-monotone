@@ -316,7 +316,7 @@ Word PARTIALS(Word r, Word L)
     return Gs;
 }
 
-void QepcadCls::QUASIAFFINE(Word A, Word r, Word *A_)
+void QepcadCls::STRATIFY(Word A, Word r, Word *A_)
 {
     Word AA, A1, A11, P, k, r1, L;
 

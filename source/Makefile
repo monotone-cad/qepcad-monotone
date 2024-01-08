@@ -333,6 +333,7 @@ $(LIB)(ticad/MONOTONE.o) \
 $(LIB)(ticad/REFINE.o) \
 $(LIB)(ticad/FRONTIER.o) \
 $(LIB)(proj/QUASIAFFINE.o) \
+$(LIB)(proj/STRATIFY.o) \
 $(LIB)(ticad/TICADauto.o)
 
 OBJS_USERINT = \
@@ -703,6 +704,7 @@ $(LIBD)(ticad/MONOTONE.o) \
 $(LIBD)(ticad/REFINE.o) \
 $(LIBD)(ticad/FRONTIER.o) \
 $(LIBD)(proj/QUASIAFFINE.o) \
+$(LIBD)(proj/STRATIFY.o) \
 $(LIBD)(ticad/TICADauto.o)
 
 OBJS_USERINTd = \

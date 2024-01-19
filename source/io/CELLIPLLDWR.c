@@ -27,6 +27,7 @@ Step1: /* Write. */
         xp = LELTI(S,k-i);
         i++;
 
+        SWRITE("Level "); IWRITE(i); SWRITE("\n");
         while (A1 != NIL && xp != NIL)
         {
             ADV(A1,&A11,&A1);
@@ -37,6 +38,8 @@ Step1: /* Write. */
 
             // write polynomial
             P = LELTI(A11, PO_POLY);
+
+            SWRITE("  ");
             IPDWRITE(i,P,V);
 
             // write sign (< 0, = 0, > 0)
@@ -51,9 +54,6 @@ Step1: /* Write. */
             GWRITE(0);
             SWRITE("\n");
         }
-
-        if (A != NIL)
-            SWRITE("\n");
     }
 
 Return: /* Prepare for return. */

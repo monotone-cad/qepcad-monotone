@@ -36,6 +36,7 @@ public:
   GCWord GVNA;         /* Normalized formula for assumptions. */
   GCWord GVWL;         /* List of "witnesses", i.e. cells true by trial eval in a SAT problem. */
   GCWord GVREFL;       /* Lst of refinement polynomials, for constructing monotone CAD. */
+  GCWord GVTD;         /* LIST2(t,D) flag and maybe ESPCAD for tarski formula construction. */
 
   /* ------------------------------------------------------------------------*/
   /*                      Program control                                    */

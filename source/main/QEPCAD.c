@@ -39,6 +39,7 @@ Step1: /* Normalize. */
     /*Int*/ GVNQFF = F;
     //       if (TYPEQFF(F) != UNDET) { t = EQU; F_e = F; goto Return; }
     /*Int*/ GVREFL = NIL;
+    /*Int*/ GVTD = NIL;
 
 Step2: /* Projection. */
     if (GVUA != NIL) F = LIST3(ANDOP,GVNA,F);
@@ -85,6 +86,12 @@ Step5: /* Monotone cells, if needed */
 
         // refine the CAD
         D = REFINE(1, D, GVREFL, P);
+
+        // if we cached an ESPCAD, it will no longer be valid. If CAD was projection definable before, it will be still
+        // be projection definable now.
+        if (GVTD != NIL && FIRST(GVTD) == 0) {
+            SWRITE("*** Invalidating cached ESPCAD. ***\n");
+        }
 
         D = FRONTIER(f, D, P, &P, &J, &RPs);
         GVREFL = RPs;

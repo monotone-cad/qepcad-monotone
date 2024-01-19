@@ -282,6 +282,13 @@ Word STRAT(Word np, Word r, Word Fs, Word Is, Word Hs, Word Minor)
         ++p_index;
     }
 
+    printf("End of round. printing Fs\n");
+    for (int i = 0; i < np; i++) {
+        printf("%d: ", i+1);
+        LWRITE(Backup[i]);
+        SWRITE("\n");
+    }
+
     // construct list Gs1 of all functions in Gs
     while (Gs != NIL) {
         Word G1;

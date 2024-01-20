@@ -53,30 +53,27 @@ void QepcadCls::CELLWRT(Word c)
     SWRITE("\nSigns of projection factors ------------------------\n\n");
 
     /* Signs of Projection Factors. */
-    // first check if the CAD is projection definable.
-    Word t1, D1;
+    // To ensure the CAD is projection definable, we will use the ESPCAD instead.
+    Word D1, P1;
     if (GVTD == NIL) { // initialise
-        SWRITE("*** Determining whether the CAD is projection definable. ***\n\n");
+        SWRITE("*** Initialising the ESPCAD. ***\n\n");
 
-        if (DOPFSUFF(GVPF, LIST1(GVPC)) == NIL) {
-            // not projection definable. construct EPSCAD
-            t1 = 0;
-        } else {
-            t1 = 1;
+        Word D0 = GVPC, P0 = LCOPY(GVPF), J0 = LCOPY(GVPJ);
+        for(i = GVNFV - LENGTH(J0); i > 0; i--) {
+            J0 = INV(COMP(NIL,INV(J0)));
         }
-        D1 = NIL;
 
-        GVTD = LIST2(t1, NIL);
-    } else {
-        FIRST2(GVTD, &t1, &D1);
+        STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1);
+
+        // cache for later
+        GVTD = LIST2(P1, D1);
+    } else { // computed before, use cached.
+        FIRST2(GVTD, &P1, &D1);
     }
 
-    if (t1 == 1) {
-        S = LELTI(c,SIGNPF);
-        CELLIPLLDWR(GVVL, GVPF, S, k); SWRITE("\n");
-    } else {
-        SWRITE("*** CAD is not projection definable, using ESPCAD. ***\n\n");
-    }
+    // TODO find by index from D1.
+    S = LELTI(c,SIGNPF);
+    CELLIPLLDWR(GVVL, GVPF, S, k); SWRITE("\n");
 
     /* Write out the sample point. */
     SWRITE("\nSample point ----------------------------------------\n\n");

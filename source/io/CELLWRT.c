@@ -70,7 +70,7 @@ void QepcadCls::CELLWRT(Word c)
             J0 = INV(COMP(NIL,INV(J0)));
         }
 
-        STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1);
+        STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1, 1);
 
         // cache for later
         GVTD = LIST2(P1, D1);

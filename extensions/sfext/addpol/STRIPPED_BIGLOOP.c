@@ -1,5 +1,5 @@
 /*======================================================================
-                     CLEAN_BIGLOOP(Jb,Pb,P0,D0,N;P,D)
+                     CLEAN_BIGLOOP(Jb,Pb,P0,D0,N;P,D, flag)
 
 Clean big loop for SF construction.  Doesn't prune projection factor set
 as derivatives are added.
@@ -10,11 +10,13 @@ Inputs
   P0 : The projection factor set for P0.
   D0 : The partial cad with truth values
   N  : The number of free variables.
+flag : if 1, don't consider truth values. otherwise, proceed as normal.
 ======================================================================*/
 #include "qepcad.h"
 
-void QepcadCls::STRIPPED_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word *D_)
+void QepcadCls::STRIPPED_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word *D_, Word flag)
 {
+    printf("in STRIPPED_BIGLOOP\n");
       Word P,D,G,C,T,N_T,Tb,Gb,Gbp,S_N_T,Tp,Gp,K,KT,p,i,S;
       Word Q,Q_i,Ps,Ds,Qb,Qb_i,Dsp,t,Ph;
       Word inum,tm,tt;

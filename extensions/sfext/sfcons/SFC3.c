@@ -66,7 +66,7 @@ Step3: /* The normal language. */
 	  D0 = GVPC; P0 = LCOPY(GVPF); J0 = LCOPY(GVPJ);
 	  for(i = GVNFV - LENGTH(J0); i > 0; i--)
 	    J0 = INV(COMP(NIL,INV(J0)));
-	  STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1); }
+	  STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1, 0); }
 	else {
 	  D1 = D; P1 = P; }
 

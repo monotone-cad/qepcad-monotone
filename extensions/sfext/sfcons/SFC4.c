@@ -38,7 +38,7 @@ Step1: /* Space is either empty or R^n. */
           T1 = ACLOCK();
       t = DOPFSUFF(P,LIST1(D));
           T1 = ACLOCK() - T1;
-      if (t == TRUE) {       
+      if (t == TRUE) {
         SF = LIST1(TRUE);  /* CAD is identically TRUE. */
         goto Step4; }
       else if (t == FALSE) {
@@ -56,7 +56,7 @@ Step2: /* Extended language. */
 	  Pp = P; }
 	else { /* Simplify! */
 	      T2 = ACLOCK();
-	  CCADCON(n,P,D,&Pp,&Dp); 
+	  CCADCON(n,P,D,&Pp,&Dp);
 	      T2 = ACLOCK() - T2;
 	}
 	Dp = PCAD2ESPCAD(P,Pp,Dp,NIL);
@@ -72,35 +72,35 @@ Step2: /* Extended language. */
 	/* Actually construct formula. */
 	m = SFALGCHOICE(&L,e);
 	switch(m) {
-	case 'N' : 
+	case 'N' :
 	      T3 = ACLOCK();
-	  SF = NECCONDS(Lt,Lf,LA,Pp); 
+	  SF = NECCONDS(Lt,Lf,LA,Pp);
 	      T3 = ACLOCK() - T3;
 	  break;
-	case 'S' : 
+	case 'S' :
 	      T3 = ACLOCK();
-	  SF = NAIVESF(Lt,Lf,LA,Pp); 
+	  SF = NAIVESF(Lt,Lf,LA,Pp);
 	      T3 = ACLOCK() - T3;
 	  break;
-	case 'G' : 
+	case 'G' :
 	      T3 = ACLOCK();
-	  SF = GEOTEST(Dp,Pp,n,LA); 
+	  SF = GEOTEST(Dp,Pp,n,LA);
 	      T3 = ACLOCK() - T3;
 	  break; }
       }
       else {
 
 Step3: /* The normal language. */
-	
+
 	/* Do we have projection definability? */
 	if (t == NIL) { /* No we don't! */
 	  D0 = GVPC; P0 = LCOPY(GVPF); J0 = LCOPY(GVPJ);
 	  for(i = GVNFV - LENGTH(J0); i > 0; i--)
 	    J0 = INV(COMP(NIL,INV(J0)));
-	  STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1); }
+	  STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1, 0); }
 	else {
 	  D1 = D; P1 = P; }
-	
+
 	/* Construct the CAD on which we'll operate. */
 	s = SIMPLECHOICE(&L);
 	if (s == 'N') { /* No simplification. */
@@ -108,14 +108,14 @@ Step3: /* The normal language. */
 	  Pp = P1; }
 	else { /* Simplify! */
 	      T2 = ACLOCK();
-	  CCADCON(n,P1,D1,&Pp,&Dp); 
+	  CCADCON(n,P1,D1,&Pp,&Dp);
 	      T2 = ACLOCK() - T2;
 	  t = ESPCADDOPFSUFF(Pp,LIST1(Dp));
 	  if (t == NIL) {
 	        F1 = 1;
 	        T4 = ACLOCK();
 	    Q = MINPFSET(P1,Pp,D1,n);
-	    CCADCONFPFS(n,P1,D1,Q,&Pp,&Dp); 
+	    CCADCONFPFS(n,P1,D1,Q,&Pp,&Dp);
 	        T4 = ACLOCK() - T4;
 	  } }
 	Dp = PCAD2ESPCAD(P1,Pp,Dp,NIL);
@@ -127,14 +127,14 @@ Step3: /* The normal language. */
 	/* Actually construct formula. */
 	m = SFALGCHOICE(&L,e);
 	switch(m) {
-	case 'N' : 
+	case 'N' :
 	      T3 = ACLOCK();
-	  SF = NECCONDS(Lt,Lf,LA,Pp); 
+	  SF = NECCONDS(Lt,Lf,LA,Pp);
 	      T3 = ACLOCK() - T3;
 	  break;
-	case 'S' : 
+	case 'S' :
 	      T3 = ACLOCK();
-	  SF = NAIVESF(Lt,Lf,LA,Pp); 
+	  SF = NAIVESF(Lt,Lf,LA,Pp);
 	      T3 = ACLOCK() - T3;
 	  break; } }
 
@@ -148,7 +148,7 @@ Step4: /* Massage the formula. */
 	switch(c) {
 	case 'S': /* FMASORT */
 	  SF = FMASORT(SF);
-	  break; 
+	  break;
 	case 'R': /* FMA_REMCONST */
 	  SF = FMA_REMCONST(SF);
 	  break;
@@ -164,7 +164,7 @@ Step4: /* Massage the formula. */
 	case 'A': /* FMASTRENGTHEN */
 	  FMASTRENGTHEN(SF,Lt,Pp);
 	  break;
- 
+
 	case 'P': /* Normal output. */
 	  SWRITE("An equivalent quantifier-free formula:\n\n");
 	  FMAWRITE(SF,Pp,GVVL);
@@ -189,7 +189,7 @@ Step4: /* Massage the formula. */
 	  FMAWRITEQEIN(SF,Pp,GVVL);
 	  SWRITE("\n\n");
 	  break;
-	  
+
 	case 'T': /* Print Stats. */
 	  print_stats(LIST3(e,s,m));
 	  break;
@@ -215,8 +215,8 @@ Step4: /* Massage the formula. */
 	  CWRITE(c);
 	  SWRITE(" is not understood!\n\n");
 	  break; } }
-      
-      
+
+
  Return: /* Prepare to return. */
       return;
 }
@@ -245,7 +245,7 @@ static char LANGCHOICE(Word *L_, Word t)
     if (c == 'T' || c == 'E') break;
       SWRITE("Option must be 'T' or 'E'!!\n");
     } while(1); }
-  
+
   /* Update L_ and return. */
   *L_ = L;
   return c;
@@ -273,7 +273,7 @@ static char SIMPLECHOICE(Word *L_)
     if (c == 'Y' || c == 'N') break;
       SWRITE("Option must be 'Y' or 'N'!!\n");
     } while(1); }
-  
+
   /* Update L_ and return. */
   *L_ = L;
   return c;
@@ -302,7 +302,7 @@ static char SFALGCHOICE(Word *L_, char e)
     if (c == 'S' || c == 'N' || c == 'G') break;
       SWRITE("Option must be 'S', 'N', or 'G'!!\n");
     } while(1); }
-  
+
   else {
     /* Option for Tarski Language is read in from user. */
     do {
@@ -312,7 +312,7 @@ static char SFALGCHOICE(Word *L_, char e)
     if (c == 'S' || c == 'N') break;
       SWRITE("Option must be 'S' or 'N'!!\n");
     } while(1); }
-  
+
   /* Update L_ and return. */
   *L_ = L;
   return c;

@@ -22,7 +22,7 @@ Word QepcadCls::SFC3f(Word D, Word P, Word J, Word n, Word L)
 
 Step1: /* Space is either empty or R^n. */
       t = DOPFSUFF(P,LIST1(D));
-      if (t == TRUE) {       
+      if (t == TRUE) {
         SF = LIST1(TRUE);  /* CAD is identically TRUE. */
         goto Step4; }
       else if (t == FALSE) {
@@ -58,22 +58,22 @@ Step2: /* Extended language. */
       else {
 
 Step3: /* The normal language. */
-	
+
 	/* Do we have projection definability? */
 	if (t == NIL) { /* No we don't! */
 	  D0 = GVPC; P0 = LCOPY(GVPF); J0 = LCOPY(GVPJ);
 	  for(i = GVNFV - LENGTH(J0); i > 0; i--)
 	    J0 = INV(COMP(NIL,INV(J0)));
-	  STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1); }
+	  STRIPPED_BIGLOOP(J0,P0,P0,D0,GVNFV,&P1,&D1, 0); }
 	else {
 	  D1 = D; P1 = P; }
-	
+
 	/* Construct the CAD on which we'll operate. */
 	if (s) { /* No simplification. */
 	  Dp = SCADDSCON(D1,NIL,n);
 	  Pp = P1; }
 	else { /* Simplify! */
-	  CCADCON(n,P1,D1,&Pp,&Dp); 
+	  CCADCON(n,P1,D1,&Pp,&Dp);
 	  t = ESPCADDOPFSUFF(Pp,LIST1(Dp));
 	  if (t == NIL) {
 	    Q = MINPFSET(P1,Pp,D1,n);
@@ -87,7 +87,7 @@ Step3: /* The normal language. */
 	/* Actually construct formula. */
 	switch(m) {
 	case (0) : SF = NECCONDS(Lt,Lf,LA,Pp); break;
-	case (1) : SF = NAIVESF(Lt,Lf,LA,Pp); break; 
+	case (1) : SF = NAIVESF(Lt,Lf,LA,Pp); break;
 	case (2) : SWRITE("GEOTEST requires the extended language!\n"); goto Return; } }
 
 Step4: /* Massage the formula. */
@@ -98,7 +98,7 @@ Step4: /* Massage the formula. */
 	switch(FIRST(Lp)) {
 	case 0: /* FMASORT */
 	  SF = FMASORT(SF);
-	  break; 
+	  break;
 	case 1: /* FMA_REMCONST */
 	  SF = FMA_REMCONST(SF);
 	  break;
@@ -115,7 +115,7 @@ Step4: /* Massage the formula. */
 	  FMASTRENGTHEN(SF,Lt,Pp); /* SF may get modified! */
 	  break;
 	} }
-	
+
 Return: /* Prepare to return. */
       return SF;
 }

@@ -297,7 +297,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
 
   /* SFEXT */
   void CLEAN_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word *D_);
-  void STRIPPED_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word *D_);
+  void STRIPPED_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word *D_, Word flag);
   void CADSTATS(Word C, Word P);
   void CSORCELLTR(Word c, Word Pp, Word PpO, Word PpN);
   void CSORCELLTR_MOD(Word c, Word Pp, Word PpO, Word PpN, Word P);

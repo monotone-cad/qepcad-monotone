@@ -6,7 +6,7 @@ Conflicting cell list.
 Inputs
  L_D: A list of cells of the same level, all of which have the
       same signiture on all projection factors of lower level.
-flag: if 0, do not take truth values into account. otherwise, perfrom as normal.
+flag: if 1, do not take truth values into account. otherwise, perfrom as normal.
 
 Outputs
  C  : A list (C_1,...,C_N).  C_i contains the list of all pairs of

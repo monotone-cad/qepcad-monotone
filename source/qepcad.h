@@ -103,6 +103,7 @@ Word IPFRPmod(Word r, Word P);
 Word SUBSTITUTE(Word r, Word P, Word S, bool rc);
 Word ROOTS(Word Ps, Word I);
 Word LDCOPY(Word L1);
+Word FindByIndex(Word L, Word I, Word j, Word k);
 void FGWRITE(Word A, Word n);
 void FILINE();
 void FILLIN(Word n, Word vs, Word S_r, Word S_s, Word R_c, Word R_s, Word *v_);
@@ -637,7 +638,7 @@ void OutputContextInit();
 /* ----------------------------------------*/
 /* sfext */
 void BPOLSETS(Word L_, Word D, Word P, Word *T_, Word *N_);
-Word CFLCELLLIST(Word L_D);
+Word CFLCELLLIST(Word L_D, Word flag);
 Word ICSIGDIFFLNSC(Word **A, Word a, Word k);
 void KCONST(Word J, Word P, Word G, Word *K_, Word *KT_);
 Word MINPFSETNSC(Word P,Word S,Word D,Word K);

@@ -52,6 +52,13 @@ void QepcadCls::CELLWRT(Word c)
     SWRITE("----------\n\n");
     SWRITE("\nSigns of projection factors ------------------------\n\n");
 
+    S = LELTI(c,SIGNPF);
+    CELLIPLLDWR(GVVL, GVPF, S, k); SWRITE("\n");
+
+
+
+    SWRITE("\nSigns of (guaranteed definable ) projection factors \n\n");
+
     /* Signs of Projection Factors. */
     // To ensure the CAD is projection definable, we will use the ESPCAD instead.
     Word D1, P1;
@@ -72,8 +79,10 @@ void QepcadCls::CELLWRT(Word c)
     }
 
     // TODO find by index from D1.
-    S = LELTI(c,SIGNPF);
-    CELLIPLLDWR(GVVL, GVPF, S, k); SWRITE("\n");
+
+    Word c1 = FindByIndex(LELTI(D1, CHILD), LELTI(c, INDX), k, 1);
+    S = LELTI(c1,SIGNPF);
+    CELLIPLLDWR(GVVL, P1, S, k); SWRITE("\n");
 
     /* Write out the sample point. */
     SWRITE("\nSample point ----------------------------------------\n\n");

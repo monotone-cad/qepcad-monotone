@@ -54,33 +54,6 @@ int TwoDimIndex(Word I, Word *j_, Word *k_)
     return 2;
 }
 
-// return the cell in list L with (partial) index I.
-// purpose is to find parent cells.
-// L : list of cells, level k
-// I : partial index to match, level j
-// return : C s.t. C has index I
-Word FindByIndex(Word L, Word I, Word j, Word k)
-{
-    Word J, C, C1;
-
-    while (L != NIL) {
-        ADV(L, &C, &L);
-        J = LELTI(C, INDX);
-
-        // no partial match
-        if (FIRST(I) != LELTI(J, k)) continue;
-
-        // otherwise, partial match. if j == k then we're done
-        if (j == k) return C;
-
-        // if j < k, then we have a partial but incomplete match, continue searching recursively
-        return FindByIndex(LELTI(C, CHILD), RED(I), j, k + 1);
-    }
-
-    // no partial match.
-    return NIL;
-}
-
 // return a list (f_i1,...,f_i2), where each f_i is a level i polynomial which is 0 on C with sample point S substituted in.
 // A : (reversed) projection factor set
 // r : positive integer, dimension of CAD

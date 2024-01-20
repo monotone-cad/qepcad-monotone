@@ -1,7 +1,7 @@
 /*======================================================================
                      CLEAN_BIGLOOP(Jb,Pb,P0,D0,N;P,D)
 
-Clean big loop for SF construction.  Doesn't prune projection factor set 
+Clean big loop for SF construction.  Doesn't prune projection factor set
 as derivatives are added.
 
 Inputs
@@ -22,7 +22,7 @@ void QepcadCls::STRIPPED_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Wor
 Step1: /* Initialize. */
                     tt = ACLOCK();
       P = NIL; for(i = N; i > 0; i--) { P = COMP(LELTI(P0,i),P); }
-      D = D0; 
+      D = D0;
       G = NIL; for(i = 0; i < N; i++) { G = COMP(NIL,G); }
        /* Stats. */ inum = 0;
 
@@ -32,7 +32,7 @@ Step2: /* Construct the conflicting pair set. */
                     CADSTATS(D,P);
                     tm = ACLOCK(); }
 
-      C = CFLCELLLIST(LIST1(D));
+      C = CFLCELLLIST(LIST1(D), 0);
       for(t = C; t != NIL && FIRST(t) == NIL;t = RED(t));
 
                     if (PCVERBOSE) {

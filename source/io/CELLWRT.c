@@ -7,6 +7,14 @@ Write out the cell C as a tarski formula
 ======================================================================*/
 #include "qepcad.h"
 
+// return the cell in list L with (partial) index I.
+// purpose is to find parent cells.
+// L : list of cells, level k
+// I : partial index to match, level j
+// return : a list of cells C s.t. C has index I
+Word FindInRcad(Word L, Word I, Word j, Word k);
+
+
 void QepcadCls::CELLWRT(Word c)
 {
     Word S,S1,k,t,i,r,D,I;
@@ -60,10 +68,10 @@ void QepcadCls::CELLWRT(Word c)
     SWRITE("\nSigns of (guaranteed definable ) projection factors \n\n");
 
     /* Signs of Projection Factors. */
-    // To ensure the CAD is projection definable, we will use the ESPCAD instead.
+    // To ensure the CAD is projection definable, we will use the RCAD instead.
     Word D1, P1;
     if (GVTD == NIL) { // initialise
-        SWRITE("*** Initialising the ESPCAD. ***\n\n");
+        SWRITE("*** Initialising the RCAD. ***\n\n");
 
         Word D0 = GVPC, P0 = LCOPY(GVPF), J0 = LCOPY(GVPJ);
         for(i = GVNFV - LENGTH(J0); i > 0; i--) {
@@ -78,11 +86,22 @@ void QepcadCls::CELLWRT(Word c)
         FIRST2(GVTD, &P1, &D1);
     }
 
-    // TODO find by index from D1.
+    Word Cs = FindInRcad(LELTI(D1, CHILD), LELTI(c, INDX), k, 1);
+    Word ncs = LENGTH(Cs);
+    if (ncs > 1) {
+        SWRITE("This cell consists of ");
+        IWRITE(ncs);
+        SWRITE("cells in the RCAD.\n\n");
+    }
 
-    Word c1 = FindByIndex(LELTI(D1, CHILD), LELTI(c, INDX), k, 1);
-    S = LELTI(c1,SIGNPF);
-    CELLIPLLDWR(GVVL, P1, S, k); SWRITE("\n");
+    while (Cs != NIL) {
+        Word c1;
+        ADV(Cs, &c1, &Cs);
+
+        SWRITE("Index in RCAD: "); LWRITE(LELTI(c1, INDX)); SWRITE("\n");
+        S = LELTI(c1,SIGNPF);
+        CELLIPLLDWR(GVVL, P1, S, k); SWRITE("\n");
+    }
 
     /* Write out the sample point. */
     SWRITE("\nSample point ----------------------------------------\n\n");
@@ -92,5 +111,30 @@ void QepcadCls::CELLWRT(Word c)
     SWRITE("\n----------------------------------------------------\n");
 
     return;
+}
+
+Word FindInRcad(Word L, Word I, Word j, Word k)
+{
+    Word J, C, Cs;
+
+    Cs = NIL;
+    while (L != NIL) {
+        ADV(L, &C, &L);
+        J = LELTI(LELTI(C, 11), INDX); // 11: INCELL
+
+        // no partial match
+        if (FIRST(I) != LELTI(J, k)) continue;
+
+        // otherwise, partial match. if j == k then we're done
+        if (j == k) {
+            Cs = COMP(C, Cs);
+        } else {
+            // if j < k, then we have a partial but incomplete match, continue searching recursively
+            Cs = CONC(FindInRcad(LELTI(C, CHILD), RED(I), j, k + 1), Cs);
+        }
+    }
+
+    // no partial match.
+    return Cs;
 }
 

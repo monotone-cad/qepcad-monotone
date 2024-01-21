@@ -22,11 +22,11 @@ static Word comp(Word A, Word B);
 
 Word CFLCELLLIST(Word L_D, Word flag)
 {
-    Word C,r,C_r,L,Lp,T,F,U,c,t,f,u,Fp,Up,h,Cb,Cp,Q;
+    Word C,r,C_r,L,Lp,Lp1,T,F,U,c,t,f,u,Fp,Up,h,Cb,Cp,Q;
     /* Time */ Word tm;
 
 Step1: /* Initialize. */
-    C = NIL;
+    C = NIL; C_r = NIL;
 
 Step2: /* Get the children of L_D. */
     L = NIL;
@@ -44,8 +44,10 @@ Step4: /* Loop over each block of cells with same signiture. */
             L = RED(L);
         } while (L != NIL && comp(FIRST(Lp),FIRST(L)) == 0);
 
+    if (flag == 1) goto Step8;
+
 Step5: /* Separate into lists of TRUE, FALSE, and UNDET cells. */
-        T = NIL; F = NIL; U = NIL; C_r = NIL;
+        T = NIL; F = NIL; U = NIL;
         while (Lp != NIL) {
             ADV(Lp,&c,&Lp);
             switch (LELTI(c,TRUTH)) {
@@ -76,14 +78,29 @@ Step7: /* FALSE/UNDET combinations. */
                    if (h == TRUE || h == UNDET)
                        C_r = COMP(LIST2(f,u),C_r); } }
 
-Step8: /* Recurse on the UNDET cells. */
+    goto Step9;
+
+Step8: /* Ignore truth values. */
+        // all pairs of cells are conflicting
+        U = Lp;
+        while (Lp != NIL) {
+            ADV(Lp, &t, &Lp);
+            Lp1 = Lp;
+            while (Lp1 != NIL) {
+                ADV(Lp1, &f, &Lp1);
+
+                C_r = COMP(LIST2(t,f), C_r);
+            }
+        }
+
+Step9: /* Recurse on the UNDET cells. */
            if ( U != NIL )
                Cb = COMP(C_r,CFLCELLLIST(U, flag));
            else
                Cb = LIST1(C_r);
 
 
-Step9: /* Update C to include the */
+Step10: /* Update C to include the */
            Cp = NIL;
            while( C != NIL && Cb != NIL ) {
                Cp = COMP(CCONC(FIRST(Cb),FIRST(C)),Cp);

@@ -285,8 +285,8 @@ void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word Endpoints, Word* A_)
     // find cell index if exists
     Word A = *A_, Rs1 = NIL;
     while (A != NIL) {
-        Word I1, S1, Ps;
-        ADV3(A, &I1, &S1, &Ps, &A);
+        Word I1, S1, E1, Ps;
+        ADV4(A, &I1, &S1, &E1, &Ps, &A);
 
         if (I == I1) { // avoid proper list comparison because subcads are identical
             Ps = CONC(Ps, Rs);

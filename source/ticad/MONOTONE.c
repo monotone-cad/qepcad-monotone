@@ -171,7 +171,7 @@ Word ProjMcx(Word r, Word A)
 // use CAD projection to solve a set of multivariate polynomials for x_1
 // A : set of polynomials in r variables
 // r : positive integer
-// return : set of univariat polynomials whose roots are x_1 coordinates of zeros of A
+// return : set of univariate polynomials whose roots are x_1 coordinates of zeros of A
 Word ProjSolve(Word r, Word A)
 {
     Word J = A;

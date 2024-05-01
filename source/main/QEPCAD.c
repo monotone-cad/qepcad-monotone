@@ -46,12 +46,7 @@ Step2: /* Projection. */
     A = EXTRACT(r,F);
     if (GVUA != NIL) {
         GVNA = SECOND(F);
-        F = THIRD(F); }
-
-    // add extra derivatives for quasi-affine cells if needed
-    if (PCMCT == 'y') {
-        //STRATIFY(A, r, &A);
-        QUASIAFFINE(A, r, &A);
+        F = THIRD(F);
     }
 
     /*Int*/ for (i = 1; i <= r; i++) NMNIP[i] = LENGTH(LELTI(A,i));
@@ -62,7 +57,17 @@ Step2: /* Projection. */
 
     /*Int if (INTERACT()) USERINT(LFS("After Normalization"),'A'); */
     /*Int PCNSTEP = 1; */
-    PROJECT(r,A,&P,&J);
+
+    // project andadd jacobi determinants for quasi-affine cells
+    if (PCMCT == 'y') {
+        // note that quasi-affine does projeection, too.
+        /*Int*/     USERINT(LFS("Before Projection (quasi-affine)"),'b');
+        QUASIAFFINE(r, GVVL, F, A, &P, &J);
+        GVPF = P;
+        GVPJ = J;
+    } else { // standard case
+        PROJECT(r,A,&P,&J);
+    }
 
     /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
 

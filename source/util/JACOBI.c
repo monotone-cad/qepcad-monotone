@@ -24,7 +24,11 @@
 Word JacobiRow(Word r, Word P, Word Is, Word i)
 {
     // rightmost d f / d xi
-    Word Mi = LIST1(IPDER(r, P, i));
+    Word Mi = NIL;
+
+    if (i > 0) {
+        Mi = COMP(IPDER(r, P, i), Mi);
+    }
 
     // remaining elements
     Word j;
@@ -54,7 +58,9 @@ Word JACOBI(Word r, Word f, Word i, Word Hs, Word Is)
         M = COMP(JacobiRow(r, h, Is, i), M);
     }
 
-    M = COMP(JacobiRow(r, f, Is, i), M);
+    if (i > 0) {
+        M = COMP(JacobiRow(r, f, Is, i), M);
+    }
 
     return MAIPDE(r, M);
 }

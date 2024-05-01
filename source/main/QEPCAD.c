@@ -62,7 +62,8 @@ Step2: /* Projection. */
     if (PCMCT == 'y') {
         // note that quasi-affine does projeection, too.
         /*Int*/     USERINT(LFS("Before Projection (quasi-affine)"),'b');
-        QUASIAFFINE(r, GVVL, F, A, &P, &J);
+        QUASIAFFINE(r, GVVL, F, &A, &P, &J);
+        GVNIP = A;
         GVPF = P;
         GVPJ = J;
     } else { // standard case

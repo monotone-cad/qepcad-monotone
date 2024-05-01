@@ -35,7 +35,7 @@ Word Dim(Word C)
 }
 
 // return a list of CAD cells, which is the smooth two-dimensional locus of V (defined by formula F)
-void SmoothOneTwoDim(Word r, Word V, Word F, Word *C1s_, Word *C2s_, Word *PPs_, Word *PFs_)
+void SmoothOneTwoDim(Word r, Word V, Word F, Word *C1s_, Word *C2s_, Word *PIs_, Word *PPs_, Word *PFs_)
 {
     Word C1s = NIL, C2s = NIL, C, Ct, Cf;
 
@@ -74,6 +74,7 @@ void SmoothOneTwoDim(Word r, Word V, Word F, Word *C1s_, Word *C2s_, Word *PPs_,
     // prepare to return
     *C1s_ = C1s;
     *C2s_ = C2s;
+    *PIs_ = Q.GVNIP;
     *PFs_ = Q.GVPF;
     *PPs_ = Q.GVPJ;
 }
@@ -98,7 +99,6 @@ Word ZeroPols(Word A, Word r, Word C)
             if (s == ZERO) {
                 Word Q = PADDVS(LELTI(P, PO_POLY), i);
                 L = COMP(Q, L);
-                LWRITE(Q); SWRITE("\n");
 
                 break;
             }
@@ -155,9 +155,8 @@ void AddJacobis(Word r, Word Ps, Word *P_, Word *J_)
         Word R, K1;
         ADV(K, &K1, &K);
 
+        printf("j = %d, K1 length = %d\n", j, LENGTH(K1));
         ADDPOLS(K1, j, LFS("Q"), J_);
-        printf("k = %d", j);
-        LWRITE(K1); SWRITE("\n");
 
         R = IPLFAC(j, K1);
         ADDPOLS(R, j, LFS("Q"), P_);
@@ -165,29 +164,32 @@ void AddJacobis(Word r, Word Ps, Word *P_, Word *J_)
     }
 }
 
-void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word A, Word* P_, Word *J_)
+void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word* A_, Word* P_, Word* J_)
 {
-    Word C, Ps, C1s, C2s, Js = NIL, PFs, PPs;
-    SmoothOneTwoDim(r, V, F, &C1s, &C2s, &PPs, &PFs);
+    Word C, Ps, C1s, C2s, Js = NIL, PIs, PFs, PPs;
+    SmoothOneTwoDim(r, V, F, &C1s, &C2s, &PIs, &PPs, &PFs);
     Word PF1 = CINV(PFs); // reverse order of proj factors to match cells
 
     // one-dimensional cells
+    SWRITE("1d cells \n");
     while (C1s != NIL) {
         ADV(C1s, &C, &C1s);
         Word Ps = ZeroPols(PF1, r, C);
 
         // n-1 polynomials Ps will appear in rows of the jacobi, now we generate the lists of indices
-        for (int i = 1; i < r; ++i) {
+        for (int i = 1; i <= r; ++i) {
             Word Is = GenerateIndex(r, i,0);
             Word J = JACOBI(r, NIL, 0, Ps, Is);
 
             if (!IPCONST(r, J)) {
+                LWRITE(Is); SWRITE(" "); LWRITE(J); SWRITE("\n");
                 Js = COMP(J, Js);
             }
         }
     }
 
     // two-dimensional cells
+    SWRITE("2d cells \n");
     while (C2s != NIL) {
         ADV(C2s, &C, &C2s);
         Word Ps = ZeroPols(PF1, r, C);
@@ -198,6 +200,7 @@ void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word A, Word* P_, Word *J_)
                 Word Is = GenerateIndex(r, i,j);
                 Word J = JACOBI(r, NIL, 0, Ps, Is);
                 if (!IPCONST(r, J)) {
+                    LWRITE(Is); SWRITE(" "); LWRITE(J); SWRITE("\n");
                     Js = COMP(J, Js);
                 }
 
@@ -206,9 +209,10 @@ void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word A, Word* P_, Word *J_)
     }
 
     // finally, add the jacobis
+    *A_ = PIs;
     *P_ = PFs;
     *J_ = PPs;
 
-    AddJacobis(r, Js, P_, J_);
+    AddJacobis(r, Js, P_, A_);
 }
 

@@ -849,6 +849,7 @@ Word GMSL(Word A, Word (*C)(Word,Word));
 void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Word* J_, Word* RPs_);
 void GETSAMPLEK(Word k, Word S, Word* Q_, Word* J_);
 bool AfIsRat(Word b, Word* r_);
+Word ProjMcxUtil(Word r, Word A);
 Word LazardLifting(Word r, Word Ps, Word S, Word As);
 
 #endif

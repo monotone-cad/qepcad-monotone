@@ -193,18 +193,6 @@ $(LIB)(normqff/TYPEQFF.o)
 
 OBJS_PROJ = \
 $(LIB)(proj/APPEND.o) \
-$(LIB)(util/ADDPOLS.o) \
-$(LIB)(util/LEVELIDX.o) \
-$(LIB)(util/PADDVS.o) \
-$(LIB)(util/PPREPVS.o) \
-$(LIB)(util/JACOBI.o) \
-$(LIB)(util/IPFRPmod.o) \
-$(LIB)(util/SUBSTITUTE.o) \
-$(LIB)(util/ROOTS.o) \
-$(LIB)(util/LDCOPY.o) \
-$(LIB)(util/FindByIndex.o) \
-$(LIB)(util/ADDREFINEMENTPOINTS.o) \
-$(LIB)(util/GETSAMPLEK.o) \
 $(LIB)(proj/APPENDEC.o) \
 $(LIB)(proj/ECLEVEL.o) \
 $(LIB)(proj/EXTRACT.o) \
@@ -231,7 +219,9 @@ $(LIB)(proj/PROJMCEC.o) \
 $(LIB)(proj/PROPCONS.o) \
 $(LIB)(proj/UDEQNCONST.o) \
 $(LIB)(proj/SEPLAB.o) \
-$(LIB)(proj/PROJECTauto.o)
+$(LIB)(proj/PROJECTauto.o) \
+$(LIB)(proj/QUASIAFFINE.o) \
+$(LIB)(proj/ProjMcxUtil.o)
 
 OBJS_SYSOLVE = \
 $(LIB)(sysolve/ASSUMPTIONSRATVEVAL.o) \
@@ -333,8 +323,8 @@ $(LIB)(ticad/TICAD.o) \
 $(LIB)(ticad/MONOTONE.o) \
 $(LIB)(ticad/REFINE.o) \
 $(LIB)(ticad/FRONTIER.o) \
-$(LIB)(proj/QUASIAFFINE.o) \
-$(LIB)(ticad/TICADauto.o)
+$(LIB)(ticad/TICADauto.o) \
+$(LIB)(ticad/LazardLifting.o)
 
 OBJS_USERINT = \
 $(LIB)(userint/CELLFIDX.o) \
@@ -421,7 +411,19 @@ $(LIB)(util/RMCONS.o) \
 $(LIB)(util/RNFAF.o) \
 $(LIB)(util/SVPOWR.o) \
 $(LIB)(util/SVPROD.o) \
-$(LIB)(util/VALIDLBL.o)
+$(LIB)(util/VALIDLBL.o) \
+$(LIB)(util/ADDPOLS.o) \
+$(LIB)(util/LEVELIDX.o) \
+$(LIB)(util/PADDVS.o) \
+$(LIB)(util/PPREPVS.o) \
+$(LIB)(util/JACOBI.o) \
+$(LIB)(util/IPFRPmod.o) \
+$(LIB)(util/SUBSTITUTE.o) \
+$(LIB)(util/ROOTS.o) \
+$(LIB)(util/LDCOPY.o) \
+$(LIB)(util/FindByIndex.o) \
+$(LIB)(util/ADDREFINEMENTPOINTS.o) \
+$(LIB)(util/GETSAMPLEK.o)
 
 #  To replace saclib routines.
 OBJS_SACLIB = \
@@ -435,7 +437,6 @@ $(LIB)(saclib/RVSPTSVSP.o) \
 $(LIB)(saclib/SOSRSUBS.o) \
 $(LIB)(saclib/SOSRSUPS.o) \
 $(LIB)(saclib/SUBSET.o) \
-$(LIB)(ticad/LazardLifting.o) \
 
 OBJS_DBd = \
 $(LIBD)(db/AFCSBMDB.o) \
@@ -563,19 +564,6 @@ $(LIBD)(normqff/TYPEQFF.o)
 
 OBJS_PROJd = \
 $(LIBD)(proj/APPEND.o) \
-$(LIBD)(util/ADDPOL.o) \
-$(LIBD)(util/ADDPOLS.o) \
-$(LIBD)(util/LEVELIDX.o) \
-$(LIBD)(util/PADDVS.o) \
-$(LIBD)(util/PPREPVS.o) \
-$(LIBD)(util/JACOBI.o) \
-$(LIBD)(util/IPFRPmod.o) \
-$(LIBD)(util/SUBSTITUTE.o) \
-$(LIBD)(util/ROOTS.o) \
-$(LIBD)(util/LDCOPY.o) \
-$(LIBD)(util/FindByIndex.o) \
-$(LIBD)(util/ADDREFINEMENTPOINTS.o) \
-$(LIBD)(util/GETSAMPLEK.o) \
 $(LIBD)(proj/APPENDEC.o) \
 $(LIBD)(proj/ECLEVEL.o) \
 $(LIBD)(proj/EXTRACT.o) \
@@ -602,7 +590,9 @@ $(LIBD)(proj/PROJMCEC.o) \
 $(LIBD)(proj/PROPCONS.o) \
 $(LIBD)(proj/UDEQNCONST.o) \
 $(LIBD)(proj/SEPLAB.o) \
-$(LIBD)(proj/PROJECTauto.o)
+$(LIBD)(proj/PROJECTauto.o) \
+$(LIBD)(proj/QUASIAFFINE.o) \
+$(LIBD)(proj/ProjMcxUtil.o)
 
 OBJS_SYSOLVEd = \
 $(LIBD)(sysolve/ASSUMPTIONSRATVEVAL.o) \
@@ -705,7 +695,8 @@ $(LIBD)(ticad/MONOTONE.o) \
 $(LIBD)(ticad/REFINE.o) \
 $(LIBD)(ticad/FRONTIER.o) \
 $(LIBD)(proj/QUASIAFFINE.o) \
-$(LIBD)(ticad/TICADauto.o)
+$(LIBD)(ticad/TICADauto.o) \
+$(LIBD)(ticad/LazardLifting.o)
 
 OBJS_USERINTd = \
 $(LIBD)(userint/CELLFIDX.o) \
@@ -792,7 +783,20 @@ $(LIBD)(util/RMCONS.o) \
 $(LIBD)(util/RNFAF.o) \
 $(LIBD)(util/SVPOWR.o) \
 $(LIBD)(util/SVPROD.o) \
-$(LIBD)(util/VALIDLBL.o)
+$(LIBD)(util/VALIDLBL.o) \
+$(LIBD)(util/ADDPOL.o) \
+$(LIBD)(util/ADDPOLS.o) \
+$(LIBD)(util/LEVELIDX.o) \
+$(LIBD)(util/PADDVS.o) \
+$(LIBD)(util/PPREPVS.o) \
+$(LIBD)(util/JACOBI.o) \
+$(LIBD)(util/IPFRPmod.o) \
+$(LIBD)(util/SUBSTITUTE.o) \
+$(LIBD)(util/ROOTS.o) \
+$(LIBD)(util/LDCOPY.o) \
+$(LIBD)(util/FindByIndex.o) \
+$(LIBD)(util/ADDREFINEMENTPOINTS.o) \
+$(LIBD)(util/GETSAMPLEK.o)
 
 #  To replace saclib routines.
 OBJS_SACLIBd = \
@@ -806,7 +810,6 @@ $(LIBD)(saclib/RVSPTSVSP.o) \
 $(LIBD)(saclib/SOSRSUBS.o) \
 $(LIBD)(saclib/SOSRSUPS.o) \
 $(LIBD)(saclib/SUBSET.o) \
-$(LIBD)(ticad/LazardLifting.o)
 
 # ============================================================
 #     Dependecies

@@ -125,42 +125,31 @@ Word GenerateIndex(Word r, Word i, Word j)
     return L;
 }
 
-void AddJacobis(Word r, Word Ps, Word *P_, Word *J_)
+void ProcessPolynomials(Word r, Word Ps, Word *Ps1_, Word *PsQ_, Word *Fs1_)
 {
-    // sets of level k jacobis
-    Word K = NIL; for (int i=0; i<r; i++) K = COMP(NIL,K);
-
-    // determine level of P.
+    // we assume they are all r-variate polynomials, but only add those with nonzero degree in x_r as qepcad polynomials
+    Word P, e, P1;
+    Word Ps1 = NIL;
     while (Ps != NIL) {
-        Word PP, P1, e1;
-        ADV(Ps, &P1, &Ps);
+        ADV(Ps, &P, &Ps);
 
-        Word k = r + 1;
-        do {
-            --k;
-            PP = P1;
-
-            FIRST2(PP, &e1, &P1);
-        } while (e1 == 0);
-
-        // append at correct level
-        Word K1 = LELTI(K, k);
-        K1 = COMP(MPOLY(PP, NIL, NIL, PO_OTHER, PO_KEEP), K1);
-        SLELTI(K, k, K1);
+        FIRST2(P, &e, &P1);
+        if (e > 0) {
+            Ps1 = COMP(MPOLY(P, NIL, NIL, PO_OTHER, PO_KEEP), Ps1);
+        }
     }
 
-    // P is of level k. add to P and J
-    Word j = 1;
-    while (K != NIL) {
-        Word R, K1;
-        ADV(K, &K1, &K);
+    // factorise
+    Word Fs1 = IPLFAC(r, Ps1);
 
-        printf("j = %d, K1 length = %d\n", j, LENGTH(K1));
-        ADDPOLS(K1, j, LFS("Q"), J_);
+    // prepare to return
+    *Ps1_ = Ps1;
+    *Fs1_ = Fs1;
 
-        R = IPLFAC(j, K1);
-        ADDPOLS(R, j, LFS("Q"), P_);
-        ++j;
+    Word PsQ = NIL; // extract factors only.
+    while (Ps1 != NIL) {
+        ADV(Ps1, &P, &Ps1);
+        PsQ = COMP(LELTI(P, PO_POLY), Ps);
     }
 }
 
@@ -171,36 +160,55 @@ void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word* A_, Word* P_, Word* J_
     Word PF1 = CINV(PFs); // reverse order of proj factors to match cells
 
     // one-dimensional cells
-    SWRITE("1d cells \n");
+    // i represents the projection onto one-dimensional coordinate subspace proj(i)
+    // i.j represents proj(i,j), but we consider all minors with n-2 polynomials
     while (C1s != NIL) {
         ADV(C1s, &C, &C1s);
         Word Ps = ZeroPols(PF1, r, C);
 
-        // n-1 polynomials Ps will appear in rows of the jacobi, now we generate the lists of indices
+        // proj(i)
         for (int i = 1; i <= r; ++i) {
             Word Is = GenerateIndex(r, i,0);
             Word J = JACOBI(r, NIL, 0, Ps, Is);
 
             if (!IPCONST(r, J)) {
-                LWRITE(Is); SWRITE(" "); LWRITE(J); SWRITE("\n");
                 Js = COMP(J, Js);
+            }
+
+            // proj(i,j)
+            for (int j = i + 1; j <= r; j++) {
+                Word Is1 = GenerateIndex(r, i,j);
+
+                // minors - n-2 polynomials
+                Word Ps1 = Ps, Qs = NIL;
+                while (Ps1 != NIL) {
+                    Word P;
+                    ADV(Ps1, &P, &Ps1);
+
+                    Word J1 = JACOBI(r, NIL, 0, CCONC(Ps1, Qs), Is1);
+                    if (!IPCONST(r, J1)) {
+                        Js = COMP(J1, Js);
+                    }
+
+                    // P will be considered in the next round
+                    Qs = COMP(P, Qs);
+                }
             }
         }
     }
 
     // two-dimensional cells
-    SWRITE("2d cells \n");
+    // i.j represent 2-dimensional coordinate subspace proj(i,j), and all minors for proj(i)
     while (C2s != NIL) {
         ADV(C2s, &C, &C2s);
         Word Ps = ZeroPols(PF1, r, C);
 
-        // n-2 polynomials Ps will appear in rows of the jacobi, now we generate the lists of indices
+        // proj(i,j)
         for (int i = 1; i < r; ++i) {
             for (int j = i + 1; j <= r; j++) {
                 Word Is = GenerateIndex(r, i,j);
                 Word J = JACOBI(r, NIL, 0, Ps, Is);
                 if (!IPCONST(r, J)) {
-                    LWRITE(Is); SWRITE(" "); LWRITE(J); SWRITE("\n");
                     Js = COMP(J, Js);
                 }
 
@@ -208,11 +216,29 @@ void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word* A_, Word* P_, Word* J_
         }
     }
 
-    // finally, add the jacobis
-    *A_ = PIs;
-    *P_ = PFs;
-    *J_ = PPs;
+    // CAD should be sign-invariant on Js. this means it should be compatible with their projections, too.
+    // we add projections here to save recomputing the projection for entire CAD.
 
-    AddJacobis(r, Js, P_, A_);
+    // assign the pointers.
+    *A_ = PIs; // input polynomials
+    *P_ = PFs; // projection factors
+    *J_ = PPs; // projection polynomials
+
+    // add Js...
+    // Ps1 contains QEPCAD polynomials, Fs1 contains its factors.
+    Word Ps1, PsQ, Fs1;
+    ProcessPolynomials(r, Js, &Ps1, &PsQ, &Fs1);
+    ADDPOLS(Ps1, r, LFS("Q"), J_);
+    ADDPOLS(Fs1, r, LFS("Q"), J_);
+
+    // and its projections
+    while (r > 1) {
+        Js = ProjMcxUtil(r, PsQ);
+        --r;
+
+        ProcessPolynomials(r, Js, &Ps1, &PsQ, &Fs1);
+        ADDPOLS(Ps1, r, LFS("Q"), J_);
+        ADDPOLS(Fs1, r, LFS("Q"), J_);
+    }
 }
 

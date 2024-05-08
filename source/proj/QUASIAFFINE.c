@@ -174,26 +174,6 @@ void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word* A_, Word* P_, Word* J_
             if (!IPCONST(r, J)) {
                 Js = COMP(J, Js);
             }
-
-            // proj(i,j)
-            for (int j = i + 1; j <= r; j++) {
-                Word Is1 = GenerateIndex(r, i,j);
-
-                // minors - n-2 polynomials
-                Word Ps1 = Ps, Qs = NIL;
-                while (Ps1 != NIL) {
-                    Word P;
-                    ADV(Ps1, &P, &Ps1);
-
-                    Word J1 = JACOBI(r, NIL, 0, CCONC(Ps1, Qs), Is1);
-                    if (!IPCONST(r, J1)) {
-                        Js = COMP(J1, Js);
-                    }
-
-                    // P will be considered in the next round
-                    Qs = COMP(P, Qs);
-                }
-            }
         }
     }
 

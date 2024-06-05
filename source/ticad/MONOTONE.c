@@ -220,7 +220,7 @@ void STOREPOLYNOMIALS(Word Rs, Word I, Word S, Word Endpoints, Word* A_)
     Word A = *A_, Rs1 = NIL;
     while (A != NIL) {
         Word I1, S1, E1, Ps;
-        ADV4(A, &I1, &S1, &E1, &Ps, &A);
+        ADV4(A, &I1, &S1, &Ps, &E1, &A);
 
         if (I == I1) { // avoid proper list comparison because subcads are identical
             Ps = CONC(Ps, Rs);
@@ -302,6 +302,7 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
 
             S0B = SECOND(S0B);
         }
+
         if (ij < LENGTH(C0C)) {
             GETSAMPLEK(
                 Ij,
@@ -312,6 +313,7 @@ Word QepcadCls::MONOTONE(Word* A_, Word* J_, Word D, Word r)
 
             S0T = SECOND(S0T);
         }
+
         Endpoints = LIST2(S0B, S0T);
 
         // find polynomials in sub-cad

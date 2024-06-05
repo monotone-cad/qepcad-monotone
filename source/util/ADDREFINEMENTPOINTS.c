@@ -24,7 +24,6 @@ void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Wor
 
     Word k1 = LENGTH(I); // level of current polynomials
     Word k = k1 - 1; // level of base cell
-    printf("adding refinement points for ");LWRITE(I);SWRITE("\n");
 
     // factorise the list of polynomials, add to J and store as rationals for root finding
     Word Ps = NIL;

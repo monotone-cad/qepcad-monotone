@@ -25,100 +25,66 @@ Word SectionCells(Word r, Word S, Word Ps)
         // if P depends on variable r, discard it
         if (e > 0) continue;
 
-        // refactor evaluation code from MONOTONE, eval P at sample x and append.
         A1 = SUBSTITUTE(r, A, S, false); // w/ integer coefficients
-        // LWRITE(A); SWRITE("\n");
 
         if (PDEG(A1) == 0) continue;
 
         Ps1 = COMP(A1, Ps1);
-        // SWRITE("  -> "); LWRITE(SUBSTITUTE(r, A, S, false)); SWRITE("\n");
     }
 
     return Ps1;
 }
 
-void LazardHelper(Word r, Word Ps, Word S, Word As, Word i, Word k, Word R, Word L, Word* Hs_)
+// saturation of Ps w.r.t Q
+Word LazardHelper(Word r, Word S, Word Ps, Word Rs, Word Q, Word k)
 {
-    // base case, blow-up polynomial f
-    if (i == r) {
-        Word f = FIRST(Ps);
-        printf("base case: f = "); LWRITE(f); SWRITE("\n");
+    // construct 1 - z * Q
+    Word Q1 = IPSUM(
+        r + 1,
+        PPREPVS(PMON(1,0), r), // 1
+        LIST2(1, PADDVS(IPNEG(k, Q), r - k)) // z * - Q
+    );
 
-        *Hs_ = CONC(*Hs_, SectionCells(
-            r,
-            S,
-            GVCAP->GROEBNER(
-                COMP(f, L),
-                COMP(r, R),
-                r + 1
-            )
-        ));
-
-        return;
-    }
-
-    // saturation polynomial h, 1 - z * h
-    if (i == k) {
-        Word g;
-        ADV(Ps, &g, &Ps);
-
-        // construct 1 - z * h
-        Word h = IPSUM(
-            r + 1,
-            PPREPVS(PMON(1,0), r), // 1
-            LIST2(1, PADDVS(IPNEG(k, g), r - k)) // z * - h
-        );
-
-        printf("%d, 1 - zh case = ", i); LWRITE(h);
-        LazardHelper(
-            r,
-            Ps,
-            S,
-            RED(As),
-            i + 1,
-            k,
-            COMP(r + 1, R),
-            COMP(h, L),
-            Hs_
-        );
-
-        return;
-    }
-
-    // rest of elements are projection factors.
-    Word A1s, A11;
-    ADV(As, &A1s, &As);
-
-    while (A1s != NIL) {
-        ADV(A1s, &A11, &A1s);
-
-        printf("%d, proj factor case = ", i); LWRITE(LELTI(A11, PO_POLY)); SWRITE("\n");
-        LazardHelper(
-            r,
-            RED(Ps),
-            S,
-            As,
-            i + 1,
-            k,
-            COMP(i, R),
-            COMP(LELTI(A11, PO_POLY), L),
-            Hs_
-        );
-    }
+    return SectionCells(
+        r,
+        S,
+        GVCAP->GROEBNER(
+            COMP(Q1, Ps),
+            COMP(r+1, Rs),
+            r + 1
+        )
+    );
 }
 
-Word LazardLifting(Word k, Word Ps, Word S, Word As)
+Word LazardLifting(Word k, Word S, Word As, Word IPs, Word i, Word j)
 {
-    Word Hs = NIL;
+    printf("i = %d, j = %d, lvl = %d, signs ", i, j, k); LWRITE(IPs); SWRITE("\n");
 
-    Word i = 0;
-    while (i < k) {
-        ++i;
+    // locate polynomials
+    Word Rs = NIL, Ps = NIL, Q1 = NIL, r1 = NIL, Q2 = NIL, r2 = NIL;
+    Word level = 0, index, P, A1s;
+    while (IPs != NIL) {
+        ++level;
+        ADV(IPs, &index, &IPs);
+        ADV(As, &A1s, &As);
 
-        LazardHelper(k + 1, Ps, S, As, 1, i, NIL, NIL, &Hs);
+        P = LELTI(LELTI(A1s, index), PO_POLY);
+
+        if (level == i) {
+            Q1 = P;
+            r1 = level;
+        } else if (level == j) {
+            Q2 = P;
+            r2 = level;
+        } else {
+            Ps = COMP(P, Ps);
+            Rs = COMP(level, Rs);
+        }
     }
 
-    return Hs;
+    return CONC(
+        LazardHelper(k, S, COMP(Q2, Ps), COMP(r2, Rs), Q1, r1),
+        LazardHelper(k, S, COMP(Q1, Ps), COMP(r1, Rs), Q2, r2)
+    );
 }
 

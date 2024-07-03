@@ -422,6 +422,7 @@ $(LIB)(util/SUBSTITUTE.o) \
 $(LIB)(util/ROOTS.o) \
 $(LIB)(util/LDCOPY.o) \
 $(LIB)(util/FindByIndex.o) \
+$(LIB)(util/TwoDimensionalIndex.o) \
 $(LIB)(util/ADDREFINEMENTPOINTS.o) \
 $(LIB)(util/GETSAMPLEK.o)
 
@@ -795,6 +796,7 @@ $(LIBD)(util/SUBSTITUTE.o) \
 $(LIBD)(util/ROOTS.o) \
 $(LIBD)(util/LDCOPY.o) \
 $(LIBD)(util/FindByIndex.o) \
+$(LIBD)(util/TwoDimensionalIndex.o) \
 $(LIBD)(util/ADDREFINEMENTPOINTS.o) \
 $(LIBD)(util/GETSAMPLEK.o)
 

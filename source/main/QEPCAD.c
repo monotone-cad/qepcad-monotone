@@ -99,7 +99,7 @@ Step5: /* Monotone cells, if needed */
             SWRITE("*** Invalidating cached ESPCAD. ***\n");
         }
 
-        D = FRONTIER(f, D, P, &P, &J, &RPs);
+        D = FRONTIER(f, 1, D, P, &P, &J, &RPs);
         GVREFL = RPs;
 
         /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }

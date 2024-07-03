@@ -104,6 +104,7 @@ Word SUBSTITUTE(Word r, Word P, Word S, bool rc);
 Word ROOTS(Word Ps, Word I);
 Word LDCOPY(Word L1);
 Word FindByIndex(Word L, Word I, Word j, Word k);
+int TwoDimIndex(Word I, Word *j_, Word *k_);
 void FGWRITE(Word A, Word n);
 void FILINE();
 void FILLIN(Word n, Word vs, Word S_r, Word S_s, Word R_c, Word R_s, Word *v_);
@@ -850,7 +851,7 @@ void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Wor
 void GETSAMPLEK(Word k, Word S, Word* Q_, Word* J_);
 bool AfIsRat(Word b, Word* r_);
 Word ProjMcxUtil(Word r, Word A);
-Word LazardLifting(Word r, Word Ps, Word S, Word As);
+Word LazardLifting(Word k, Word S, Word As, Word IPs, Word i, Word j);
 
 #endif
 

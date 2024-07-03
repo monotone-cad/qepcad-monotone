@@ -17,14 +17,12 @@ Output
 #include "qepcad.h"
 #include <iostream>
 
-// returns the index of first polynomial which is zero, -1 otherwise.
-Word IndexOfFirstZero(Word S)
+Word IndexOfFirstZero(Word S1)
 {
     Word i = 1;
-    while (S != NIL) {
+    while (S1 != NIL) {
         Word s;
-        ADV(S, &s, &S);
-
+        ADV(S1, &s, &S1);
         if (s == 0) {
             return i;
         }
@@ -33,6 +31,20 @@ Word IndexOfFirstZero(Word S)
     }
 
     return -1;
+}
+
+// returns (j1,...,jk) where each ji is the index of first zero for lezel-i projection factors.
+Word SignatureIndex(Word S)
+{
+    Word J, S1;
+
+    J = NIL;
+    while (S != NIL) {
+        ADV(S, &S1, &S);
+        J = COMP(IndexOfFirstZero(S1), J);
+    }
+
+    return J;
 }
 
 // unique comp, with == check, O(n)
@@ -49,76 +61,90 @@ Word UCOMP(Word x, Word L)
     return COMP(x, L);
 }
 
-// identifies bad cells in the children of C, i.e., section cells on which a polynomial vanishes identically
-//  r : positive integer, number of variables
-//  C : CAD cell
-// Ps : projection factor set
-// return : list of pairs (P_1, C_1, ..., P_l, C_l) such that each P_i is the bad polynomial on cell C_i
-Word IdentifyBadCells(Word r, Word C, Word Ps)
+void ProcessBadCells(Word r, Word C, Word As, Word i, Word j, Word S)
 {
-    Word Children = LELTI(C, CHILD);
-    if (Children == NIL) return NIL;
+    if (C == NIL) return; // base case, nothing to do
 
-    Word P;
-    ADV(Ps, &P, &Ps);
+    Word s;
+    ADV(S, &s, &S);
 
-    Word Is = NIL;
-    Word Js = NIL;
-    bool section = true;
-    while (Children != NIL) {
-        Word C, Is2, i;
-        ADV(Children, &C, &Children);
+    Word Ch = LELTI(C, CHILD);
+    if (Ch == NIL) return;
+
+    Word sample = LELTI(C, SAMPLE);
+    Ch = RED(Ch);
+    bool section = false;
+    while (Ch != NIL) {
+        Word C1, level, s1, SC1;
         section = !section;
+        ADV(Ch, &C1, &Ch);
+        level = LELTI(C1, LEVEL);
+        SC1 = LELTI(C1, SIGNPF);
+        s1 = IndexOfFirstZero(FIRST(SC1));
 
-        if (section && (Is2 = IdentifyBadCells(r + 1, C, Ps)) != NIL) {
-            Word j = IndexOfFirstZero(FIRST(LELTI(C, SIGNPF)));
-            Word Pj = LELTI(LELTI(P, j), PO_POLY);
+        if (!section && level > j && s == s1) {
+            printf("possible bad cell "); LWRITE(LELTI(C1, INDX)); SWRITE("\n");
+            Word Rp = LazardLifting(
+                level,
+                sample,
+                As,
+                COMP(s1, SignatureIndex(RED(SC1))),
+                i,
+                j
+            );
+            LWRITE(Rp); SWRITE("\n");
+        }
 
-            while (Is2 != NIL) {
-                Word I, C1;
-                ADV2(Is2, &I, &C1, &Is2);
-
-                Is = COMP2(COMP(Pj, I), C1, Is);
-            }
-        } else if (!section && r > 2 && (i = IndexOfFirstZero(FIRST(LELTI(C, SIGNPF)))) > 0) {
-            Js = UCOMP(i, Js);
+        if (section && (level == j || s == s1)) {
+            ProcessBadCells(r, C1, As, i, j, S);
         }
     }
-
-    // look up the polynomials from indices in Js
-    Word JPs = NIL;
-    while (Js != NIL) {
-        Word i;
-        ADV(Js, &i, &Js);
-
-        JPs = COMP2(LIST1(LELTI(LELTI(P, i), PO_POLY)), C, JPs);
-    }
-
-    return CONC(Is, JPs);
 }
 
-Word QepcadCls::FRONTIER(Word r, Word C, Word P, Word* A_, Word* J_, Word* RPs_)
+Word QepcadCls::FRONTIER(Word r, Word k, Word D, Word As, Word* A_, Word* J_, Word* RPs_)
 {
-    // if r < 3, frontier condition is obtaoined automatically.
-    if (r < 3) return C;
+    Word Ch, TrueCells, junk, C1, C1_B, C1_T, C;
+    Ch = LELTI(D, CHILD);
 
-    // find bad cells
-    Word L = IdentifyBadCells(1, C, P);
-    while (L != NIL) {
-        Word Ps, C, As, f;
-        ADV2(L, &Ps, &C, &L);
+    // if r < 3, frontier condition is obtaoined automatically, if no children then nothing to do.
+    if (r < 3 || Ch == NIL) return D;
 
-        SWRITE("bad cell: "); LWRITE(LELTI(C, INDX)), SWRITE("\n");
+    ADV(Ch, &C1, &Ch);
 
-        // perform Lazard lifting to obtain a list of univariate polynomials defining refinement points above C
-        Word Hs = LazardLifting(LELTI(C, LEVEL), Ps, LELTI(C, SAMPLE), P);
+    // only one sector, bad cells are not possible.
+    if (Ch != NIL);
 
-        // add refinement points and refine cell immediately.
-        ADDREFINEMENTPOINTS(LELTI(C, INDX), LELTI(C, SAMPLE), Hs, LIST2(NIL, NIL), A_, J_, RPs_);
-        LWRITE(Hs); SWRITE("\n");
-        C = REFINE(1, C, *RPs_, P);
+    C1_B = NIL, C1_T = NIL;
+    while (Ch != NIL) {
+        // Ch = (top, next sector, ...)
+        // cells will be taken in pairs.
+        ADV(Ch, &C1_T, &Ch);
+        FRONTIER(r, k+1, C1_T, As, A_, J_, RPs_);
+
+        // get true (1,...)-cells
+        LISTOFCWTV(C1, &TrueCells, &junk);
+        while (TrueCells != NIL) {
+            Word d, j, SI;
+            ADV(TrueCells, &C, &TrueCells);
+
+            d = TwoDimIndex(LELTI(C, INDX), &junk, &j);
+            if (d != 2 || j == r) continue;
+
+            printf("- true two-dimensional section cell "); LWRITE(LELTI(C, INDX)); SWRITE("\n");
+
+            // find indices of polynomials which are zero on C.
+            SI = REDI(SignatureIndex(LELTI(C, SIGNPF)), k);
+            LWRITE(SI); SWRITE("\n");
+
+            ProcessBadCells(r, C1_B, As, k, j, SI);
+            ProcessBadCells(r, C1_T, As, k, j, SI);
+        }
+
+        // next sector.
+        ADV(Ch, &C1, &Ch);
+        C1_B = C1_T; // one sector's top is the next sector's bottom.
     }
 
-    return C;
+    return D;
 }
 

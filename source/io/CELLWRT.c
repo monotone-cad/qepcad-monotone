@@ -115,12 +115,18 @@ void QepcadCls::CELLWRT(Word c)
 
 Word FindInRcad(Word L, Word I, Word j, Word k)
 {
-    Word J, C, Cs;
+    Word J, C, C1, Cs;
 
     Cs = NIL;
     while (L != NIL) {
         ADV(L, &C, &L);
-        J = LELTI(LELTI(C, 11), INDX); // 11: INCELL
+
+        if (LENGTH(C) < 11) { // unrefined in RCAD
+            J = LELTI(C, INDX);
+        } else { // look at the cell of original cad containing this RCell
+            C1 = LELTI(C, 11); // 11: INCELL
+            J = LELTI(C1, INDX);
+        }
 
         // no partial match
         if (FIRST(I) != LELTI(J, k)) continue;

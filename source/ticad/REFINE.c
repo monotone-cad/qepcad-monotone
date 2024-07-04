@@ -239,11 +239,41 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
     SLELTI(C, SAMPLE, S1);
 }
 
+// add missing signpfs
+void ADDSIGNPF(Word k, Word C, Word A1)
+{
+    Word sample = LELTI(C, SAMPLE);
+    Word S = FIRST(LELTI(C, SIGNPF));
+    A1 = REDI(A1, LENGTH(S));
+
+    // nothing to do
+    if (A1 == NIL) return;
+
+    // missing polynomials
+    Word S1 = NIL;
+    while (A1 != NIL) {
+        Word P1, P, s;
+        ADV(A1, &P1, &A1);
+        P = LELTI(P1, PO_POLY);
+
+        Word sign = RNSIGN(SUBSTITUTE(k, P, sample, true));
+        S1 = COMP(sign, S1);
+        SWRITE("missing polynomial "); LWRITE(P); printf(" sign %d\n", sign);
+    }
+
+    // append the new signs, in the right order
+    S = CONC(S, INV(S1));
+}
+
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
 // (0,...,0,0)-cell
 Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word S0M, Word S0I, Word PFs, bool* rc)
 {
     Word Cs2 = Cs;
+
+    // split projection factors
+    Word PF1;
+    ADV(PFs, &PF1, &PFs);
 
     // Let C = (a,b). C becomes (a,s), C2 becomes new cell s and C3 new cell (s,b)
     Word C1;
@@ -278,10 +308,12 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word S0M, Word S0I, Word PFs,
         SETSAMPLE(C2, PM, PI, PFs);
     }
 
+    // add missing signs of projection factors
+    ADDSIGNPF(k, C1, PF1);
+    ADDSIGNPF(k, C2, PF1);
+
     // we may will need to update the sample of C3, but this is done later.
     *rc = sign != 1;
-
-    // TODO update polynomial signpfs
 
     // append new cells
     SRED(Cs2, COMP2(C2, C3, Cs));
@@ -375,11 +407,16 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
         bool refine_after = false; // do we need to refine C3?
         Ch1 = RefineCell(k, Ch1, PM, PI, S0M, S0I, PFs, &refine_after);
 
-        // might be that we need to refine C3
-        if (!refine_after) continue;
-
         ADV(RED2(Ch1), &C, &Ch1);
         // now FIRST(Ch) is the top of C, if C is bounded from above
+
+        // might be that we need to refine C3
+        if (!refine_after) {
+            // don't forget to add missing signpfs
+            ADDSIGNPF(k, C, FIRST(PFs));
+
+            continue;
+        }
 
         if (Ch1 == NIL) { // not bounded from above. easy!
             c = RNSUM(SECOND(PI), RNINT(1));
@@ -389,7 +426,8 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
             RNWRITE(SECOND(PI)); SWRITE(" "); RNWRITE(FIRST(S0I)); SWRITE(" ");  RNWRITE(c);
         }
 
-        SETSAMPLE(C, PMON(1,1), LIST1(c), PFs);
+        SETSAMPLE(C, PMON(1,1), LIST1(c), RED(PFs));
+        ADDSIGNPF(k, C, FIRST(PFs));
     }
 
     // finally update indices.
@@ -430,7 +468,6 @@ Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
         return D;
     }
 
-    PF = RED(PF);
     Word k1 = k-1;
     Word A1;
     ADV(A, &A1, &A); // decomstruct A. A1 is the set of level k+1 polys
@@ -465,6 +502,7 @@ Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
     // walk the CAD, sections only.
     Word C, junk;
     ADV(Ch, &junk, &Ch);
+    PF = RED(PF);
     while (Ch != NIL) {
         ADV2(Ch, &C, &junk, &Ch);
 

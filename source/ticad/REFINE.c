@@ -241,7 +241,7 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
 
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
 // (0,...,0,0)-cell
-Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word c, Word PFs, bool* rc)
+Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word S0M, Word S0I, Word PFs, bool* rc)
 {
     Word Cs2 = Cs;
 
@@ -251,14 +251,7 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word c, Word PFs, bool* rc)
     Word C2 = LDCOPY(C1);
     Word C3 = LDCOPY(C1);
 
-    // k-th element of C index.
-    Word j = LELTI(LELTI(C1, INDX), k);
-
     SWRITE("Refine cell "); LWRITE(LELTI(C1, INDX)); SWRITE("\n");
-
-    // update indices
-    SETINDEXK(C2, k, ++j);
-    SETINDEXK(C3, k, ++j);
 
     // update sample
     // we will need to update only two of the cells, as the existing sample will be correct for one of them
@@ -269,7 +262,14 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word c, Word PFs, bool* rc)
     // -1: C1 is correct, 0: C2 is correct, +1: C3 is correct.
 
     if (sign != -1) { // need to update C1 ...
-        // to the given rational point c
+        // we need a rational number in between the bottom C1 and the refinement point.
+        Word c;
+        if (S0M == NIL) { // not bounded from below. easy!
+            c = RNSUM(FIRST(PI), RNINT(-1));
+        } else {
+            c = RNQ(RNSUM(SECOND(S0I), FIRST(PI)), RNINT(2));
+        }
+
         SETSAMPLE(C1, PMON(1,1), LIST1(c), PFs);
     }
 
@@ -281,14 +281,7 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word c, Word PFs, bool* rc)
     // we may will need to update the sample of C3, but this is done later.
     *rc = sign != 1;
 
-    // increment indices of remaining cells.
-    Word Cs1 = Cs;
-    while (Cs1 != NIL) {
-        Word C;
-        ADV(Cs1, &C, &Cs1);
-
-        SETINDEXK(C, k, ++j);
-    }
+    // TODO update polynomial signpfs
 
     // append new cells
     SRED(Cs2, COMP2(C2, C3, Cs));
@@ -317,19 +310,20 @@ Word STRIP(Word P)
 }
 
 // convenience function for next polynomial
-void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word* Ps_)
+void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word *I_, Word* Ps_)
 {
     if (Ps == NIL) {
         *PM_ = NIL;
         *PI_ = NIL;
         *J_ = NIL;
+        *I_ = NIL;
 
         return;
     }
 
-    Word P, M, I, b, a;
+    Word P, M, I, b, a, P1;
     ADV(Ps, &P, Ps_);
-    Word P1 = FIRST(P);
+    FIRST3(P, I_, &P1, J_);
 
     // extended form, can assume the polynomial is normalised
     if (LENGTH(P1) == 5) {
@@ -348,87 +342,66 @@ void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word* Ps_)
 
     *PM_ = M;
     *PI_ = I;
-    *J_ = SECOND(P);
 }
 
 // Refine subcad D to be compatible with level 1 polynomials Ps
 Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 {
-    Word Ch2 = Ch; // backup of list pointer, to return.
-    Word PM, PI, J;
+    Word Ch1, C, i, c, C0;
+    while (Ps != NIL) {
+        Word PM, PI, J;
+        NextPolynomial(Ps, &PM, &PI, &J, &i, &Ps);
 
-    // Ps is a list of sample points in ascending order, which define new 0-cells we will add to D
-    NextPolynomial(Ps, &PM, &PI, &J, &Ps);
-            SWRITE("first polynomial ");
-            LWRITE(PM); SWRITE(" ");
-            LWRITE(PI); SWRITE("\n");
+        printf("refinement of cell %d\n", i);
+        // find cell with index i.
+        Word j = 0, S0M = NIL, S0I = NIL;
+        Ch1 = Ch, i = i - 1;  // we are actually looking fro sector bottom
+        while (i > 0 || Ch1 != NIL) {
+            ADV(Ch1, &C, &Ch1);
 
+            // original cell indices are preserved until the last moment.
+            // we cannot just count in case a cell was refined.
+            j = LELTI(LELTI(C, INDX), k);
 
-    Word sign = -1;
-    Word Ch1 = Ch;
-    bool refined = false;
-    while (Ch != NIL) {
-        Word C, CT, PM1, PI1;
-        // next sector cell
-        ADV(Ch, &C, &Ch1);
+            if (j == i) {
+                // C is the cell bottom. get its sample k
+                GETSAMPLEK(-1, LELTI(C, SAMPLE), &S0M, &S0I);
 
-        // get next polynomial if needed.
-        if (sign != -1) {
-            PM1 = PM, PI1 = PI;
-            NextPolynomial(Ps, &PM, &PI, &J, &Ps);
-            SWRITE("next polynomial ");
-            LWRITE(PM); SWRITE(" ");
-            LWRITE(PI); SWRITE("\n");
-        }
-
-        // last cell TODO
-        //         SETSAMPLE(C, PMON(1,1), RNSUM(RNINT(1), RNCEIL(SECOND(J))), PFs);
-
-        Word SQ, SJ;
-        // refine the last cell
-        if (Ch1 != NIL) {
-            // next section -- top of C
-            ADV(Ch1, &CT, &Ch1);
-
-            // get k-th coordinate of the sample point of C
-            GETSAMPLEK(-1, LELTI(CT, SAMPLE), &SQ, &SJ);
-            SWRITE("cell top ");
-            LWRITE(SQ); SWRITE(" ");
-            LWRITE(SJ); SWRITE("\n");
-
-            if (PM != NIL) {
-                sign = COMPARE(SQ, &SJ, PM, &PI);
-                printf("sign = %d\n", sign);
+                break;
             }
-        } else if (PM != NIL) {
-            SQ = PMON(1,1);
-
-            Word c1 = RNSUM(SECOND(J), RNINT(2));
-            SJ = LIST2(c1, c1);
-
-            sign = 1; // force a refinement.
         }
 
-        // previous cell was refined, need to update
-        if (refined) {
-            Word c = RNQ(RNSUM(SECOND(PI1), FIRST(SJ)), RNINT(2));
-            SWRITE("refine "); RNWRITE(c); SWRITE("\n");
-            SETSAMPLE(C, PMON(1,1), LIST1(c), PFs);
-            refined = false;
+        // first cell in Ch is to be refined, S1M, S1J is the k-th coordinate of the sample point of C_B
+        bool refine_after = false; // do we need to refine C3?
+        Ch1 = RefineCell(k, Ch1, PM, PI, S0M, S0I, PFs, &refine_after);
+
+        // might be that we need to refine C3
+        if (!refine_after) continue;
+
+        ADV(RED2(Ch1), &C, &Ch1);
+        // now FIRST(Ch) is the top of C, if C is bounded from above
+
+        if (Ch1 == NIL) { // not bounded from above. easy!
+            c = RNSUM(SECOND(PI), RNINT(1));
+        } else {
+            GETSAMPLEK(-1, LELTI(FIRST(Ch1), SAMPLE), &S0M, &S0I);
+            c = RNQ(RNSUM(SECOND(PI), FIRST(S0I)), RNINT(2));
+            RNWRITE(SECOND(PI)); SWRITE(" "); RNWRITE(FIRST(S0I)); SWRITE(" ");  RNWRITE(c);
         }
 
-        // no more polynomials
-        if (PM == NIL) break;
-
-        if (sign > 0) { // S > P, refine previous sector, FIRST(Ch)
-            Word c = PDEG(PM) == 1 ? FIRST(J) : FIRST(PI);
-            Ch1 = RED2(RefineCell(k, Ch, PM, PI, c, PFs, &refined));
-        }
-
-        Ch = Ch1;
+        SETSAMPLE(C, PMON(1,1), LIST1(c), PFs);
     }
 
-    return Ch2;
+    // finally update indices.
+    i = 0, Ch1 = Ch;
+    while (Ch1 != NIL) {
+        ++i;
+        ADV(Ch1, &C, &Ch1);
+
+        SETINDEXK(C, k, i);
+    }
+
+    return Ch;
 }
 
 // are the first k elements in L1 and L2 equal
@@ -468,8 +441,12 @@ Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
         Word P;
         ADV(A1, &P, &A1);
 
-        if (EQUALK(k1, LELTI(P, PO_REFINEMENT), I)) { // list equality check not needed, since same cell index pointer is used
-            Ps = COMP(LELTI(P, PO_POLY), Ps);
+        Word J = LELTI(P, PO_REFINEMENT);
+        if (FIRST(J) != -1 && EQUALK(k1, J, I)) { // list equality check not needed, since same cell index pointer is used
+            Ps = COMP(COMP(LELTI(J, k1 + 1), LELTI(P, PO_POLY)), Ps);
+
+            // mark the refinement point as "used"
+            SLELTI(P, PO_REFINEMENT, COMP(-1, J));
         }
     }
 

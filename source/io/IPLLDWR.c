@@ -34,7 +34,7 @@ Step1: /* Write. */
                 SWRITE("  *** Equational Constraint ***  ");
             if (LELTI(A11,PO_TYPE) == PO_REFINEMENT) {
                 SWRITE("  *** Refinement of cell ");
-                LWRITE(LELTI(A11,PO_REFINEMENT));
+                LWRITE(RED(LELTI(A11,PO_REFINEMENT)));
                 SWRITE(" ***  ");
             }
             P = LELTI(A11,PO_POLY);

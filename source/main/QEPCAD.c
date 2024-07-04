@@ -101,6 +101,7 @@ Step5: /* Monotone cells, if needed */
 
         D = FRONTIER(f, 1, D, P, &P, &J, &RPs);
         GVREFL = RPs;
+        D = REFINE(1, D, GVREFL, P);
 
         /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
     }

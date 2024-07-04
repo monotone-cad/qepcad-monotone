@@ -13,9 +13,19 @@
  *====================================================================*/
 #include "qepcad.h"
 
+Word Estimate(Word J, Word M)
+{
+    if (PDEG(M) == 1) {
+        return IUPRLP(M);
+    }
+
+    // algebraic
+    return RNQ(RNSUM(FIRST(J), SECOND(J)), RNINT(2));
+}
+
 Word ROOTS(Word Ps, Word I)
 {
-    Word B, s, T, Rs, Rs1, Rs2, M, J, l, r;
+    Word B, s, T, Rs, Rs1, M, J, l, r;
     // compute the list of "similar polynomials", to satisfy the condition for finest squarefree basis
     IPLSRP(Ps, &s, &T);
 
@@ -31,27 +41,36 @@ Word ROOTS(Word Ps, Word I)
     // finally, throw out roots outside the desired interval
     FIRST2(I, &l, &r);
 
+    Rs1 = Rs;
     if (l != NIL) {
+        //printf("letf endpoint "); RNWRITE(l); SWRITE("\n");
+        Word c;
         do {
-            ADV2(Rs, &J, &M, &Rs);
-        } while(RNCOMP(FIRST(J),l) > 0 && Rs != NIL);
+            ADV2(Rs1, &J, &M, &Rs1);
+            c = Estimate(J, M);
+
+            // SWRITE("Compare "); RNWRITE(c); SWRITE(" "); RNWRITE(l); printf(" %d ", RNCOMP(c,l)); SWRITE("\n");
+            if (RNCOMP(c,l) > 0) break;
+            Rs = Rs1;
+        } while(Rs != NIL);
     }
 
     // Rs1 now contains all roots whose isolating interval is greater than l
 
-    Rs1 = Rs;
-    if (r == NIL) return Rs;
-    // TODO if rational don't we need to compute it? test pls!
-    while (Rs1 != NIL) {
-        Rs2 = Rs1;
-        ADV2(Rs1, &J, &M, &Rs1);
+    if (r == NIL || Rs == NIL) return Rs;
+    // printf("right endpoint "); RNWRITE(r); SWRITE("\n");
+    Rs1 = NIL;
+    while (Rs != NIL) {
+        ADV2(Rs, &J, &M, &Rs);
+        Word c = Estimate(J, M);
+        // SWRITE("Compare "); RNWRITE(c); SWRITE(" "); RNWRITE(r); SWRITE("\n");
+        if (RNCOMP(c, r) > 0) break;
+        // SWRITE("  root comes before r: "); LWRITE(M); SWRITE("\n");
 
-        if (RNCOMP(SECOND(J), r) < 0) break;
+        Rs1 = COMP2(M, J, Rs1);
     }
 
-    // Rs1 now points to the las root before r
-    if (Rs2 != NIL) SRED(Rs1, NIL);
-
-    return Rs;
+    printf("number of roots = %d\n", LENGTH(Rs1));
+    return INV(Rs1);
 }
 

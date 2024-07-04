@@ -359,6 +359,10 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
     // Ps is a list of sample points in ascending order, which define new 0-cells we will add to D
     NextPolynomial(Ps, &PM, &PI, &J, &Ps);
+            SWRITE("first polynomial ");
+            LWRITE(PM); SWRITE(" ");
+            LWRITE(PI); SWRITE("\n");
+
 
     Word sign = -1;
     Word Ch1 = Ch;
@@ -372,25 +376,37 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
         if (sign != -1) {
             PM1 = PM, PI1 = PI;
             NextPolynomial(Ps, &PM, &PI, &J, &Ps);
+            SWRITE("next polynomial ");
+            LWRITE(PM); SWRITE(" ");
+            LWRITE(PI); SWRITE("\n");
         }
 
-        // no more cells or no more polynomials
-        if (Ch1 == NIL) {
-            if (refined) {
-                SETSAMPLE(C, PMON(1,1), RNSUM(RNINT(1), RNCEIL(SECOND(J))), PFs);
-            }
+        // last cell TODO
+        //         SETSAMPLE(C, PMON(1,1), RNSUM(RNINT(1), RNCEIL(SECOND(J))), PFs);
 
-            break;
-        }
-
-        // next section -- top of C
-        ADV(Ch1, &CT, &Ch1);
-
-        // get k-th coordinate of the sample point of C
         Word SQ, SJ;
-        GETSAMPLEK(-1, LELTI(CT, SAMPLE), &SQ, &SJ);
-        if (PM != NIL) {
-            sign = COMPARE(SQ, &SJ, PM, &PI);
+        // refine the last cell
+        if (Ch1 != NIL) {
+            // next section -- top of C
+            ADV(Ch1, &CT, &Ch1);
+
+            // get k-th coordinate of the sample point of C
+            GETSAMPLEK(-1, LELTI(CT, SAMPLE), &SQ, &SJ);
+            SWRITE("cell top ");
+            LWRITE(SQ); SWRITE(" ");
+            LWRITE(SJ); SWRITE("\n");
+
+            if (PM != NIL) {
+                sign = COMPARE(SQ, &SJ, PM, &PI);
+                printf("sign = %d\n", sign);
+            }
+        } else if (PM != NIL) {
+            SQ = PMON(1,1);
+
+            Word c1 = RNSUM(SECOND(J), RNINT(2));
+            SJ = LIST2(c1, c1);
+
+            sign = 1; // force a refinement.
         }
 
         // previous cell was refined, need to update
@@ -435,6 +451,12 @@ bool EQUALK(Word k, Word L1, Word L2)
 
 Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
 {
+    // no children to refine.
+    Word Ch = LELTI(D, CHILD);
+    if (Ch == NIL) {
+        return D;
+    }
+
     PF = RED(PF);
     Word k1 = k-1;
     Word A1;
@@ -451,16 +473,16 @@ Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
         }
     }
 
-    // finished?
-    Word Ch = LELTI(D, CHILD);
-    if (A == NIL || Ch == NIL) {
-        return D;
-    }
-
     // do refinement if the list of Ps is non-empty
     if (Ps != NIL) {
+        printf("refining subcad of "); LWRITE(LELTI(D, INDX)); SWRITE("\n");
         Ch = RefineSubcad(k, Ch, Ps, PF);
         SLELTI(D, CHILD, Ch);
+    }
+
+    // no more refinement polynomials
+    if (A == NIL) {
+        return D;
     }
 
     // walk the CAD, sections only.

@@ -122,10 +122,6 @@ void ProcessBadCells(Word r, Word C, Word As, Word i, Word j, Word S, Word *Refi
                 j
             );
 
-            // TODO
-            // - add refinement points
-            //   - maybe add the endpoints? (samlpe of cell top and bottom?
-            // - compute the refinement
             ADDREFINEMENTPOINTS(Idx, sample, RP, LIST2(JB, JT), A_, J_, RPs_);
             *RefinedCells_ = COMP(I1x, *RefinedCells_);
             LWRITE(RP); SWRITE("\n");

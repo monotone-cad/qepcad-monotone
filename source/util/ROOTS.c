@@ -43,13 +43,11 @@ Word ROOTS(Word Ps, Word I)
 
     Rs1 = Rs;
     if (l != NIL) {
-        //printf("letf endpoint "); RNWRITE(l); SWRITE("\n");
         Word c;
         do {
             ADV2(Rs1, &J, &M, &Rs1);
             c = Estimate(J, M);
 
-            // SWRITE("Compare "); RNWRITE(c); SWRITE(" "); RNWRITE(l); printf(" %d ", RNCOMP(c,l)); SWRITE("\n");
             if (RNCOMP(c,l) > 0) break;
             Rs = Rs1;
         } while(Rs != NIL);
@@ -58,19 +56,15 @@ Word ROOTS(Word Ps, Word I)
     // Rs1 now contains all roots whose isolating interval is greater than l
 
     if (r == NIL || Rs == NIL) return Rs;
-    // printf("right endpoint "); RNWRITE(r); SWRITE("\n");
     Rs1 = NIL;
     while (Rs != NIL) {
         ADV2(Rs, &J, &M, &Rs);
         Word c = Estimate(J, M);
-        // SWRITE("Compare "); RNWRITE(c); SWRITE(" "); RNWRITE(r); SWRITE("\n");
         if (RNCOMP(c, r) > 0) break;
-        // SWRITE("  root comes before r: "); LWRITE(M); SWRITE("\n");
 
         Rs1 = COMP2(M, J, Rs1);
     }
 
-    printf("number of roots = %d\n", LENGTH(Rs1));
     return INV(Rs1);
 }
 

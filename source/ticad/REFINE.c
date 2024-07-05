@@ -177,6 +177,10 @@ Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
         Word P;
         ADV(Ps, &P, &Ps);
 
+        // skip unused refinement poitns as cells associated with them have not been computed yet
+        // it's a bit clumsy, using the label, as the type is PO_FAC, which is the same as ordinary projection factors
+        if (EQUAL(FIRST(LELTI(P, PO_LABEL)), LFS("M"))) continue;
+
         Word P1 = SUBSTITUTE(r, LELTI(P, PO_POLY), S1, true); // with rational coefficients
         SPs = COMP(P1, SPs);
     }
@@ -258,7 +262,6 @@ void ADDSIGNPF(Word k, Word C, Word A1)
 
         Word sign = RNSIGN(SUBSTITUTE(k, P, sample, true));
         S1 = COMP(sign, S1);
-        SWRITE("missing polynomial "); LWRITE(P); printf(" sign %d\n", sign);
     }
 
     // append the new signs, in the right order
@@ -379,12 +382,13 @@ void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word *I_, Word* Ps_
 // Refine subcad D to be compatible with level 1 polynomials Ps
 Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 {
-    Word Ch1, C, i, c, C0;
+    Word i1, Ch1, C, i, c, C0;
+    i1 = LELTI(LELTI(FIRST(Ch), INDX), k);
+
     while (Ps != NIL) {
         Word PM, PI, J;
         NextPolynomial(Ps, &PM, &PI, &J, &i, &Ps);
 
-        printf("refinement of cell %d\n", i);
         // find cell with index i.
         Word j = 0, S0M = NIL, S0I = NIL;
         Ch1 = Ch, i = i - 1;  // we are actually looking fro sector bottom
@@ -431,7 +435,7 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
     }
 
     // finally update indices.
-    i = 0, Ch1 = Ch;
+    i = i1 - 1, Ch1 = Ch;
     while (Ch1 != NIL) {
         ++i;
         ADV(Ch1, &C, &Ch1);

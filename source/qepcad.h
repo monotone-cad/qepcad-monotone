@@ -852,6 +852,7 @@ void GETSAMPLEK(Word k, Word S, Word* Q_, Word* J_);
 bool AfIsRat(Word b, Word* r_);
 Word ProjMcxUtil(Word r, Word A);
 Word LazardLifting(Word k, Word S, Word As, Word IPs, Word i, Word j);
+Word RefineSubcad(Word k, Word Ch, Word Ps, Word PF);
 
 #endif
 

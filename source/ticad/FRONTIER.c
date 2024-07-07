@@ -72,10 +72,11 @@ void ProcessBadCells(Word r, Word C, Word As, Word i, Word j, Word S, Word *Refi
     if (Ch == NIL) return;
 
     Word C1 = NIL, C2 = NIL, JT = NIL, JB = NIL;
+    Word level = LELTI(C, LEVEL) + 1; // level of children
     Word sample = LELTI(C, SAMPLE);
     bool section = false;
     while (true) {
-        Word level, s1, SC1;
+        Word s1, SC1;
         C1 = C2;
         JB = JT;
         section = !section;
@@ -85,10 +86,8 @@ void ProcessBadCells(Word r, Word C, Word As, Word i, Word j, Word S, Word *Refi
 
         if (Ch != NIL) {
             ADV(Ch, &C2, &Ch);
-            level = LELTI(C2, LEVEL);
         } else {
             C2 = NIL;
-            level = LELTI(C1, LEVEL);
         }
 
         if (!section && C2 != NIL) {
@@ -124,7 +123,6 @@ void ProcessBadCells(Word r, Word C, Word As, Word i, Word j, Word S, Word *Refi
 
             ADDREFINEMENTPOINTS(Idx, sample, RP, LIST2(JB, JT), A_, J_, RPs_);
             *RefinedCells_ = COMP(I1x, *RefinedCells_);
-            LWRITE(RP); SWRITE("\n");
         }
 
         if (section && (level == j || s == s1)) {

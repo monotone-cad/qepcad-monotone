@@ -89,6 +89,8 @@ Word SUBSTITUTE(Word r, Word P, Word S, bool rc)
     // otherwise perform substitution
     if (PDEG(Q) > 1) { // algebraic sample
         P1 = IPAFME(r, Q, P, c);
+        if (k == 0 || P1 == 0) return P1;
+
         P1 = AFPNORM(k, Q, P1);
 
         if (rc) {

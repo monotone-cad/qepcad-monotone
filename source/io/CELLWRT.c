@@ -14,7 +14,6 @@ Write out the cell C as a tarski formula
 // return : a list of cells C s.t. C has index I
 Word FindInRcad(Word L, Word I, Word j, Word k);
 
-
 void QepcadCls::CELLWRT(Word c)
 {
     Word S,S1,k,t,i,r,D,I;
@@ -24,13 +23,13 @@ void QepcadCls::CELLWRT(Word c)
     k = LELTI(c,LEVEL);
     r = LENGTH(GVVL);
 
-    SWRITE("---------- Information about the cell "); LWRITE(LELTI(c,INDX)); SWRITE("\n\n");
+    I = LELTI(c, INDX);
+    SWRITE("---------- Information about the cell "); LWRITE(I);
 
     /* Dimension at each level (which is why we don't use CELLDIM) */
-    SWRITE("Dimension ");
+    SWRITE(" (Dimension ");
 
     int d = 0, o = 0, j = 0;
-    I = LELTI(c, INDX);
     i = NIL;
     // write the dimension at each level, calculate d = CELLDIM(c)
     while (I != NIL) {
@@ -54,18 +53,14 @@ void QepcadCls::CELLWRT(Word c)
         SWRITE(",1");
     }
 
-    SWRITE(") ");
+    SWRITE(") (");
     IWRITE(d);
 
-    SWRITE("----------\n\n");
-    SWRITE("\nSigns of projection factors ------------------------\n\n");
+    SWRITE("))\n\n");
+    SWRITE("Signs of projection factors ------------------------\n\n");
 
     S = LELTI(c,SIGNPF);
     CELLIPLLDWR(GVVL, GVPF, S, k); SWRITE("\n");
-
-
-
-    SWRITE("\nSigns of (guaranteed definable ) projection factors \n\n");
 
     /* Signs of Projection Factors. */
     // To ensure the CAD is projection definable, we will use the RCAD instead.
@@ -86,8 +81,10 @@ void QepcadCls::CELLWRT(Word c)
         FIRST2(GVTD, &P1, &D1);
     }
 
+    SWRITE("Signs of projection factors (for defining formula) -\n\n");
     Word Cs = FindInRcad(LELTI(D1, CHILD), LELTI(c, INDX), k, 1);
     Word ncs = LENGTH(Cs);
+
     if (ncs > 1) {
         SWRITE("This cell consists of ");
         IWRITE(ncs);
@@ -104,7 +101,7 @@ void QepcadCls::CELLWRT(Word c)
     }
 
     /* Write out the sample point. */
-    SWRITE("\nSample point ----------------------------------------\n\n");
+    SWRITE("Sample point ----------------------------------------\n\n");
     SAMPLEWR(c);
 
     /* Finish. */
@@ -121,7 +118,7 @@ Word FindInRcad(Word L, Word I, Word j, Word k)
     while (L != NIL) {
         ADV(L, &C, &L);
 
-        if (LENGTH(C) < 11) { // unrefined in RCAD
+        if (LENGTH(C) < 11) {
             J = LELTI(C, INDX);
         } else { // look at the cell of original cad containing this RCell
             C1 = LELTI(C, 11); // 11: INCELL

@@ -187,19 +187,25 @@ Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
 
     // and find their roots
     Word B = ROOTS(SPs, LIST2(NIL, NIL));
-    while (B != NIL && Ch != NIL) {
+    Word l = NIL, c;
+    while (B != NIL && RED(Ch) != NIL) {
         Word C1, C2, RM, RI;
         ADV2(Ch, &C1, &C2, &Ch);
         ADV2(B, &RI, &RM, &B);
 
-        // TODO if the first root is not algebraic, then the isolating interval is not sufficient. same is true for the
-        // last root. maybe we should do C_B,C instead, and set the first sector to floo or first interval - 1.
-        Word SC1 = SetSampleHelper(r+1, S1, LELTI(C1, CHILD), PMON(1,1), LIST1(FIRST(RI)), PFs);
+        // first sector
+        if (l == NIL) {
+            c = RNSUM(FIRST(RI), RNINT(-1));
+        } else { // sector in the middle
+            c = RNQ(RNSUM(FIRST(RI), l), RNINT(2));
+        }
+
+        Word SC1 = SetSampleHelper(r+1, S1, LELTI(C1, CHILD), PMON(1,1), LIST1(c), PFs);
 
         // if root is rational
         Word SC2;
         if (PDEG(RM) == 1) {
-            Word c = IUPRLP(RM);
+            c = IUPRLP(RM);
 
             SC2 = SetSampleHelper(r+1, S1, LELTI(C2, CHILD), PMON(1,1), LIST1(c), PFs);
         } else { // polynomial and isolating interval define the algebraic number
@@ -208,7 +214,14 @@ Word SetSampleHelper(Word r, Word S, Word Ch, Word M, Word I, Word PFs)
 
         SLELTI(C1, SAMPLE, SC1);
         SLELTI(C2, SAMPLE, SC2);
+        l = SECOND(RI);
     }
+
+    // and the last sector
+    Word Cr = FIRST(Ch);
+    c = RNSUM(l, RNINT(1));
+    Word SCr = SetSampleHelper(r+1, S1, LELTI(Cr, CHILD), PMON(1,1), LIST1(c), PFs);
+    SLELTI(Cr, SAMPLE, SCr);
 
     return S1;
 }
@@ -246,6 +259,7 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
 // add missing signpfs
 void ADDSIGNPF(Word k, Word C, Word A1)
 {
+    printf("missing signpfs for "); LWRITE(LELTI(C, INDX)); SWRITE("\n");
     Word sample = LELTI(C, SAMPLE);
     Word S = FIRST(LELTI(C, SIGNPF));
     A1 = REDI(A1, LENGTH(S));
@@ -310,10 +324,6 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word S0M, Word S0I, Word PFs,
         // to the new "refinement point" given
         SETSAMPLE(C2, PM, PI, PFs);
     }
-
-    // add missing signs of projection factors
-    ADDSIGNPF(k, C1, PF1);
-    ADDSIGNPF(k, C2, PF1);
 
     // we may will need to update the sample of C3, but this is done later.
     *rc = sign != 1;
@@ -416,9 +426,6 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
         // might be that we need to refine C3
         if (!refine_after) {
-            // don't forget to add missing signpfs
-            ADDSIGNPF(k, C, FIRST(PFs));
-
             continue;
         }
 
@@ -431,16 +438,17 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
         }
 
         SETSAMPLE(C, PMON(1,1), LIST1(c), RED(PFs));
-        ADDSIGNPF(k, C, FIRST(PFs));
     }
 
     // finally update indices.
     i = i1 - 1, Ch1 = Ch;
+    Word PF1 = FIRST(PFs);
     while (Ch1 != NIL) {
         ++i;
         ADV(Ch1, &C, &Ch1);
 
         SETINDEXK(C, k, i);
+        ADDSIGNPF(k, C, PF1);
     }
 
     return Ch;

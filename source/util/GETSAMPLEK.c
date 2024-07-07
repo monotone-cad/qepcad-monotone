@@ -24,7 +24,7 @@ void GETSAMPLEK(Word k, Word S, Word* Q_, Word* J_)
     Word SQ, SJ, SM, SI, Sb, junk;
     bool extended = LENGTH(S) == 5;
 
-    if (extended && (k == -1 || k == LENGTH(LELTI(S, 5)))) {
+    if (extended && (k == -1 || k == LENGTH(LELTI(S, 5)) + 1)) {
         // extended representation, last coordinate
         FIRST4(S, &SQ, &SJ, &SM, &SI);
         SQ = AFPNORM(1, SM, SQ);

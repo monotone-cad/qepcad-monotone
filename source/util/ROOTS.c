@@ -43,13 +43,10 @@ Word ROOTS(Word Ps, Word I)
 
     Rs1 = Rs;
     if (l != NIL) {
-        printf("left endpoint = "); RNWRITE(l); SWRITE("\n");
         Word c;
         do {
             ADV2(Rs1, &J, &M, &Rs1);
             c = Estimate(J, M);
-            printf("  c = "); RNWRITE(c);
-            printf(" compare = %d\n", RNCOMP(c,l));
 
             // root is IN if c > l
             if (RNCOMP(c,l) > 0) break;
@@ -61,19 +58,15 @@ Word ROOTS(Word Ps, Word I)
 
     if (r == NIL || Rs == NIL) return Rs;
     Rs1 = NIL;
-    printf("right endpoint = "); RNWRITE(r); SWRITE("\n");
     while (Rs != NIL) {
         ADV2(Rs, &J, &M, &Rs);
         Word c = Estimate(J, M);
-        printf("  c = "); RNWRITE(c);
-        printf(" compare = %d\n", RNCOMP(c,r));
         // root is IN if c < r
         if (RNCOMP(c,r) >= 0) break;
 
         Rs1 = COMP2(M, J, Rs1);
     }
 
-    printf("number of roots %d\n", LENGTH(Rs1));
     return INV(Rs1);
 }
 

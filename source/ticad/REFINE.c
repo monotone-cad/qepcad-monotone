@@ -256,10 +256,25 @@ void SETSAMPLE(Word C, Word M, Word I, Word PFs)
     SLELTI(C, SAMPLE, S1);
 }
 
+// append S to level k signpf
+void SignpfHelper(Word k, Word C, Word S)
+{
+    Word i = LELTI(C, LEVEL);
+
+    SLELTI(LELTI(C, SIGNPF), i + 1 - k, S);
+
+    Word Ch = LELTI(C, CHILD);
+    while (Ch != NIL) {
+        Word C1;
+        ADV(Ch, &C1, &Ch);
+
+        SignpfHelper(k, C1, S);
+    }
+}
+
 // add missing signpfs
 void ADDSIGNPF(Word k, Word C, Word A1)
 {
-    printf("missing signpfs for "); LWRITE(LELTI(C, INDX)); SWRITE("\n");
     Word sample = LELTI(C, SAMPLE);
     Word S = FIRST(LELTI(C, SIGNPF));
     A1 = REDI(A1, LENGTH(S));
@@ -280,6 +295,9 @@ void ADDSIGNPF(Word k, Word C, Word A1)
 
     // append the new signs, in the right order
     S = CONC(S, INV(S1));
+
+    // for copy cells, we have to append the signpfs to children, too
+    SignpfHelper(k, C, S);
 }
 
 // let C = FIRST(Cs) be a (0,...,0,1)-cell and s be a point in C. refine C into three new cells such that s is a new
@@ -298,8 +316,6 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word S0M, Word S0I, Word PFs,
     Word C2 = LDCOPY(C1);
     Word C3 = LDCOPY(C1);
 
-    SWRITE("Refine cell "); LWRITE(LELTI(C1, INDX)); SWRITE("\n");
-
     // update sample
     // we will need to update only two of the cells, as the existing sample will be correct for one of them
     Word SQ, SJ;
@@ -314,6 +330,11 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word S0M, Word S0I, Word PFs,
         if (S0M == NIL) { // not bounded from below. easy!
             c = RNSUM(FIRST(PI), RNINT(-1));
         } else {
+            Word c1;
+            SWRITE("set sample before. ");
+            RNWRITE(SECOND(S0I)); SWRITE(" ");
+            RNWRITE(FIRST(PI)); SWRITE("\n");
+
             c = RNQ(RNSUM(SECOND(S0I), FIRST(PI)), RNINT(2));
         }
 
@@ -389,6 +410,22 @@ void NextPolynomial(Word Ps, Word* PM_, Word* PI_, Word* J_, Word *I_, Word* Ps_
     *PI_ = I;
 }
 
+bool RequiresRefinements(Word Ch, Word PM, Word PI)
+{
+    Ch = RED(Ch);
+
+    if (Ch == NIL) {
+        // refining last sector.
+        return true;
+    }
+
+    // otherwise, we check if the refinement is past the end of the cell (greater than C_T)
+    Word SM, SI;
+    GETSAMPLEK(-1, LELTI(FIRST(Ch), SAMPLE), &SM, &SI);
+
+    return COMPARE(SM, &SI, PM, &PI) > 0;
+}
+
 // Refine subcad D to be compatible with level 1 polynomials Ps
 Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 {
@@ -400,26 +437,44 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
         NextPolynomial(Ps, &PM, &PI, &J, &i, &Ps);
 
         // find cell with index i.
+        // we will retrieve the sample of the bottom of the cell to be refined.
+        bool section = true;
         Word j = 0, S0M = NIL, S0I = NIL;
         Ch1 = Ch, i = i - 1;  // we are actually looking fro sector bottom
-        while (i > 0 || Ch1 != NIL) {
+        while (i > 0 && Ch1 != NIL) {
+            section = !section;
             ADV(Ch1, &C, &Ch1);
+
+            // do not consider sector cells, as oru candidate is always a sector and the bottom is always a section
+            if (!section) continue;
 
             // original cell indices are preserved until the last moment.
             // we cannot just count in case a cell was refined.
             j = LELTI(LELTI(C, INDX), k);
 
-            if (j == i) {
-                // C is the cell bottom. get its sample k
+            // C is the cell bottom. get its sample k
+            if (j >= i) {
                 GETSAMPLEK(-1, LELTI(C, SAMPLE), &S0M, &S0I);
 
-                break;
+                // check if the cell requires refinement
+                if (RequiresRefinements(Ch1, PM, PI)) {
+                    printf("%d requires refinement", j);
+
+                    break;
+                }
             }
         }
 
         // first cell in Ch is to be refined, S1M, S1J is the k-th coordinate of the sample point of C_B
         bool refine_after = false; // do we need to refine C3?
-        Ch1 = RefineCell(k, Ch1, PM, PI, S0M, S0I, PFs, &refine_after);
+        Word J1;
+        if (PDEG(S0M) == 1) { // exact rational refinement point
+            J1 = S0I;
+        } else { // approximate ratinoal number, for algebraic refinement point
+            J1 = J;
+        }
+
+        Ch1 = RefineCell(k, Ch1, PM, PI, S0M, J1, PFs, &refine_after);
 
         ADV(RED2(Ch1), &C, &Ch1);
         // now FIRST(Ch) is the top of C, if C is bounded from above
@@ -433,8 +488,10 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
             c = RNSUM(SECOND(PI), RNINT(1));
         } else {
             GETSAMPLEK(-1, LELTI(FIRST(Ch1), SAMPLE), &S0M, &S0I);
+            SWRITE("set sample after. ");
+            RNWRITE(SECOND(PI)); SWRITE(" ");
+            RNWRITE(FIRST(S0I)); SWRITE("\n");
             c = RNQ(RNSUM(SECOND(PI), FIRST(S0I)), RNINT(2));
-            RNWRITE(SECOND(PI)); SWRITE(" "); RNWRITE(FIRST(S0I)); SWRITE(" ");  RNWRITE(c);
         }
 
         SETSAMPLE(C, PMON(1,1), LIST1(c), RED(PFs));
@@ -501,7 +558,6 @@ Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
 
     // do refinement if the list of Ps is non-empty
     if (Ps != NIL) {
-        printf("refining subcad of "); LWRITE(LELTI(D, INDX)); SWRITE("\n");
         Ch = RefineSubcad(k, Ch, Ps, PF);
         SLELTI(D, CHILD, Ch);
     }

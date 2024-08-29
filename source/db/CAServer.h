@@ -31,7 +31,7 @@ public:
   }
 
   /*
-    Integer Polynomial Factorized Groebner Basis: 
+    Integer Polynomial Factorized Groebner Basis:
     Inputs:
      r = number of variables
      I = a list of r-variate polynomials that generate the ideal
@@ -41,7 +41,7 @@ public:
          GB being a list of r-variate integral polynomials.  The intersection
 	 of these ideals has the same zero set as the original ideal,
 	 assuming the given non-zero constraints.  Each polynomial
-	 will be integral.	 
+	 will be integral.
    */
   virtual Word IPFACTGB(Word r, Word I, Word N)
   {
@@ -53,12 +53,18 @@ public:
     cerr << "CONSTORDTEST not implemented by this CAServer!" << endl;
     exit(1);
   }
+  virtual Word GROEBNER(Word Ps, Word Rs, Word r)
+  {
+    cerr << "GROEBNER not implemented by this CAServer!" << endl;
+    exit(1);
+  }
+
 
 
   virtual int serverTime() { return -1; }
-  virtual void reportStats(ostream &out) 
-  { 
-    out << "Stats for CAServer " << name() << " not available." << endl; 
+  virtual void reportStats(ostream &out)
+  {
+    out << "Stats for CAServer " << name() << " not available." << endl;
   }
   virtual const string name() { return "Empty"; }
   virtual ~CAServer() { }

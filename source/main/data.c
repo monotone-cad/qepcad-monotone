@@ -10,7 +10,7 @@ SingularServer *GVpSingularServer = 0;
 /* -----------------------------------------------*/
 /*            Data-bases                          */
 /* -----------------------------------------------*/
-Word DBAFCSBM;      /* Database for AFCSBM */   
+Word DBAFCSBM;      /* Database for AFCSBM */
 Word DBAFPNIP;      /* Database for AFPNIP */
 Word DBAFUPGC;      /* Database for AFUPGC */
 Word DBAFUPSFN;     /* Database for AFUPSFN */
@@ -51,7 +51,7 @@ Word TCPC;      /* Partial CAD */
 Word TCPROD;    /* Product generated */
 Word TCPIMP;    /* Prime Implicant */
 Word TCPIMPTBL; /* Prime Implicant Table */
-Word TCEPIMP;   /* Essential Prime Implicant */ 
+Word TCEPIMP;   /* Essential Prime Implicant */
 Word TCSTAT;    /* Statistics at the end */
 Word TCDSTAT;   /* Dissertation statistics at the end */
 
@@ -64,6 +64,7 @@ Word PCDBUSE;
 Word PCDBLIMIT;
 Word PCRESALG;    /* Choice of resultant algorithm. */
 Word PCIPFZT;     /* 'y' if IPFZT is turned on, 'n' otherise. */
+Word PCMCT;       /* 'y' if we want monotone cells, 'n' otherwise. */
 Word PCVERBOSE;   /* Verbose mode: 0 means not verbose, 1 means verbose 06/19/02 */
 Word PCCONTINUE;   /* Flag to show that the "continue" command has been issued. */
 
@@ -105,7 +106,7 @@ void QEGLOBALS()
   PCRESALG = MODULAR;
   PCVERBOSE = 0;
 
-  GCGLOBAL(&DBAFCSBM);     /* Database for AFCSBM */   
+  GCGLOBAL(&DBAFCSBM);     /* Database for AFCSBM */
   GCGLOBAL(&DBAFPNIP);     /* Database for AFPNIP */
   GCGLOBAL(&DBAFUPGC);     /* Database for AFUPGC */
   GCGLOBAL(&DBAFUPSFN);    /* Database for AFUPSFN */
@@ -139,14 +140,14 @@ void QepcadCls::INITGLOBALS()
   GVWL = -1; /* -1 means uninit, 0 means inactive, NIL makes active */
 
   PCAFUPBRI = 1;
-    
+
   /* Uses the fast cell choice mechanism.  the "selected cells"
      option works with fast cell choice, but the ordering stragies
      do not! */
   PCCHFLAG = 1;
-  
+
   PCMZERROR = 0; /* By default do NOT allow any error!! */
-  
+
   PCCCS = LIST3(TCORD,LDORD,HLORD);
   PCCCSF = LIST1(LLORD);
   PCIGS = 'r';
@@ -159,16 +160,17 @@ void QepcadCls::INITGLOBALS()
   PCDESIRED = LIST3(EQOP,0,0);
   PCUSEDES  = 'n';
   PCIPFZT = 'y';
+  PCMCT = 'n';
   PCNUMDEC = 10;
   PCSIMPLIFY = 'b';
   PCEQC  = 0;
-  
+
   PCPROPEC = FALSE;
-  
+
   PCSEARCHOK = 'n';
   PCSEARCHTRUE = 'n';
   PCSEARCHFALSE = 'n';
-  
+
 }
 
 void QepcadCls::INITSTATS()

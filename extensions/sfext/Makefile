@@ -1,4 +1,4 @@
-##################################################################
+#################################################################
 #
 # Makefile for sfext.a
 #
@@ -56,7 +56,10 @@ $(LIB)(CRCELL.o) \
 $(LIB)(CSORCELL.o) \
 $(LIB)(CSORCELL_MOD.o) \
 $(LIB)(FALSECELLWRITE.o) \
+$(LIB)(FALSECELLWRITET.o) \
 $(LIB)(TRUECELLWRITE.o) \
+$(LIB)(TRUECELLWRITET.o) \
+$(LIB)(ALLCELLWRITET.o) \
 $(LIB)(LISTOFCWTV.o) \
 $(LIB)(NUMSOLPOINTS.o) \
 $(LIB)(RNCADRTV.o) \

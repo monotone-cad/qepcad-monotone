@@ -7,12 +7,12 @@ class SingSacPolicy : public CAPolicy
 {
   CAPolicy *sing, *sac;
 public:
-  SingSacPolicy() 
+  SingSacPolicy()
   {
     sac = new OriginalPolicy;
     sing = new SingularPolicy;
   }
-  ~SingSacPolicy() 
+  ~SingSacPolicy()
   {
     delete sing;
     delete sac;
@@ -28,35 +28,44 @@ public:
   Word IPRES(Word r, Word A, Word B)
   {
     if (r > 2)
-      sing->IPRES(r,A,B);
+      return sing->IPRES(r,A,B);
     else
-      sac ->IPRES(r,A,B);
+      return sac->IPRES(r,A,B);
   }
 
   Word IPDSCR(Word r, Word A)
   {
     if (r > 2)
-      sing->IPDSCR(r,A);
+      return sing->IPDSCR(r,A);
     else
-      sac ->IPDSCR(r,A);
+      return sac ->IPDSCR(r,A);
   }
 
-  Word IPFACTGB(Word r, Word I, Word N)  
+  Word IPFACTGB(Word r, Word I, Word N)
   {
     return sing->IPFACTGB(r,I,N);
   }
 
-  Word CONSTORDTEST(Word r, Word A, Word L) 
+  Word CONSTORDTEST(Word r, Word A, Word L)
   {
     return sing->CONSTORDTEST(r,A,L);
   }
+  Word GROEBNER(Word Ps, Word Rs, Word r) {
+    return sing->GROEBNER(Ps, Rs, r);
+  }
+
 
   const string name() { return "SingSacPolicy"; }
   bool supports(const string &s)
   {
-      return s == "IPFAC" || s == "IPRES" || s == "IPDSCR" || s == "IPFACTGB" || s == "CONSTORDTEST"; 
+      return s == "IPFAC"
+          || s == "IPRES"
+          || s == "IPDSCR"
+          || s == "IPFACTGB"
+          || s == "CONSTORDTEST"
+          || s == "GROEBNER";
   }
-  
+
 };
 
 #endif

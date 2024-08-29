@@ -23,13 +23,13 @@ Step1: /* Write Atomic Tarski Formula. */
 
 Step2: /* Write Atomic Extended Tarski Formula */
        FIRST6(A,&X,&T,&j,&P,&r,&I);
-       
+
        /* Correct for unnormalized ETF atoms */
        if (I == NIL)
 	 P = LIST1(P);
 
        VWRITE(LELTI(V,r));
-       SWRITE(" "); RLOPWR(T); 
+       SWRITE(" "); RLOPWR(T);
        SWRITE(" _root_"); IWRITE(j);
        if (LENGTH(P) == 1)
        {

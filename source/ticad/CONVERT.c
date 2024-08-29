@@ -1,12 +1,12 @@
 /*======================================================================
                       sh <- CONVERT(s,k)
 
-Convert to a primitive sample point.  
- 
-\Input 
+Convert to a primitive sample point.
+
+\Input
    \parm{s} is a sample point of a cell c.
    \parm{k} is the level of the cell~\v{c}, \v{k} $\geq 1$.
- 
+
 \Output
    \parm{sh} is a primitive sample point for the cell c.
 ======================================================================*/

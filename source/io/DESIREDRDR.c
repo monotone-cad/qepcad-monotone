@@ -2,8 +2,8 @@
                       DESIREDRDR(; F,t)
 
 Desired cell condition read, robust.
-  
-\Output  
+
+\Output
   \parm{F} is a condition for desired cells.
   \parm{t} is 1 if successful, 0 otherwise.
 ======================================================================*/
@@ -17,8 +17,8 @@ void DESIREDRDR(Word *F_, Word *t_)
 Step1: /* Atomic condition. */
        t = 1;
        C = CREADB(); if (C == '[') goto Step2;
-       BKSP(); 
-       if (DIGIT(C)) 
+       BKSP();
+       if (DIGIT(C))
          V1 = AREAD();
        else
          {CATTRNRDR(&V1,&t);  if (t == 0) goto Return;}
@@ -56,8 +56,8 @@ Step5: /* Indentify the logical operator. */
          case LEFTOP:    goto Step9; break;
          case EQUIOP:    goto Step10; break;
          case NOTOP:     {
-                         SWRITE("Error DESIREDRDR: '~' must not be here.\n"); 
-                         goto Step11; 
+                         SWRITE("Error DESIREDRDR: '~' must not be here.\n");
+                         goto Step11;
                          }
          }
 
@@ -72,7 +72,7 @@ Step6: /* Conjunction. */
          BKSP(); LGOPRDR(&p,&t); if (t == 0) goto Return;
          if (p != ANDOP)
            { SWRITE("Error DESIREDRDR: '/\\' was expected.\n"); goto Step11; }
-         } 
+         }
        while (1);
 
 Step7: /* Disjunction. */
@@ -86,7 +86,7 @@ Step7: /* Disjunction. */
          BKSP(); LGOPRDR(&p,&t); if (t == 0) goto Return;
          if (p != OROP)
            { SWRITE("Error DESIREDRDR: '\\/' was expected.\n"); goto Step11; }
-         } 
+         }
        while (1);
 
 Step8: /* $\Rightarrow$. */

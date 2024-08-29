@@ -1,3 +1,6 @@
+# Executable files
+source/qepcadd
+source/qepcad
 # Prerequisites
 *.d
 

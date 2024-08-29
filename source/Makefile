@@ -96,6 +96,7 @@ $(LIB)(io/CATTRNRDR.o) \
 $(LIB)(io/CATTRNWR.o) \
 $(LIB)(io/CELLRDR.o) \
 $(LIB)(io/CELLWR.o) \
+$(LIB)(io/CELLWRT.o) \
 $(LIB)(io/CELLSWR.o) \
 $(LIB)(io/COMMNT.o) \
 $(LIB)(io/COMMNTRD.o) \
@@ -118,6 +119,7 @@ $(LIB)(io/GETWORD.o) \
 $(LIB)(io/GREADR.o) \
 $(LIB)(io/IPLDWR.o) \
 $(LIB)(io/IPLLDWR.o) \
+$(LIB)(io/CELLIPLLDWR.o) \
 $(LIB)(io/IPLLDWRMOD.o) \
 $(LIB)(io/IUPRWR.o) \
 $(LIB)(io/LABELWR.o) \
@@ -217,7 +219,9 @@ $(LIB)(proj/PROJMCEC.o) \
 $(LIB)(proj/PROPCONS.o) \
 $(LIB)(proj/UDEQNCONST.o) \
 $(LIB)(proj/SEPLAB.o) \
-$(LIB)(proj/PROJECTauto.o)
+$(LIB)(proj/PROJECTauto.o) \
+$(LIB)(proj/QUASIAFFINE.o) \
+$(LIB)(proj/ProjMcxUtil.o)
 
 OBJS_SYSOLVE = \
 $(LIB)(sysolve/ASSUMPTIONSRATVEVAL.o) \
@@ -316,7 +320,11 @@ $(LIB)(ticad/SUBST.o) \
 $(LIB)(ticad/SUBSTR.o) \
 $(LIB)(ticad/TCHILD.o) \
 $(LIB)(ticad/TICAD.o) \
-$(LIB)(ticad/TICADauto.o)
+$(LIB)(ticad/MONOTONE.o) \
+$(LIB)(ticad/REFINE.o) \
+$(LIB)(ticad/FRONTIER.o) \
+$(LIB)(ticad/TICADauto.o) \
+$(LIB)(ticad/LazardLifting.o)
 
 OBJS_USERINT = \
 $(LIB)(userint/CELLFIDX.o) \
@@ -332,6 +340,7 @@ $(LIB)(userint/PRAPPROX.o) \
 $(LIB)(userint/PRCCS.o) \
 $(LIB)(userint/PRCCSF.o) \
 $(LIB)(userint/PRDC.o) \
+$(LIB)(userint/PRDCT.o) \
 $(LIB)(userint/PRDCC.o) \
 $(LIB)(userint/PRDCS.o) \
 $(LIB)(userint/PRDDESIRED.o) \
@@ -360,6 +369,7 @@ $(LIB)(userint/PRFINISH.o) \
 $(LIB)(userint/PRGO.o) \
 $(LIB)(userint/PRHELP.o) \
 $(LIB)(userint/PRIPFZT.o) \
+$(LIB)(userint/PRMCT.o) \
 $(LIB)(userint/PRIGS.o) \
 $(LIB)(userint/PRLDB.o) \
 $(LIB)(userint/PRMCC.o) \
@@ -388,6 +398,8 @@ $(LIB)(userint/PRRESALG.o) \
 $(LIB)(userint/USERINT.o)
 
 OBJS_UTIL = \
+$(LIB)(util/ADDPOL.o) \
+$(LIB)(util/ADDPOLS.o) \
 $(LIB)(util/CELLDEG.o) \
 $(LIB)(util/CELLDIM.o) \
 $(LIB)(util/MATCHWORD.o) \
@@ -399,7 +411,21 @@ $(LIB)(util/RMCONS.o) \
 $(LIB)(util/RNFAF.o) \
 $(LIB)(util/SVPOWR.o) \
 $(LIB)(util/SVPROD.o) \
-$(LIB)(util/VALIDLBL.o)
+$(LIB)(util/VALIDLBL.o) \
+$(LIB)(util/ADDPOLS.o) \
+$(LIB)(util/LEVELIDX.o) \
+$(LIB)(util/PADDVS.o) \
+$(LIB)(util/PPREPVS.o) \
+$(LIB)(util/JACOBI.o) \
+$(LIB)(util/IPFRPmod.o) \
+$(LIB)(util/SUBSTITUTE.o) \
+$(LIB)(util/ROOTS.o) \
+$(LIB)(util/LDCOPY.o) \
+$(LIB)(util/FindByIndex.o) \
+$(LIB)(util/TwoDimensionalIndex.o) \
+$(LIB)(util/ConvertToPrimitive.o) \
+$(LIB)(util/ADDREFINEMENTPOINTS.o) \
+$(LIB)(util/GETSAMPLEK.o)
 
 #  To replace saclib routines.
 OBJS_SACLIB = \
@@ -412,8 +438,7 @@ $(LIB)(saclib/IPRNEVAL.o) \
 $(LIB)(saclib/RVSPTSVSP.o) \
 $(LIB)(saclib/SOSRSUBS.o) \
 $(LIB)(saclib/SOSRSUPS.o) \
-$(LIB)(saclib/SUBSET.o)
-
+$(LIB)(saclib/SUBSET.o) \
 
 OBJS_DBd = \
 $(LIBD)(db/AFCSBMDB.o) \
@@ -444,6 +469,7 @@ $(LIBD)(io/CATTRNRDR.o) \
 $(LIBD)(io/CATTRNWR.o) \
 $(LIBD)(io/CELLRDR.o) \
 $(LIBD)(io/CELLWR.o) \
+$(LIBD)(io/CELLWRT.o) \
 $(LIBD)(io/CELLSWR.o) \
 $(LIBD)(io/COMMNT.o) \
 $(LIBD)(io/COMMNTRD.o) \
@@ -466,6 +492,7 @@ $(LIBD)(io/GETWORD.o) \
 $(LIBD)(io/GREADR.o) \
 $(LIBD)(io/IPLDWR.o) \
 $(LIBD)(io/IPLLDWR.o) \
+$(LIBD)(io/CELLIPLLDWR.o) \
 $(LIBD)(io/IPLLDWRMOD.o) \
 $(LIBD)(io/IUPRWR.o) \
 $(LIBD)(io/LABELWR.o) \
@@ -565,7 +592,9 @@ $(LIBD)(proj/PROJMCEC.o) \
 $(LIBD)(proj/PROPCONS.o) \
 $(LIBD)(proj/UDEQNCONST.o) \
 $(LIBD)(proj/SEPLAB.o) \
-$(LIBD)(proj/PROJECTauto.o)
+$(LIBD)(proj/PROJECTauto.o) \
+$(LIBD)(proj/QUASIAFFINE.o) \
+$(LIBD)(proj/ProjMcxUtil.o)
 
 OBJS_SYSOLVEd = \
 $(LIBD)(sysolve/ASSUMPTIONSRATVEVAL.o) \
@@ -664,7 +693,12 @@ $(LIBD)(ticad/SUBST.o) \
 $(LIBD)(ticad/SUBSTR.o) \
 $(LIBD)(ticad/TCHILD.o) \
 $(LIBD)(ticad/TICAD.o) \
-$(LIBD)(ticad/TICADauto.o)
+$(LIBD)(ticad/MONOTONE.o) \
+$(LIBD)(ticad/REFINE.o) \
+$(LIBD)(ticad/FRONTIER.o) \
+$(LIBD)(proj/QUASIAFFINE.o) \
+$(LIBD)(ticad/TICADauto.o) \
+$(LIBD)(ticad/LazardLifting.o)
 
 OBJS_USERINTd = \
 $(LIBD)(userint/CELLFIDX.o) \
@@ -680,6 +714,7 @@ $(LIBD)(userint/PRAPPROX.o) \
 $(LIBD)(userint/PRCCS.o) \
 $(LIBD)(userint/PRCCSF.o) \
 $(LIBD)(userint/PRDC.o) \
+$(LIBD)(userint/PRDCT.o) \
 $(LIBD)(userint/PRDCC.o) \
 $(LIBD)(userint/PRDCS.o) \
 $(LIBD)(userint/PRDDESIRED.o) \
@@ -708,6 +743,7 @@ $(LIBD)(userint/PRFINISH.o) \
 $(LIBD)(userint/PRGO.o) \
 $(LIBD)(userint/PRHELP.o) \
 $(LIBD)(userint/PRIPFZT.o) \
+$(LIBD)(userint/PRMCT.o) \
 $(LIBD)(userint/PRIGS.o) \
 $(LIBD)(userint/PRLDB.o) \
 $(LIBD)(userint/PRMCC.o) \
@@ -736,6 +772,8 @@ $(LIBD)(userint/PRRESALG.o) \
 $(LIBD)(userint/USERINT.o)
 
 OBJS_UTILd = \
+$(LIBD)(util/ADDPOL.o) \
+$(LIBD)(util/ADDPOLS.o) \
 $(LIBD)(util/CELLDEG.o) \
 $(LIBD)(util/CELLDIM.o) \
 $(LIBD)(util/MATCHWORD.o) \
@@ -747,7 +785,22 @@ $(LIBD)(util/RMCONS.o) \
 $(LIBD)(util/RNFAF.o) \
 $(LIBD)(util/SVPOWR.o) \
 $(LIBD)(util/SVPROD.o) \
-$(LIBD)(util/VALIDLBL.o)
+$(LIBD)(util/VALIDLBL.o) \
+$(LIBD)(util/ADDPOL.o) \
+$(LIBD)(util/ADDPOLS.o) \
+$(LIBD)(util/LEVELIDX.o) \
+$(LIBD)(util/PADDVS.o) \
+$(LIBD)(util/PPREPVS.o) \
+$(LIBD)(util/JACOBI.o) \
+$(LIBD)(util/IPFRPmod.o) \
+$(LIBD)(util/SUBSTITUTE.o) \
+$(LIBD)(util/ROOTS.o) \
+$(LIBD)(util/LDCOPY.o) \
+$(LIBD)(util/FindByIndex.o) \
+$(LIBD)(util/TwoDimensionalIndex.o) \
+$(LIBD)(util/ConvertToPrimitive.o) \
+$(LIBD)(util/ADDREFINEMENTPOINTS.o) \
+$(LIBD)(util/GETSAMPLEK.o)
 
 #  To replace saclib routines.
 OBJS_SACLIBd = \
@@ -760,7 +813,7 @@ $(LIBD)(saclib/IPRNEVAL.o) \
 $(LIBD)(saclib/RVSPTSVSP.o) \
 $(LIBD)(saclib/SOSRSUBS.o) \
 $(LIBD)(saclib/SOSRSUPS.o) \
-$(LIBD)(saclib/SUBSET.o)
+$(LIBD)(saclib/SUBSET.o) \
 
 # ============================================================
 #     Dependecies

@@ -35,6 +35,8 @@ public:
   GCWord GVUA;         /* Unnormalized formula for assumptions. */
   GCWord GVNA;         /* Normalized formula for assumptions. */
   GCWord GVWL;         /* List of "witnesses", i.e. cells true by trial eval in a SAT problem. */
+  GCWord GVREFL;       /* Lst of refinement polynomials, for constructing monotone CAD. */
+  GCWord GVTD;         /* LIST2(t,D) flag and maybe ESPCAD for tarski formula construction. */
 
   /* ------------------------------------------------------------------------*/
   /*                      Program control                                    */
@@ -42,27 +44,28 @@ public:
   GCWord PCAFUPBRI;   /* 0 for AFUPBRI, 1 for AFUPHIBRI. */
   GCWord PCNSTEP;     /* Number of steps to be skipped */
   GCWord PCFINISH;    /* 'y' if finish, 'n' otherwise */
-  GCWord PCMC;        /* 'y' if a cell is  chosen manually, 
+  GCWord PCMC;        /* 'y' if a cell is  chosen manually,
 		     * 'n' otherwise */
   GCWord PCMCC;       /* The cell manually chosen */
-  GCWord PCTCN;       /* 'y' if trivial conversion is treated, 
+  GCWord PCTCN;       /* 'y' if trivial conversion is treated,
 		     * 'n' otherwise */
-  GCWord PCRSP;       /* 'y' if rational sample point is treated, 
+  GCWord PCRSP;       /* 'y' if rational sample point is treated,
 		     * 'n' otherwise */
   GCWord PCFULL;      /* 'y' if a full CAD is to be build */
-  GCWord PCPROJOP;    /* Projection operators */       
+  GCWord PCMCT;      /* 'y' if a monotone CAD is to be constructed (also enables frontier condition) */
+  GCWord PCPROJOP;    /* Projection operators */
   GCWord PCCCS;       /* Cell Choice Strategy for cells of level >= f. */
   GCWord PCCCSF;      /* Cell Choice Strategy for cells of level < f. */
   GCWord PCDESIRED;   /* Desired cell condition */
   GCWord PCUSEDES;    /* 'y' if use the desired condition, 'n' otherwise. */
-  GCWord PCNUMDEC;    /* Number of decimal digits for 
+  GCWord PCNUMDEC;    /* Number of decimal digits for
 		       * approximating algebraic numbers. */
-  GCWord PCSIMPLIFY;  /* 'b' if bottom-up is used.   
+  GCWord PCSIMPLIFY;  /* 'b' if bottom-up is used.
 		       * 't' if top-down is used. */
   GCWord PCEQC;       /* 1 if equational contraint specified.
 		       * 0 otherwise. */
   GCWord PCPROPEC;    /* Propagation of equational constraints. */
-  
+
   GCWord PCSEARCHOK;     /* 'y' if the search for true/false cell succeeded, 'n' otherwise. */
   GCWord PCSEARCHTRUE;   /* 'y' if the search for true cell should be done, 'n' otherwise. */
   GCWord PCSEARCHFALSE;  /* 'y' if the search for false cell should be done, 'n' otherwise. */
@@ -83,6 +86,9 @@ Word   TMAPPEND[MNV1];     /* Time for Appending, APPEND */
 
 /* Statistics on Truth Invariant CAD Construction Phase */
 Word TMTICAD[MNV1];     /* Time for Truth invariant CAD Construnction Phase, TICAD */
+Word MONOTONE(Word* A_, Word* J_, Word D, Word r);
+Word REFINE(Word k, Word D, Word A, Word P);
+Word FRONTIER(Word r, Word k, Word C, Word P, Word* A, Word* J_, Word* RPs_);
 Word   TMCHOOSE[MNV1];    /* Time for Choosing a cell, CHOOSE */
 Word   TMCONVERT[MNV1];   /* Time for Conversion, CONVERT */
 Word     TMTCN[MNV1];       /* Time for Trivial Conversion */
@@ -103,7 +109,7 @@ Word     TMIPLSRP[MNV1];    /* Time for computing signs and similar int; polys, 
 Word     TMIPFSBM[MNV1];    /* Time for computing finest squarefree basis, IPFSBM */
 Word     TMIPLRRI[MNV1];    /* Time for integral poly real root isolation,  IPLRRI */
 Word     TMECR[MNV1];       /* Time for establishing children on rational, ECR, EC1 */
-Word     TMSIGNPR[MNV1];    /* Time for computing projection signature, SIGNPR, SIGNP1 */  
+Word     TMSIGNPR[MNV1];    /* Time for computing projection signature, SIGNPR, SIGNP1 */
 Word   TMEVALUATE[MNV1];  /* Time for trial evaluataion, EVALUATE */
 Word   TMPROPAGATE[MNV1]; /* Time for propagation, PROPAGATE */
 Word   TMAPEQC[MNV1];     /* Time for applying equational constraints, APEQC */
@@ -142,7 +148,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
 /* ------------------------------------------------------------------------*/
 /*                    MEMBER FUNCITONS                                     */
 /* ------------------------------------------------------------------------*/
-  
+
   void INITGLOBALS();
   void INITSTATS();
   QepcadCls() { INITGLOBALS(); INITSTATS(); }
@@ -195,6 +201,8 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   Word PROJLA(Word r, Word A);
   Word PROJMC(Word r, Word A);
   Word PROJMCx(Word r, Word A);
+  void QUASIAFFINE(Word r, Word V, Word F, Word* A_);
+  void STRATIFY(Word A, Word r, Word *A_);
 
   /* TICAD */
   Word TICAD(Word Q, Word F, Word f, Word P, Word A);
@@ -212,8 +220,8 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void CHOOSE(Word D, Word *t_, Word *c_);
   void CHCELL(Word cs, Word *c_, Word *t_);
   void ECLI(Word D, Word *c_, Word *t_);
-  BDigit SCREEN(Word c); 
-  BDigit SCREENBYQUANTIFIER(Word c); 
+  BDigit SCREEN(Word c);
+  BDigit SCREENBYQUANTIFIER(Word c);
   Word ISFECLI(Word D);
   Word INITPCAD();
   void EVALUATE(Word c, Word k, Word F, Word A);
@@ -227,6 +235,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void STATWR();
   void SAMPLEWR(Word c);
   void CELLWR(Word c);
+  void CELLWRT(Word c);
   void CELLSWR(Word c);
 
   /* SACLIB */
@@ -242,6 +251,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void PRCCSF();
   void PRCHPIVOT();
   void PRDC();
+  void PRDCT();
   void PRDCS();
   void PRDDESIRED();
   void PRDESIRED();
@@ -269,6 +279,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void PRFINISH();
   void PRGO();
   void PRIPFZT();
+  void PRMCT();
   void PRMCC(Word *t_);
   void PRPROJOP();
   void PRPROPEC();
@@ -286,7 +297,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
 
   /* SFEXT */
   void CLEAN_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word *D_);
-  void STRIPPED_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word *D_);
+  void STRIPPED_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word *D_, Word flag);
   void CADSTATS(Word C, Word P);
   void CSORCELLTR(Word c, Word Pp, Word PpO, Word PpN);
   void CSORCELLTR_MOD(Word c, Word Pp, Word PpO, Word PpN, Word P);
@@ -301,7 +312,10 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void SFCFULLD(Word D, Word P, Word J, Word n);
   Word SFCFULLDf(Word D, Word P, Word J, Word n);
   void FALSECELLWRITE(Word D);
+  void FALSECELLWRITET(Word D);
   void TRUECELLWRITE(Word D);
+  void ALLCELLWRITET(Word D);
+  void TRUECELLWRITET(Word D);
   void REPLACE_WITH_SIMPLE(Word D, Word P, Word flag);
   void SEPPIVNONPIV(Word Q_k, Word k, Word *PP_, Word *NP_);
   void PROJMCECCLOSURE(Word P, Word J, Word Q);
@@ -324,5 +338,4 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   void QEPCADauto(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_);
   void PROJECTauto(Word r, Word A, Word *P_, Word *J_);
   Word TICADauto(Word Q, Word F, Word f, Word P, Word A);
-
 };

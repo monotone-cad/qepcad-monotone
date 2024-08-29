@@ -1,4 +1,4 @@
-/*  The big loop for SF construction. 
+/*  The big loop for SF construction.
     It returns P and D, the projection factors and a CAD, which
     allow solution formula construction. */
 #include "qepcad.h"
@@ -11,11 +11,11 @@ void STRIPPED_BIGLOOP(Word Jb, Word Pb, Word P0, Word D0, Word N, Word *P_, Word
 
 Step1: /* Initialize. */
       P = NIL; for(i = N; i > 0; i--) { P = COMP(LELTI(P0,i),P); }
-      D = D0; 
+      D = D0;
       G = NIL; for(i = 0; i < N; i++) { G = COMP(NIL,G); }
 
 Step2: /* Construct the conflicting pair set. */
-      C = CFLCELLLIST(LIST1(D));
+      C = CFLCELLLIST(LIST1(D), 0);
       for(t = C; t != NIL && FIRST(t) == NIL;t = RED(t));
       if (t == NIL) goto Return; /* If no conflicting pairs, return. */
 

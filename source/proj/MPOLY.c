@@ -20,7 +20,7 @@ Word MPOLY(Word a1, Word a2, Word a3, Word a4, Word a5)
        Word A;
 
 Step1: /* Make it. */
-       A = NIL;
+       A = LIST1(NIL);
        A = COMP(a5,A);
        A = COMP(a4,A);
        A = COMP(a3,A);

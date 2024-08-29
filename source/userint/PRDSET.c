@@ -14,13 +14,13 @@ Step1: /* Heading. */
        SWRITE("---------------------------------------------\n");
        SWRITE("             Current Settings\n");
        SWRITE("---------------------------------------------\n");
-    
+
 Step2: /* Projection operator. */
        SWRITE("Projection operators                  : ");
        CWRITE('(');
        for (k = 1; k <= GVNV - 2; k++) { CWRITE(LELTI(PCPROJOP,k)); CWRITE(','); }
        CWRITE(LELTI(PCPROJOP,GVNV - 1)); SWRITE(")\n");
-      
+
 Step3: /* Cell choice strategy. */
        SWRITE("Cell choice strategy level < f        : ");
        S = PCCCSF; SWRITE("(");
@@ -72,7 +72,7 @@ Step4: /* Condition for desired cells. */
        else
           SWRITE("Top-down\n");
        SWRITE("Condition for desired cells           : ");
-       DESIREDWR(PCDESIRED);   
+       DESIREDWR(PCDESIRED);
        SWRITE("\n");
        SWRITE("Use the condition                     : ");
        CWRITE(PCUSEDES); SWRITE("\n");
@@ -85,24 +85,24 @@ Step5: /* Solution formula constructrion. */
          case 'r': SWRITE("Right to Left"); break;
          }
        SWRITE("\n");
-    
+
 Step6: /* Databases. */
        SWRITE("Use database                          : ");
        CWRITE(PCDBUSE); SWRITE("\n");
-    
+
        SWRITE("Limit for database entry              : ");
        GWRITE(PCDBLIMIT); SWRITE("ms\n");
-       
+
 Step7: /* Specially treat trivial converions of sample points? */
        SWRITE("Specially treat trivial conversion    : ");
        CWRITE(PCTCN);
        SWRITE("\n");
-   
+
 Step8: /* Specially treat rational sample point? */
        SWRITE("Specially treat Rational sample point : ");
        CWRITE(PCRSP);
        SWRITE("\n");
-   
+
 Step9: /* Build a full CAD? */
        SWRITE("Build a full CAD                      : ");
        CWRITE(PCFULL); SWRITE("\n");
@@ -111,36 +111,40 @@ Step10: /* IPFZT test? */
        SWRITE("IPFZT test                            : ");
        CWRITE(PCIPFZT); SWRITE("\n");
 
-Step11: /* approx precision */
+Step11: /* MCT test? */
+       SWRITE("MCT                                   : ");
+       CWRITE(PCMCT); SWRITE("\n");
+
+Step12: /* approx precision */
        SWRITE("Approx precision                      : ");
        GWRITE(PCNUMDEC); SWRITE("\n");
 
-Step12: /* Algorithm for resultant and discriminant computation. */
+Step13: /* Algorithm for resultant and discriminant computation. */
        SWRITE("Resultant and discriminant algorithm  : ");
        switch (PCRESALG) {
          case MODULAR: SWRITE("modular\n"); break;
          case SUBRES:  SWRITE("subresultant prs\n");  break; }
 
-Step13: /* Propagate equational constraints? */
+Step14: /* Propagate equational constraints? */
        SWRITE("Propagate equational constraints      : ");
        if (PCPROPEC == TRUE) SWRITE("True\n");
        else                  SWRITE("False\n");
 
-Step14: /* Search for true/false cells? */
+Step15: /* Search for true/false cells? */
        SWRITE("Search for true cell?                 : ");
        CWRITE(PCSEARCHTRUE); SWRITE("\n");
        SWRITE("Search for false cell?                : ");
        CWRITE(PCSEARCHFALSE); SWRITE("\n");
 
-Step15: /* SACLIB system parameters. */
+Step16: /* SACLIB system parameters. */
        SWRITE("\n");
-       SWRITE("Size of Heap (NU)                     : "); 
+       SWRITE("Size of Heap (NU)                     : ");
        GWRITE(NU); SWRITE(" words\n");
        SWRITE("Number of primes (NLPRIME)             : ");
        GWRITE(NLPRIME); SWRITE("\n");
-       SWRITE("Number of small primes (NSPRIME)       : "); 
+       SWRITE("Number of small primes (NSPRIME)       : ");
        GWRITE(NSPRIME); SWRITE("\n");
-       SWRITE("Garbage collection limit ratio (RHO)  : "); 
+       SWRITE("Garbage collection limit ratio (RHO)  : ");
        GWRITE(RHO); SWRITE("\n");
 
 Return: /* Prepare for return. */

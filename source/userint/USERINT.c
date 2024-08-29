@@ -49,6 +49,7 @@ Step2: /* Process the command. */
        case 17: PRDCC(); break;
        case 18: PRDLV(); break;
        case 19: PRDC(); break;
+       case 119: PRDCT(); break;
        case 20: PRDSET(); break;
        case 21: { PRFINISH(); goto Return; } break;
        case 22: PRDPF(); break;
@@ -69,7 +70,7 @@ Step2: /* Process the command. */
 	 if (PCMZERROR)
 	   SWRITE("Command incompatible with \"measure-zero-erro\"! No change made!\n");
 	 else
-	   PCFULL = 'y'; 
+	   PCFULL = 'y';
 	 break;
        case 40: { PRGO(); goto Return; } break;
        case 41: PRDESIRED(); break;
@@ -77,10 +78,12 @@ Step2: /* Process the command. */
        case 43: PRDDESIRED(); break;
        case 44: PRCCSF(); break;
        case 45: PRIPFZT(); break;
+       case 150: PRMCT(); break;
+       case 152: if (PCMCT == 'y') IPLLDWR(GVVL, GVREFL); else SWRITE("Error GETCID: monotone CAD not enabled.\n"); break;
        case 46: PRAPPROX(); break;
        case 47: PRSIMPLIFIER(); break;
-       case 48: PRDCS(); break; 
-       case 49: PRDPCS(); break; 
+       case 48: PRDCS(); break;
+       case 49: PRDPCS(); break;
        case 51: PREQNCONST(); break;
        case 52: PRRESALG(); break;
        case 53: PRPROPEC(); break;
@@ -93,7 +96,10 @@ Step2: /* Process the command. */
        case 60: PRDLPI(); break;
        case 61: PRDLFI(); break;
        case 63: TRUECELLWRITE(GVPC); break;
+       case 163: TRUECELLWRITET(GVPC); break;
        case 64: FALSECELLWRITE(GVPC); break;
+       case 164: FALSECELLWRITET(GVPC); break;
+       case 165: ALLCELLWRITET(GVPC); break;
        case 69: PRDSTACK(); break;
        case 71: DISP2DCAD(GVPC,GVPF,GVPJ); break;
        case 72: /*ADJ_2D_TEST(GVPC,GVPF,GVPJ); */ /* HATEST(GVPC,GVPF,GVPJ); */ break;
@@ -130,7 +136,7 @@ Step2: /* Process the command. */
 	 op = IREAD();
 	 KTHSECTIONTRUE(GVPC,j,k,op,i);
 	 break;
-	     
+
        case 82:
 	 SWRITE("The solution set has dimension ");
 	 IWRITE(SOLSETDIM(GVPC,GVNFV));
@@ -156,7 +162,7 @@ Step2: /* Process the command. */
 	 /* CONVEXPROP(IREAD(),GVPC);*/
 	 EXPROP(IREAD(),GVPC);
 	 break;
-       case 86: 
+       case 86:
 	 SWRITE("Give me a formula:\n");
 	 FMAREAD(GVPF,GVVL,&j,&t);
 	 if (t)
@@ -165,7 +171,7 @@ Step2: /* Process the command. */
 	   SWRITE("Format's wrong!\n");
 	 break;
        case 88:
-	 t = LREAD(); 
+	 t = LREAD();
 	 REPLACE_WITH_SIMPLE(GVPC,GVPF,
 			     t == NIL ? 0 : FIRST(t) + 2*SECOND(t));
 	 break;
@@ -177,14 +183,14 @@ Step2: /* Process the command. */
 	 case 2: SWRITE("CAD is projection definable.\n"); break;
 	 default: SWRITE("CAD is not projection definable.\n"); break; }
 	 break;
-	     
+
        case 91:
 	 SFC4(GVPC,GVPF,GVPJ,IREAD(),NIL);
 	 /* IPLDWR(GVVL,BYPOLLIST2D(GVPC,GVPF,GVPJ)); */
 
 	 /* UNIVPROP(IREAD(),GVPC); */
 	 break;
-     
+
        case 92: /*Vertical Fill */
 	 VERTFILL2D(GVPC);
 	 break;
@@ -220,7 +226,7 @@ Step2: /* Process the command. */
 	 else
 	   PCMZERROR = 1;
 	 break;
-	 
+
        case 98: /* "assume" command */
 	 QFFRDR(CINV(REDI(CINV(GVVL),GVNV - GVNFV)),&F,&s);
 	 if (s) {
@@ -239,14 +245,14 @@ Step2: /* Process the command. */
 	 if (GVUA == NIL)
 	   SWRITE("There are no assumptions!\n");
 	 else {
-	   QFFWR(GVVL,GVUA); SWRITE("\n"); 
+	   QFFWR(GVVL,GVUA); SWRITE("\n");
 	 }
 	 break;
-	 
+
        case 100: /* "negate-truth-values" command */
 	 CADTVNEG(GVPC);
 	 break;
-	 
+
        case 101: /* "lim-inf" command */
 	 CADTVSUPINF(GVPC,GVNFV,-1);
 	 break;
@@ -278,7 +284,7 @@ Step2: /* Process the command. */
 	       CELLWR(FIRST(Li));
 	 }
 	 break;
-	 
+
        case 104:
 	 PREQNCONSTPOLY();
 	 break;
@@ -316,7 +322,7 @@ void CADTVSUPINF(Word D, Word k, Word dir)
   else
   {
     Word L = LELTI(D,CHILD);
-    if (dir == -1) 
+    if (dir == -1)
       L = CINV(L);
 
     Word m = 0, i = 0;
@@ -402,7 +408,7 @@ void PRINTBORDERPOLS(Word D)
     /* Get Right Sector Cell Info */
     BORDERPOLINDICES(FIRST(L),&lR,&uR);
     L = RED(L);
-    
+
     /* L O W E R   B O U N D A R Y */
     if (lL != lR)
     {
@@ -461,7 +467,7 @@ void VERTFILL2D(Word D)
     /* Skip empty stacks */
     if (S == NIL)
       continue;
-    
+
     /* Search for first TRUE cell in stack */
     for(T = S; T != NIL && LELTI(FIRST(T),TRUTH) != TRUE; T = RED(T));
 
@@ -503,7 +509,7 @@ void PASSLINE(Word D, Word F, Word P)
     if (!ISLIST(S))
       continue;
 
-    for(T = S; 
+    for(T = S;
 	T != NIL && (FMACELLEVAL(F,FIRST(T),P) != TRUE ||
 		     LELTI(FIRST(T),SC_CDTV) != TRUE); T = RED(T));
   }
@@ -521,7 +527,7 @@ void PASSLINE(Word D, Word F, Word P)
       continue;
 
 
-    for(T = S; 
+    for(T = S;
 	T != NIL && (FMACELLEVAL(F,FIRST(T),P) != TRUE ||
 		     LELTI(FIRST(T),SC_CDTV) != TRUE); T = RED(T));
   }
@@ -537,7 +543,7 @@ void PASSLINE(Word D, Word F, Word P)
 
     for(T = S; T != NIL; T = RED(T))
       if (FMACELLEVAL(F,FIRST(T),P) == TRUE)
-	SLELTI(LELTI(FIRST(T),SC_REP),TRUTH,TRUE);       
+	SLELTI(LELTI(FIRST(T),SC_REP),TRUTH,TRUE);
 
     Lp = RED(Lp);
   }

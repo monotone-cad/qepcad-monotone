@@ -1,10 +1,11 @@
 /*=======================================================
-                    qepcad.h                                        
+                    qepcad.h
 ========================================================*/
 #ifndef QEPCAD_H
 #define QEPCAD_H
 #include <stdio.h>
 #include <string>
+
 using namespace std;
 
 /*-- Saclib is a C library, so we need C-style linkage --*/
@@ -92,6 +93,19 @@ Word EXPAFLT(Word L);
 Word EXPAFLTS(Word L);
 Word EXTRACT(Word r, Word F);
 void EXTRACTS(Word F, Word A, Word *Ap_);
+void ADDPOL(Word P, Word PP, BDigit k, Word Z, Word *A_, Word *L_);
+void ADDPOLS(Word Ps, BDigit k, Word Z, Word *A_);
+Word LEVELIDX(Word C);
+Word PADDVS(Word P, Word k);
+Word PPREPVS(Word P, Word k);
+Word JACOBI(Word r, Word f, Word i, Word Hs, Word Is);
+Word IPFRPmod(Word r, Word P);
+Word SUBSTITUTE(Word r, Word P, Word S, bool rc);
+Word ROOTS(Word Ps, Word I);
+Word LDCOPY(Word L1);
+Word FindByIndex(Word L, Word I, Word j, Word k);
+int TwoDimIndex(Word I, Word *j_, Word *k_);
+void ConvertToPrimitive(Word SQ, Word SJ, Word SM, Word SI, Word Sb, Word* M_, Word* I_, Word* b_);
 void FGWRITE(Word A, Word n);
 void FILINE();
 void FILLIN(Word n, Word vs, Word S_r, Word S_s, Word R_c, Word R_s, Word *v_);
@@ -130,6 +144,7 @@ Word IPFZT1(Word r, Word A);
 void IPLDWR(Word V, Word A);
 Word IPLFAC(Word k, Word J);
 void IPLLDWR(Word V, Word A);
+void CELLIPLLDWR(Word V, Word A, Word S, Word k);
 void IPLLDWRMOD(Word V, Word A);
 void IPLSRP(Word A, Word *s_, Word *P_);
 Word IPRESPRS(Word r, Word A, Word B);
@@ -173,9 +188,9 @@ Word NEGRLOP(Word T);
 void NEXTCELL(Word D, Word c, Word *cp_, Word *t_);
 void NEXTCOMB(Word n, Word r, Word Rs, Word *R_, Word *q_);
 void NEXTLEXI(Word l, Word Rs, Word *R_, Word *q_);
-void NEXTPRD(Word n, Word vs, Word Ss_r, Word Ss_s, 
-			   Word Rs_c, Word Rs_s, Word *v_, 
-			   Word *S_r_, Word *S_s_, 
+void NEXTPRD(Word n, Word vs, Word Ss_r, Word Ss_s,
+			   Word Rs_c, Word Rs_s, Word *v_,
+			   Word *S_r_, Word *S_s_,
 			   Word *R_c_, Word *R_s_, Word *q_);
 Word NORMAF(Word A);
 Word NORMAFS(Word Fh);
@@ -216,6 +231,8 @@ void PRUDB();
 void PRWHATIS();
 void PSIGTBL(Word c, Word f, Word T_t, Word T_f, Word *Tp_t_, Word *Tp_f_);
 void PSIMREP(Word r, Word P, Word *rs_, Word *Ps_);
+void ADDPOL(Word P, BDigit k, Word Z, Word *A_, Word *L_);
+void ADDPOLS(Word Ps, BDigit k, Word Z, Word *A_);
 void QEGLOBALS();
 const char* QEPCADBVersion();
 Word QFFFSOP(Word H, Word P, Word f);
@@ -315,14 +332,14 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 #define GEOP   6
 #define NEOP   5
 #define LEOP   3
-      
+
 /* Other Extended Relational Operators */
 #define CDOP   0
 #define TAOP   7
 
 /* Indexed root */
 #define IROOT  101
-  
+
 /* Logical Operators */
 #define ANDOP     11
 #define OROP      12
@@ -361,11 +378,11 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 /* Solution Flag */
 #define EQU      1
 #define INEQU    0
-      
+
 /* Return Flag */
 #define OK      1
 #define ERROR   0
-      
+
 /* Cell */
 #define LEVEL      1     /* If you change this, update MCELL also. */
 #define CHILD      2
@@ -377,7 +394,7 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 #define HOWTV      8
 #define DEGSUB     9
 #define MULSUB     10
-      
+
 /* Partial Orderings */
 #define HLORD      1
 #define LLORD      2
@@ -397,7 +414,7 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 #define CALCINDEX    -4
 #define CAPARITY     -5
 
-#define CAINDEX0     -1000  /* All the value below this is reserved for 
+#define CAINDEX0     -1000  /* All the value below this is reserved for
                                index(i). */
 
 
@@ -407,6 +424,7 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 #define PO_PARENT     3
 #define PO_TYPE       4
 #define PO_STATUS     5
+#define PO_REFINEMENT 6     /* doesn't appear in MPOLY, must be set separately. */
 
 #define PO_RES        10
 #define PO_DIS        11
@@ -437,7 +455,7 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 
 /* -----------------------------------------------------------------------*/
 /*                              Macros                                    */
-/* -----------------------------------------------------------------------*/ 
+/* -----------------------------------------------------------------------*/
 #define LBLINDEX(L)    THIRD(L)                       /* ??? */
 #define LBLLEVEL(L)    SECOND(L)                      /* ??? */
 #define MKLABEL(a,b,c)  LIST3(LFS(a),(b),(c))         /* ??? */
@@ -447,8 +465,8 @@ void SETTRUTHVALUE(Word t, Word I, Word c);
 
 /* -----------------------------------------------------------------------*/
 /*                              Data-bases                                */
-/* -----------------------------------------------------------------------*/ 
-extern Word DBAFCSBM;      /* Database for AFCSBM */   
+/* -----------------------------------------------------------------------*/
+extern Word DBAFCSBM;      /* Database for AFCSBM */
 extern Word DBAFPNIP;      /* Database for AFPNIP */
 extern Word DBAFUPGC;      /* Database for AFUPGC */
 extern Word DBAFUPSFN;     /* Database for AFUPSFN */
@@ -487,7 +505,7 @@ extern Word TCPC;      /* Partial CAD */
 extern Word TCPROD;    /* Product generated */
 extern Word TCPIMP;    /* Prime Implicant */
 extern Word TCPIMPTBL; /* Prime Implicant Table */
-extern Word TCEPIMP;   /* Essential Prime Implicant */ 
+extern Word TCEPIMP;   /* Essential Prime Implicant */
 extern Word TCSTAT;    /* Statistics at the end */
 extern Word TCDSTAT;   /* Dissertation statistics at the end */
 extern Word PCIPFZT;   /* 'y' if IPFZT is turned on, 'n' otherise. */
@@ -546,7 +564,7 @@ extern Word     TMIPLSRP[MNV1];    /* Time for computing signs and similar int; 
 extern Word     TMIPFSBM[MNV1];    /* Time for computing finest squarefree basis, IPFSBM */
 extern Word     TMIPLRRI[MNV1];    /* Time for integral poly real root isolation,  IPLRRI */
 extern Word     TMECR[MNV1];       /* Time for establishing children on rational, ECR, EC1 */
-extern Word     TMSIGNPR[MNV1];    /* Time for computing projection signature, SIGNPR, SIGNP1 */  
+extern Word     TMSIGNPR[MNV1];    /* Time for computing projection signature, SIGNPR, SIGNP1 */
 extern Word   TMEVALUATE[MNV1];  /* Time for trial evaluataion, EVALUATE */
 extern Word   TMPROPAGATE[MNV1]; /* Time for propagation, PROPAGATE */
 extern Word   TMAPEQC[MNV1];  /* Time to apply equational constraints, APEQC */
@@ -622,7 +640,7 @@ void OutputContextInit();
 /* ----------------------------------------*/
 /* sfext */
 void BPOLSETS(Word L_, Word D, Word P, Word *T_, Word *N_);
-Word CFLCELLLIST(Word L_D);
+Word CFLCELLLIST(Word L_D, Word flag);
 Word ICSIGDIFFLNSC(Word **A, Word a, Word k);
 void KCONST(Word J, Word P, Word G, Word *K_, Word *KT_);
 Word MINPFSETNSC(Word P,Word S,Word D,Word K);
@@ -829,6 +847,13 @@ void GMS(Word *A, Word m,Word (*C)(Word,Word));
 Word GMSDS(Word *A, Word m, Word (*C)(Word,Word));
 Word GMSDSL(Word A, Word (*C)(Word,Word));
 Word GMSL(Word A, Word (*C)(Word,Word));
+
+void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Word* J_, Word* RPs_);
+void GETSAMPLEK(Word k, Word S, Word* Q_, Word* J_);
+bool AfIsRat(Word b, Word* r_);
+Word ProjMcxUtil(Word r, Word A);
+Word LazardLifting(Word k, Word S, Word As, Word IPs, Word i, Word j);
+Word RefineSubcad(Word k, Word Ch, Word Ps, Word PF);
 
 #endif
 

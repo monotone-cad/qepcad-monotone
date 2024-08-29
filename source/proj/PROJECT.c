@@ -2,11 +2,11 @@
                          PROJECT(r,A; P,J)
 
 Projection Phase.
- 
+
 \Input
   \item{A} is a list~$(A_1,\ldots,A_r)$, where $A_i$ is a list of
-           all the distinct $i$--level normalized input polynomials. 
-         
+           all the distinct $i$--level normalized input polynomials.
+
 \Output
   \item{P} is a list~$(P_1,\ldots,P_r)$, where $P_i$ is a list of
            $i$--level projection factors.
@@ -22,9 +22,9 @@ void QepcadCls::PROJECT(Word r, Word A, Word *P_, Word *J_)
        Word D,F,J,P,Ps,J_k1,P_k,R,Ths,Thss,k,i;
 
 Step1: /* Initialize. */
-       P = LLCOPY(A); 
+       P = LLCOPY(A);
        J = NIL; for (i=1; i<r; i++) J = COMP(NIL,J);
-       k = r; 
+       k = r;
 
 Step2: /* Done? */
              /*Int*/ GVLV = k;
@@ -75,7 +75,7 @@ StepX: /* Filter out factors that don't vanish given assumptions */
 	   Word nextP = LELTI(FIRST(Rp),PO_POLY);
 	   bool qfc = qfrCheckNonVanishing(k-1,nextP,GVNA.W,GVNQFF.W,GVVL.W);
 	   if (!qfc)
-	   {	     
+	   {
 	     Rb = COMP(FIRST(Rp),Rb);
 	   }
 	   else if (PCVERBOSE)

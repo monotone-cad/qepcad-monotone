@@ -20,22 +20,24 @@ Step2: /* Extended representation. */
        SWRITE("The sample point is in an EXTENDED representation.\n\n");
 
        SWRITE("alpha = "); IUPRWR(LFS("x"),Mp,Ip); SWRITE("\n");
-       SWRITE("      = "); ANDWRITE(Mp,Ip,PCNUMDEC); SWRITE("\n\n"); 
+       SWRITE("      = "); ANDWRITE(Mp,Ip,PCNUMDEC); SWRITE("\n\n");
 
        AFLWR(Mp,Ip,LFS("Coordinate "),LFS("alpha"),bp,PCNUMDEC);
 
        SWRITE("Coordinate "); GWRITE(k); SWRITE(" = ");
        AFUPRWR(LFS("alpha"),LFS("x"),M,I);  SWRITE("\n");
-       F = AFPNIP(Mp,M);  
+       F = AFPNIP(Mp,M);
        M = AFPICR(1,M);
        IPSRP(2,M,&M1,&M);
        AMUPMPR(Mp,Ip,M,I,F,&Is,&j);
-       Ms = LELTI(F,j); 
-       Is = IPSIFI(Ms,Is);  
-       SWRITE("             = "); 
+       Ms = LELTI(F,j);
+       Is = IPSIFI(Ms,Is);
+       SWRITE("             = ");
        IUPRWR(LFS("x"),Ms,Is);  SWRITE("\n");
-       SWRITE("             = "); 
+       SWRITE("             = ");
        ANDWRITE(Ms,Is,PCNUMDEC); SWRITE("\n");
+
+       printf("\n");
        goto Return;
 
 Step3: /* Primitive representation. */
@@ -43,7 +45,7 @@ Step3: /* Primitive representation. */
        SWRITE("The sample point is in a PRIMITIVE representation.\n\n");
 
        SWRITE("alpha = "); IUPRWR(LFS("x"),M,I); SWRITE("\n");
-       SWRITE("      = "); ANDWRITE(M,I,PCNUMDEC); SWRITE("\n\n"); 
+       SWRITE("      = "); ANDWRITE(M,I,PCNUMDEC); SWRITE("\n\n");
 
        AFLWR(M,I,LFS("Coordinate "),LFS("alpha"),b,PCNUMDEC);  SWRITE("\n");
 

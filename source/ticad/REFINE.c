@@ -314,11 +314,6 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word S0M, Word S0I, Word PFs,
             c = RNSUM(FIRST(PI), RNINT(-1));
         } else {
             Word c1, c2;
-            SWRITE("set sample before. ");
-            RNWRITE(FIRST(S0I)); SWRITE(" ");
-            RNWRITE(SECOND(S0I)); SWRITE("*; ");
-            RNWRITE(FIRST(PI)); SWRITE("* ");
-            RNWRITE(SECOND(PI)); SWRITE("\n");
 
             if (PDEG(PM) == 1) {
                 c1 = SECOND(PI);
@@ -455,9 +450,6 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
                 // check if the cell requires refinement
                 if (RequiresRefinements(Ch1, PM, PI)) {
-                    LWRITE(LELTI(C, INDX));
-                    printf(" %d requires refinement", j);
-
                     break;
                 }
             }
@@ -479,11 +471,6 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
             c = RNSUM(SECOND(PI), RNINT(1));
         } else {
             GETSAMPLEK(-1, LELTI(FIRST(Ch1), SAMPLE), &S0M, &S0I);
-            SWRITE("set sample after. ");
-            RNWRITE(FIRST(PI)); SWRITE(" ");
-            RNWRITE(SECOND(PI)); SWRITE("; ");
-            RNWRITE(FIRST(S0I)); SWRITE(" ");
-            RNWRITE(SECOND(S0I)); SWRITE("\n");
             c = RNQ(RNSUM(SECOND(PI), FIRST(S0I)), RNINT(2));
         }
 

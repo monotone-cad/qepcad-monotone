@@ -44,7 +44,6 @@ void SmoothOneTwoDim(Word r, Word V, Word F, Word *C1s_, Word *C2s_, Word *PIs_,
 
     // set input formula
     Q.SETINPUTFORMULA(V,LIST4(r, r, NIL, F));
-    Q.PRDQFF();
     Q.CADautoConst();
 
     // special case: trivially false

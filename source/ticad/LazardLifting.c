@@ -58,8 +58,6 @@ Word LazardHelper(Word r, Word S, Word Ps, Word Rs, Word Q, Word k)
 
 Word LazardLifting(Word k, Word S, Word As, Word IPs, Word i, Word j)
 {
-    printf("i = %d, j = %d, lvl = %d, signs ", i, j, k); LWRITE(IPs); SWRITE("\n");
-
     // locate polynomials
     Word Rs = NIL, Ps = NIL, Q1 = NIL, r1 = NIL, Q2 = NIL, r2 = NIL;
     Word level = 0, index, P, A1s;

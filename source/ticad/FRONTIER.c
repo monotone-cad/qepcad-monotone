@@ -108,10 +108,6 @@ void ProcessBadCells(Word r, Word C, Word As, Word i, Word j, Word S, Word *Refi
 
         // a bad cell is a (0,...,0,1)-cell of level greater than J, with matching sign which has not yet been refined
         if (!section && level > j && s == s1 && LSRCH(I1x, *RefinedCells_) == 0) {
-            printf("possible bad cell polynomial = %d, ", s1); LWRITE(LELTI(C1, INDX));
-            JB == NIL ? SWRITE("-infty") : RNWRITE(JB); SWRITE(" ");
-            JT == NIL ? SWRITE("infty") : RNWRITE(JT); SWRITE("\n");
-
             Word RP = LazardLifting(
                 level,
                 sample,

@@ -55,12 +55,15 @@ Word PNotDependVs(Word r, Word P, Word k)
 
 Word SUBSTITUTE(Word r, Word P, Word S, bool rc)
 {
-    if (LENGTH(S) == 5) {
-        FAIL("util/SUBSTITUTE", "Expected a primitive sample point, but received an extended sample point.");
-    }
-
     Word Q, J, c;
-    FIRST3(S, &Q, &J, &c);
+    if (LENGTH(S) == 5) {
+        // convert sample
+        Word SQ, SJ, SM, SI, Sb;
+        FIRST5(S, &SQ, &SJ, &SM, &SI, &Sb);
+        ConvertToPrimitive(SQ, SJ, SM, SI, Sb, &Q, &J, &c);
+    } else {
+        FIRST3(S, &Q, &J, &c);
+    }
 
     Word i0 = LENGTH(c);
 

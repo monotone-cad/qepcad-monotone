@@ -125,42 +125,34 @@ Word GenerateIndex(Word r, Word i, Word j)
     return L;
 }
 
-void ProcessPolynomials(Word r, Word Ps, Word *Ps1_, Word *PsQ_, Word *Js1_, Word *Fs1_)
+void ProcessPolynomials(Word r, Word Ps, Word *Ps1_, Word *Js1_)
 {
     // we assume they are all r-variate polynomials, but only add those with nonzero degree in x_r as qepcad polynomials
-    Word P, e, P1;
+    Word P, e, P1, P2s = NIL, P2, junk;
     Word Ps1 = NIL;
-    Word PsQ = NIL; // extract factors only.
     Word Js1 = NIL; // zero degree xn x_r, as a polynomial in x_1,...,x_{r-1}
     while (Ps != NIL) {
         ADV(Ps, &P, &Ps);
 
         FIRST2(P, &e, &P1);
         if (e > 0) {
-            Ps1 = COMP(MPOLY(P, NIL, NIL, PO_OTHER, PO_KEEP), Ps1);
+            IPFACDB(r, P, &junk, &junk, &P2s);
+
+            while (P2s != NIL) {
+                ADV(P2s, &P2, &P2s);
+                Ps1 = COMP(MPOLY(SECOND(P2), NIL, NIL, PO_OTHER, PO_KEEP), Ps1);
+            }
         } else {
             Js1 = COMP(P1, Js1);
         }
     }
 
     // factorise
-    Word Fs1 = IPLFAC(r, Ps1);
-
-    // prepare to return Ps and Fs
     *Ps1_ = Ps1;
-    *Fs1_ = Fs1;
     *Js1_ = Js1;
-
-    // and prepare Qs
-    while (Ps1 != NIL) {
-        ADV(Ps1, &P, &Ps1);
-        PsQ = COMP(LELTI(P, PO_POLY), Ps);
-    }
-
-    *PsQ_ = PsQ;
 }
 
-void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word* A_, Word* P_, Word* J_)
+void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word* A_)
 {
     Word C, Ps, C1s, C2s, Js = NIL, PIs, PFs, PPs;
     SmoothOneTwoDim(r, V, F, &C1s, &C2s, &PIs, &PPs, &PFs);
@@ -198,7 +190,6 @@ void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word* A_, Word* P_, Word* J_
                 if (!IPCONST(r, J)) {
                     Js = COMP(J, Js);
                 }
-
             }
         }
     }
@@ -206,29 +197,15 @@ void QepcadCls::QUASIAFFINE(Word r, Word V, Word F, Word* A_, Word* P_, Word* J_
     // CAD should be sign-invariant on Js. this means it should be compatible with their projections, too.
     // we add projections here to save recomputing the projection for entire CAD.
 
-    // assign the pointers.
-    *A_ = PIs; // input polynomials
-    *P_ = PFs; // projection factors
-    *J_ = PPs; // projection polynomials
-
     // add Js...
     // Ps1 contains QEPCAD polynomials, Fs1 contains its factors.
-    Word Ps1, PsQ, Js1, Fs1;
-    ProcessPolynomials(r, Js, &Ps1, &PsQ, &Js1, &Fs1);
-    ADDPOLS(Ps1, r, LFS("Q"), J_);
-    ADDPOLS(Fs1, r, LFS("Q"), P_);
-
-    // and its projections
-    while (r > 1) {
-        LWRITE(PsQ); SWRITE(" ");
-        LWRITE(Js1); SWRITE("\n");
-        Js = ProjMcxUtil(r, PsQ);
-        Js = CONC(Js, Js1); // polynomials with 0 degree in x_r
-        --r;
-
-        ProcessPolynomials(r, Js, &Ps1, &PsQ, &Js1, &Fs1);
-        ADDPOLS(Ps1, r, LFS("Q"), J_);
-        ADDPOLS(Fs1, r, LFS("Q"), P_);
+    Word r1 = r, Ps1, Js1 = Js;
+    while (r1 > 1) {
+        ProcessPolynomials(r1, Js1, &Ps1, &Js1);
+        ADDPOLS(Ps1, r1, LFS("Q"), &PIs);
+        --r1;
     }
+
+    *A_ = PIs;
 }
 

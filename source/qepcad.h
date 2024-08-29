@@ -105,6 +105,7 @@ Word ROOTS(Word Ps, Word I);
 Word LDCOPY(Word L1);
 Word FindByIndex(Word L, Word I, Word j, Word k);
 int TwoDimIndex(Word I, Word *j_, Word *k_);
+void ConvertToPrimitive(Word SQ, Word SJ, Word SM, Word SI, Word Sb, Word* M_, Word* I_, Word* b_);
 void FGWRITE(Word A, Word n);
 void FILINE();
 void FILLIN(Word n, Word vs, Word S_r, Word S_s, Word R_c, Word R_s, Word *v_);

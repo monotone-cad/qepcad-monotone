@@ -102,23 +102,6 @@ bool SampleIsRat(Word SM, Word Sb)
     return true;
 }
 
-// helper function: convert sample to primitive, no timekeeping
-void ConvertToPrimitive(Word SQ, Word SJ, Word SM, Word SI, Word Sb, Word* M_, Word* I_, Word* b_)
-{
-    Word G, K, t, u, a, b, junk;
-    SIMPLEQE(SM,SI,SQ,SJ,&G,&t,&u,&K,&a,&b,&junk,&junk);
-
-    if (u != 0) {
-        MODCRDB(Sb,G,a,b,&Sb);
-    } else {
-        Sb = CCONC(Sb,LIST1(b));
-    }
-
-    *M_ = G;
-    *I_ = K;
-    *b_ = Sb;
-}
-
 // set sample point, recursive helper function
 // S is *always a primitive* sample point for a cell C
 // Ch is the list of children of C
@@ -330,12 +313,26 @@ Word RefineCell(Word k, Word Cs, Word PM, Word PI, Word S0M, Word S0I, Word PFs,
         if (S0M == NIL) { // not bounded from below. easy!
             c = RNSUM(FIRST(PI), RNINT(-1));
         } else {
-            Word c1;
+            Word c1, c2;
             SWRITE("set sample before. ");
-            RNWRITE(SECOND(S0I)); SWRITE(" ");
-            RNWRITE(FIRST(PI)); SWRITE("\n");
+            RNWRITE(FIRST(S0I)); SWRITE(" ");
+            RNWRITE(SECOND(S0I)); SWRITE("*; ");
+            RNWRITE(FIRST(PI)); SWRITE("* ");
+            RNWRITE(SECOND(PI)); SWRITE("\n");
 
-            c = RNQ(RNSUM(SECOND(S0I), FIRST(PI)), RNINT(2));
+            if (PDEG(PM) == 1) {
+                c1 = SECOND(PI);
+            } else {
+                c1 = RNQ(RNSUM(FIRST(PI), SECOND(PI)), RNINT(2));
+            }
+
+            if (PDEG(PM) == 1) {
+                c2 = FIRST(S0I);
+            } else {
+                c2 = RNQ(RNSUM(FIRST(S0I), SECOND(S0I)), RNINT(2));
+            }
+
+            c = RNQ(RNSUM(c1, c2), RNINT(2));
         }
 
         SETSAMPLE(C1, PMON(1,1), LIST1(c), PFs);
@@ -458,7 +455,8 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
                 // check if the cell requires refinement
                 if (RequiresRefinements(Ch1, PM, PI)) {
-                    printf("%d requires refinement", j);
+                    LWRITE(LELTI(C, INDX));
+                    printf(" %d requires refinement", j);
 
                     break;
                 }
@@ -467,14 +465,7 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
         // first cell in Ch is to be refined, S1M, S1J is the k-th coordinate of the sample point of C_B
         bool refine_after = false; // do we need to refine C3?
-        Word J1;
-        if (PDEG(S0M) == 1) { // exact rational refinement point
-            J1 = S0I;
-        } else { // approximate ratinoal number, for algebraic refinement point
-            J1 = J;
-        }
-
-        Ch1 = RefineCell(k, Ch1, PM, PI, S0M, J1, PFs, &refine_after);
+        Ch1 = RefineCell(k, Ch1, PM, PI, S0M, S0I, PFs, &refine_after);
 
         ADV(RED2(Ch1), &C, &Ch1);
         // now FIRST(Ch) is the top of C, if C is bounded from above
@@ -489,8 +480,10 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
         } else {
             GETSAMPLEK(-1, LELTI(FIRST(Ch1), SAMPLE), &S0M, &S0I);
             SWRITE("set sample after. ");
-            RNWRITE(SECOND(PI)); SWRITE(" ");
-            RNWRITE(FIRST(S0I)); SWRITE("\n");
+            RNWRITE(FIRST(PI)); SWRITE(" ");
+            RNWRITE(SECOND(PI)); SWRITE("; ");
+            RNWRITE(FIRST(S0I)); SWRITE(" ");
+            RNWRITE(SECOND(S0I)); SWRITE("\n");
             c = RNQ(RNSUM(SECOND(PI), FIRST(S0I)), RNINT(2));
         }
 

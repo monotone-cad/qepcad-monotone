@@ -1,3 +1,10 @@
+# QEPCAD Monotone
+
+This is a modified version of QEPCAD which is able to compute a CAD, compatible with a family of semialgebraic sets of
+dimension at most two and satisfying the frontier condition, based on the work of Basu, Gabrielov and Vorobjov (2015)
+"Triangulation of Monotone Families"
+
+```
 ============================================================
                      Q E P C A D   B
 
@@ -84,3 +91,4 @@ cad2d - This contains the program "cad2d" is a variant of
       QEPCAD with some optimizations for constructing 2D CADs.
 
 plot2d - The ADJ2D_plot program.
+```

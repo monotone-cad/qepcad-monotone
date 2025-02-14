@@ -221,6 +221,8 @@ $(LIB)(proj/UDEQNCONST.o) \
 $(LIB)(proj/SEPLAB.o) \
 $(LIB)(proj/PROJECTauto.o) \
 $(LIB)(proj/QUASIAFFINE.o) \
+$(LIB)(proj/StratCADautoConst.o) \
+$(LIB)(proj/STRATIFY.o) \
 $(LIB)(proj/ProjMcxUtil.o)
 
 OBJS_SYSOLVE = \
@@ -594,6 +596,8 @@ $(LIBD)(proj/UDEQNCONST.o) \
 $(LIBD)(proj/SEPLAB.o) \
 $(LIBD)(proj/PROJECTauto.o) \
 $(LIBD)(proj/QUASIAFFINE.o) \
+$(LIBD)(proj/StratCADautoConst.o) \
+$(LIBD)(proj/STRATIFY.o) \
 $(LIBD)(proj/ProjMcxUtil.o)
 
 OBJS_SYSOLVEd = \

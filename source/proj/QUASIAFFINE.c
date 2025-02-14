@@ -42,9 +42,8 @@ void SmoothOneTwoDim(Word r, Word V, Word F, Word *C1s_, Word *C2s_, Word *PIs_,
     QepcadCls Q;
 	INITSYS();
 
-    // set input formula
     Q.SETINPUTFORMULA(V,LIST4(r, r, NIL, F));
-    Q.CADautoConst();
+    Q.StratCADautoConst();
 
     // special case: trivially false
     if (Q.GVPC == 0) {

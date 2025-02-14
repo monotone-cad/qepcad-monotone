@@ -848,6 +848,7 @@ Word GMSDS(Word *A, Word m, Word (*C)(Word,Word));
 Word GMSDSL(Word A, Word (*C)(Word,Word));
 Word GMSL(Word A, Word (*C)(Word,Word));
 
+Word STRATIFY(Word r, Word L);
 void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Word* J_, Word* RPs_);
 void GETSAMPLEK(Word k, Word S, Word* Q_, Word* J_);
 bool AfIsRat(Word b, Word* r_);

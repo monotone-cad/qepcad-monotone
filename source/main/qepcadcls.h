@@ -202,7 +202,7 @@ Word NMATOM;           /* Number of atomic formulas in the solution qff */
   Word PROJMC(Word r, Word A);
   Word PROJMCx(Word r, Word A);
   void QUASIAFFINE(Word r, Word V, Word F, Word* A_);
-  void STRATIFY(Word A, Word r, Word *A_);
+  void StratCADautoConst();
 
   /* TICAD */
   Word TICAD(Word Q, Word F, Word f, Word P, Word A);

@@ -18,6 +18,55 @@
   ======================================================================*/
 #include "qepcad.h"
 
+// deep length. total number of elements in the nested list
+Word DLENGTH(Word L, int maxdepth)
+{
+    // base: empty
+    if (L == NIL) return 0;
+
+    // base case
+    if (maxdepth == 0 || !ISLIST(L)) return 1;
+
+    // recursive case
+    Word len = 0, A;
+    while (L != NIL) {
+        ADV(L, &A, &L);
+
+        len += DLENGTH(A, maxdepth - 1);
+    }
+
+    return len;
+}
+
+void CountCells(Word D, Word *trueCount, Word *cellCount)
+{
+    // base case, no chillun
+    if (LELTI(D, CHILD) == NIL) {
+        if (LELTI(D, TRUTH) != UNDET) ++(*cellCount);
+        if (LELTI(D, TRUTH) == TRUE) ++(*trueCount);
+
+        return;
+    }
+
+    Word Ch, C;
+    Ch = LELTI(D, CHILD);
+    while (Ch != NIL) {
+        ADV(Ch, &C, &Ch);
+        CountCells(C, trueCount, cellCount);
+    }
+}
+
+void PrintStats(Word P, Word D)
+{
+    Word trueCount = 0, cellCount = 0;
+    CountCells(D, &trueCount, &cellCount);
+
+    printf("CAD stats:\n");
+    printf("- Total number of projection factors: %d\n", DLENGTH(P, 2));
+    printf("- Total number of cells:              %d\n", cellCount);
+    printf("- Total number of true cells:         %d\n", trueCount);
+}
+
 void QepcadCls::QEPCAD(Word Fs, Word *t_, Word *F_e_, Word *F_n_, Word *F_s_)
 {
     Word A,D,F,F_e,F_n,F_s,Fh,J,P,Q,Ths,f,i,r,t, T;
@@ -122,6 +171,9 @@ Step6: /* Solution. */
         SFCFULLD(GVPC,GVPF,GVPJ,GVNFV);
     T = ACLOCK() - T;
     TMSFCONST = COMP(T,TMSFCONST);
+
+    /* Write out the number of polynomials */
+    PrintStats(P, D);
 
 Return: /* Prepare for return. */
     *t_ = t;

@@ -23,11 +23,15 @@
 // construct one row
 Word JacobiRow(Word r, Word P, Word Is, Word i)
 {
+    bool zeroRow = true;
     // rightmost d f / d xi
-    Word Mi = NIL;
+    Word Mi = NIL, D = 0;
 
     if (i > 0) {
-        Mi = COMP(IPDER(r, P, i), Mi);
+        D = IPDER(r, P, i);
+        if (D != 0) zeroRow = true;
+
+        Mi = COMP(D, Mi);
     }
 
     // remaining elements
@@ -35,10 +39,13 @@ Word JacobiRow(Word r, Word P, Word Is, Word i)
     while (Is != NIL) {
         ADV(Is, &j, &Is);
 
-        Mi = COMP(IPDER(r, P, j), Mi);
+        Word D = IPDER(r, P, j);
+        if (D != 0) zeroRow = true;
+
+        Mi = COMP(D, Mi);
     }
 
-    return Mi;
+    return zeroRow ? 0 : Mi;
 }
 
 Word JACOBI(Word r, Word f, Word i, Word Hs, Word Is)
@@ -51,15 +58,20 @@ Word JACOBI(Word r, Word f, Word i, Word Hs, Word Is)
 
     // first k rows in the order INV(h1,...,hk),f
     // order doesnt really matter
-    Word h;
+    Word h, Ri;
     while (Hs != NIL) {
         ADV(Hs, &h, &Hs);
 
-        M = COMP(JacobiRow(r, h, Is, i), M);
+        Ri = JacobiRow(r, h, Is, i);
+        if (Ri == 0) return 0; // zero row => zero determinant
+        M = COMP(Ri, M);
     }
 
     if (i > 0) {
-        M = COMP(JacobiRow(r, f, Is, i), M);
+        Ri = JacobiRow(r, f, Is, i);
+
+        if (Ri == 0) return 0; // zero row => zero determinant
+        M = COMP(Ri, M);
     }
 
     return MAIPDE(r, M);

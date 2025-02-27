@@ -427,7 +427,8 @@ $(LIB)(util/FindByIndex.o) \
 $(LIB)(util/TwoDimensionalIndex.o) \
 $(LIB)(util/ConvertToPrimitive.o) \
 $(LIB)(util/ADDREFINEMENTPOINTS.o) \
-$(LIB)(util/GETSAMPLEK.o)
+$(LIB)(util/GETSAMPLEK.o) \
+$(LIB)(util/BADCHECK.o)
 
 #  To replace saclib routines.
 OBJS_SACLIB = \
@@ -804,7 +805,8 @@ $(LIBD)(util/FindByIndex.o) \
 $(LIBD)(util/TwoDimensionalIndex.o) \
 $(LIBD)(util/ConvertToPrimitive.o) \
 $(LIBD)(util/ADDREFINEMENTPOINTS.o) \
-$(LIBD)(util/GETSAMPLEK.o)
+$(LIBD)(util/GETSAMPLEK.o) \
+$(LIBD)(util/BADCHECK.o)
 
 #  To replace saclib routines.
 OBJS_SACLIBd = \

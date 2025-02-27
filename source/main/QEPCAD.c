@@ -156,6 +156,11 @@ Step5: /* Monotone cells, if needed */
         GVREFL = RPs;
         D = REFINE(1, D, GVREFL, P);
 
+        /* Perform badness check */
+        if (BADCHECK(D)) {
+            FAIL("QEPCAD", "A bad cell of dimension > 0 exists.");
+        }
+
         /*Int*/ if (PCCONTINUE == TRUE) { goto Return; }
     }
 

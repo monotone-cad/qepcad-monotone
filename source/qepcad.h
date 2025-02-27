@@ -851,6 +851,7 @@ Word GMSL(Word A, Word (*C)(Word,Word));
 Word STRATIFY(Word r, Word L);
 void ADDREFINEMENTPOINTS(Word I, Word S, Word R1s, Word Endpoints, Word* A_, Word* J_, Word* RPs_);
 void GETSAMPLEK(Word k, Word S, Word* Q_, Word* J_);
+Word BADCHECK(Word D);
 bool AfIsRat(Word b, Word* r_);
 Word ProjMcxUtil(Word r, Word A);
 Word LazardLifting(Word k, Word S, Word As, Word IPs, Word i, Word j);

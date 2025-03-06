@@ -16,7 +16,6 @@ bool BadCheckHelper(Word dim, Word D)
     // base case: dimension 2, check for vanishing polynomial
     if (dim == 2) {
         Word s1 = FIRST(LELTI(D, SIGNPF));
-        LWRITE(s1); SWRITE("\n");
 
         return MEMBER(0, s1);
     }

@@ -457,7 +457,6 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
 
         // first cell in Ch is to be refined, S1M, S1J is the k-th coordinate of the sample point of C_B
         bool refine_after = false; // do we need to refine C3?
-        LWRITE(LELTI(C, INDX)); SWRITE("\n");
         Ch1 = RefineCell(k, Ch1, PM, PI, S0M, S0I, PFs, &refine_after);
 
         ADV(RED2(Ch1), &C, &Ch1);

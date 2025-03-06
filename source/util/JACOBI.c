@@ -29,7 +29,7 @@ Word JacobiRow(Word r, Word P, Word Is, Word i)
 
     if (i > 0) {
         D = IPDER(r, P, i);
-        if (D != 0) zeroRow = true;
+        if (D != 0) zeroRow = false;
 
         Mi = COMP(D, Mi);
     }
@@ -40,7 +40,7 @@ Word JacobiRow(Word r, Word P, Word Is, Word i)
         ADV(Is, &j, &Is);
 
         Word D = IPDER(r, P, j);
-        if (D != 0) zeroRow = true;
+        if (D != 0) zeroRow = false;
 
         Mi = COMP(D, Mi);
     }

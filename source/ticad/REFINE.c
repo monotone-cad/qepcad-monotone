@@ -485,7 +485,6 @@ Word RefineSubcad(Word k, Word Ch, Word Ps, Word PFs)
         ADV(Ch1, &C, &Ch1);
 
         SETINDEXK(C, k, i);
-        ADDSIGNPF(k, C, PF1);
     }
 
     return Ch;
@@ -548,11 +547,16 @@ Word QepcadCls::REFINE(Word k, Word D, Word A, Word PF)
     }
 
     // walk the CAD, sections only.
-    Word C, junk;
-    ADV(Ch, &junk, &Ch);
-    PF = RED(PF);
+    Word C, C1, P1;
+    ADV(PF, &P1, &PF);
+    ADV(Ch, &C1, &Ch);
+    ADDSIGNPF(k, C1, P1);
+
     while (Ch != NIL) {
-        ADV2(Ch, &C, &junk, &Ch);
+        ADV2(Ch, &C, &C1, &Ch);
+
+        ADDSIGNPF(k, C, P1);
+        ADDSIGNPF(k, C1, P1);
 
         C = REFINE(k+1, C, A, PF);
     }

@@ -146,11 +146,6 @@ Step5: /* Monotone cells, if needed */
         // refine the CAD
         D = REFINE(1, D, GVREFL, P);
 
-        /* Perform badness check, in which case extension to Lazard isn't guaranteeed to work */
-        if (BADCHECK(D)) {
-            FAIL("QEPCAD", "A bad cell of dimension > 0 exists.");
-        }
-
         // if we cached an ESPCAD, it will no longer be valid. If CAD was projection definable before, it will be still
         // be projection definable now.
         if (GVTD != NIL && FIRST(GVTD) == 0) {
